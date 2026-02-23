@@ -1,0 +1,31 @@
+package com.example.codeprep.di
+
+import android.content.Context
+import androidx.room.Room
+import com.example.codeprep.data.local.CodePrepDatabase
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import jakarta.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): CodePrepDatabase {
+        return Room.databaseBuilder(
+            context,
+            CodePrepDatabase::class.java,
+            "codeprep_db"
+        ).fallbackToDestructiveMigration().build()
+    }
+
+    @Provides
+    fun provideUserProgressDao(db: CodePrepDatabase) = db.userProgressDao()
+
+    @Provides
+    fun provideAiExplanationDao(db: CodePrepDatabase) = db.aiExplanationDao()
+}
