@@ -37,6 +37,7 @@ class UserProgressDaoTest {
     fun writeUserProgressAndReadInList() = runTest {
         val userStats = UserProgressEntity(
             userId = "test_user_1",
+            nickname = "Pavke",
             xp = 150,
             level = 2,
             streak = 5,

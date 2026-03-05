@@ -28,4 +28,7 @@ object DatabaseModule {
 
     @Provides
     fun provideAiExplanationDao(db: CodePrepDatabase) = db.aiExplanationDao()
+
+    @Provides
+    fun provideCourseDao(db: CodePrepDatabase) = db.courseDao()
 }
