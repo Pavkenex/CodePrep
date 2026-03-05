@@ -9,3 +9,11 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+// Dark Blue Palette
+val DarkBlue900 = Color(0xFF0D1B2A)
+val DarkBlue800 = Color(0xFF1B263B)
+val DarkBlue700 = Color(0xFF415A77)
+val DarkBlue600 = Color(0xFF5A7D9B)
+val BlueAccent = Color(0xFF778DA9)
+val LightBlueAccent = Color(0xFFE0E1DD)

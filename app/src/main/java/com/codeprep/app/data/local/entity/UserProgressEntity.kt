@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "user_progress")
 data class UserProgressEntity(
     @PrimaryKey val userId: String,
+    val nickname: String,
     val xp: Int,
     val level: Int,
     val streak: Int,

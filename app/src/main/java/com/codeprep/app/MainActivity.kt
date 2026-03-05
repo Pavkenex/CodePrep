@@ -14,15 +14,12 @@ import androidx.navigation.compose.rememberNavController
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.mainNavGraph
 import com.codeprep.app.ui.theme.CodePrepTheme
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Firebase.firestore.collection("test").add(mapOf("hello" to "world"))
         enableEdgeToEdge()
         setContent {
             CodePrepTheme {
