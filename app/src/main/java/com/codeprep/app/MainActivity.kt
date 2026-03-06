@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.mainNavGraph
 import com.codeprep.app.ui.theme.CodePrepTheme
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -32,7 +33,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RootNavGraph() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "auth") {
+    val startDestination = if (FirebaseAuth.getInstance().currentUser != null) "main" else "auth"
+
+    NavHost(navController = navController, startDestination = startDestination) {
         authNavGraph(navController)
         mainNavGraph(navController)
     }
