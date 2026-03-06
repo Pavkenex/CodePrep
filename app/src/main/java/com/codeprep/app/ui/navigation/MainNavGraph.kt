@@ -9,6 +9,7 @@ import com.codeprep.app.ui.course.CourseListScreen
 import com.codeprep.app.ui.home.HomeScreen
 import com.codeprep.app.ui.lesson.LessonDetailScreen
 import com.codeprep.app.ui.lesson.LessonListScreen
+import com.codeprep.app.ui.quiz.QuizScreen
 
 fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     navigation(startDestination = Screen.Home.route, route = "main") {
@@ -44,9 +45,12 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Screen.Quiz.route) { backStackEntry ->
-            val lessonId = backStackEntry.arguments?.getString("lessonId").orEmpty()
-            Text("Quiz for lesson: $lessonId")
+        composable(Screen.Quiz.route) {
+            QuizScreen(
+                onQuizFinished = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable(Screen.AskAI.route) { Text("Ask AI") }
         composable(Screen.Profile.route) { Text("Profile") }
