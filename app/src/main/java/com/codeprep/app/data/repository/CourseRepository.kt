@@ -4,6 +4,7 @@ import com.codeprep.app.data.local.CodeSnippet
 import com.codeprep.app.data.local.dao.CourseDao
 import com.codeprep.app.data.local.entity.CachedCourseEntity
 import com.codeprep.app.data.local.entity.CachedLessonEntity
+import com.codeprep.app.data.local.entity.Question
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
@@ -133,5 +134,64 @@ class CourseRepository @Inject constructor(
                 isAntiPattern = map["isAntiPattern"] as? Boolean ?: false
             )
         }
+    }
+
+    suspend fun getQuestionsForLesson(lessonId: String): List<Question> {
+        if (lessonId.isBlank()) return emptyList()
+
+        // Prvo dobavi lekciju iz lokalne baze da dobijemo courseId
+        val cachedLesson = courseDao.getLesson(lessonId)
+        if (cachedLesson == null) {
+            println("❌ Lesson not found in cache: $lessonId")
+            return emptyList()
+        }
+
+        println("✅ Found lesson: ${cachedLesson.title} with courseId: ${cachedLesson.courseId}")
+
+        return try {
+            // Koristimo sačuvani courseId za pristup pitanjima
+            val questionsSnapshot = firestore.collection("modules")
+                .document(cachedLesson.courseId)  // ← Ovo je ključno!
+                .collection("lessons")
+                .document(lessonId)
+                .collection("questions")
+                .orderBy("orderIndex")
+                .get()
+                .await()
+
+            println("📝 Found ${questionsSnapshot.documents.size} questions")
+
+            questionsSnapshot.documents.mapNotNull { document ->
+                document.toQuestionOrNull()?.also {
+                    println("✓ Question: ${it.text}")
+                }
+            }
+        } catch (e: Exception) {
+            println("❌ Error fetching questions: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun DocumentSnapshot.toQuestionOrNull(): Question? {
+        val text = getString("text") ?: return null
+        val options = (get("options") as? List<*>)?.mapNotNull { it as? String }.orEmpty()
+        if (options.isEmpty()) return null
+
+        val correctIndex = getLong("correctIndex")?.toInt()
+            ?: getLong("answerIndex")?.toInt()
+            ?: 0
+
+        val snippet = getString("codeSnippet")
+            ?: getString("snippet")
+            ?: getString("code")
+
+        return Question(
+            id = id,
+            text = text,
+            options = options,
+            correctIndex = correctIndex.coerceIn(0, options.lastIndex),
+            explanation = getString("explanation") ?: "",
+            codeSnippet = snippet?.takeIf { it.isNotBlank() }
+        )
     }
 }
