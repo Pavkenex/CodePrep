@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,7 +25,9 @@ data class QuizUiState(
     val score: Int = 0,
     val xpEarned: Int = 0,
     val finished: Boolean = false,
-    val userHearts: Int = 0 // Observed from UserRepository
+    val userHearts: Int = 0,
+    val isLoading: Boolean = true,
+    val loadError: String? = null
 ) {
     val currentQuestion: Question? get() = questions.getOrNull(currentIndex)
 }
@@ -35,7 +36,7 @@ data class QuizUiState(
 class QuizViewModel @Inject constructor(
     private val courseRepository: CourseRepository,
     private val userRepository: UserRepository,
-    private val auth: FirebaseAuth,
+    auth: FirebaseAuth,
     savedStateHandle: SavedStateHandle
     ): ViewModel()  {
 
@@ -51,6 +52,33 @@ class QuizViewModel @Inject constructor(
     ) { state, user ->
         state.copy(userHearts = user?.hearts ?: 0)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), QuizUiState())
+
+    init {
+        loadQuestions()
+    }
+
+    private fun loadQuestions() {
+        if (lessonId.isBlank()) {
+            quizState.update {
+                it.copy(
+                    isLoading = false,
+                    loadError = "Nedostaje lessonId za kviz."
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            val questions = courseRepository.getQuestionsForLesson(lessonId)
+            quizState.update {
+                it.copy(
+                    questions = questions,
+                    isLoading = false,
+                    loadError = if (questions.isEmpty()) "Nema pitanja za ovu lekciju." else null
+                )
+            }
+        }
+    }
 
     fun submitAnswer(index: Int) {
         val currentState = quizState.value
@@ -71,8 +99,10 @@ class QuizViewModel @Inject constructor(
                     selectedIndex = index
                 )
             }
-            viewModelScope.launch {
-                userRepository.loseHeart(userId)
+            if (userId.isNotBlank()) {
+                viewModelScope.launch {
+                    userRepository.loseHeart(userId)
+                }
             }
         }
     }
@@ -81,7 +111,6 @@ class QuizViewModel @Inject constructor(
         quizState.update { state: QuizUiState ->
             val nextIndex = state.currentIndex + 1
             (if (nextIndex < state.questions.size) {
-                // Ima još pitanja
                 state.copy(
                     currentIndex = nextIndex,
                     isAnswered = false,
@@ -94,7 +123,7 @@ class QuizViewModel @Inject constructor(
     }
 
     private fun saveXpToDatabase(xpEarned: Int){
-        if(xpEarned>0){
+        if(xpEarned > 0 && userId.isNotBlank()){
             viewModelScope.launch {
                 userRepository.addXp(userId,xpEarned)
             }
@@ -104,7 +133,6 @@ class QuizViewModel @Inject constructor(
     fun onFinishClicked() {
         val xp = quizState.value.xpEarned
         saveXpToDatabase(xp)
-        // Ovde možeš dodati i navigaciju nazad
     }
 
 
