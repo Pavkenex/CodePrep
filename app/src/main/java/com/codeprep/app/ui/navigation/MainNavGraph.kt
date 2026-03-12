@@ -5,6 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.codeprep.app.ui.ai.AskAiScreen
 import com.codeprep.app.ui.course.CourseListScreen
 import com.codeprep.app.ui.home.HomeScreen
 import com.codeprep.app.ui.lesson.LessonDetailScreen
@@ -39,9 +40,6 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
             LessonDetailScreen(
                 onStartQuiz = { lessonId ->
                     navController.navigate(Screen.Quiz.createRoute(lessonId))
-                },
-                onAskAI = { _, _, _ ->
-                    navController.navigate(Screen.AskAI.route)
                 }
             )
         }
@@ -52,7 +50,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Screen.AskAI.route) { Text("Ask AI") }
+        composable(Screen.AskAI.route) { AskAiScreen() }
         composable(Screen.Profile.route) { Text("Profile") }
         composable(Screen.FriendSuggestion.route) { Text("Friends") }
     }

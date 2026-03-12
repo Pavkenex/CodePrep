@@ -12,7 +12,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,6 +68,26 @@ fun RootNavGraph() {
     val startDestination = remember {
         if (FirebaseAuth.getInstance().currentUser != null) "main" else "auth"
     }
+    val bottomNavItems = remember {
+        listOf(
+            BottomNavItem("Početna", Screen.Home.route, Icons.Default.Home),
+            BottomNavItem("Kursevi", Screen.CourseList.route, Icons.Default.School),
+            BottomNavItem("Pitaj AI", Screen.AskAI.route, Icons.Default.Psychology),
+            BottomNavItem("Profil", Screen.Profile.route, Icons.Default.Person)
+        )
+    }
+    val mainRoutes = remember {
+        setOf(
+            Screen.Home.route,
+            Screen.CourseList.route,
+            Screen.LessonList.route,
+            Screen.LessonDetail.route,
+            Screen.Quiz.route,
+            Screen.AskAI.route,
+            Screen.Profile.route,
+            Screen.FriendSuggestion.route
+        )
+    }
 
     LaunchedEffect(currentUserId) {
         if (currentUserId != null) {
@@ -71,6 +100,7 @@ fun RootNavGraph() {
             Screen.Login.route,
             Screen.Register.route
         )
+        val shouldShowBottomNav = currentRoute in mainRoutes
 
         if (shouldShowSessionBanner) {
             val currentAuthUser = FirebaseAuth.getInstance().currentUser
@@ -93,8 +123,64 @@ fun RootNavGraph() {
             authNavGraph(navController)
             mainNavGraph(navController)
         }
+
+        if (shouldShowBottomNav) {
+            NavigationBar {
+                bottomNavItems.forEach { item ->
+                    val selected = isBottomItemSelected(
+                        itemRoute = item.route,
+                        currentRoute = currentRoute
+                    )
+                    NavigationBarItem(
+                        selected = selected,
+                        onClick = {
+                            if (!selected) {
+                                navController.navigate(item.route) {
+                                    popUpTo("main") {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.label
+                            )
+                        },
+                        label = { Text(item.label) }
+                    )
+                }
+            }
+        }
     }
 }
+
+private fun isBottomItemSelected(itemRoute: String, currentRoute: String?): Boolean {
+    return when (itemRoute) {
+        Screen.CourseList.route -> currentRoute in setOf(
+            Screen.CourseList.route,
+            Screen.LessonList.route,
+            Screen.LessonDetail.route,
+            Screen.Quiz.route
+        )
+
+        Screen.Profile.route -> currentRoute in setOf(
+            Screen.Profile.route,
+            Screen.FriendSuggestion.route
+        )
+
+        else -> currentRoute == itemRoute
+    }
+}
+
+private data class BottomNavItem(
+    val label: String,
+    val route: String,
+    val icon: ImageVector
+)
 
 @Composable
 private fun SessionDebugBanner(

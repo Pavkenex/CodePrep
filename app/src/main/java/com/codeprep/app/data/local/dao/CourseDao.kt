@@ -17,6 +17,9 @@ interface CourseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(courses: List<CachedCourseEntity>)
 
+    @Query("SELECT * FROM cached_courses WHERE courseId = :courseId LIMIT 1")
+    suspend fun getCourseById(courseId: String): CachedCourseEntity?
+
     // Lekcije
     @Query("SELECT * FROM cached_lessons WHERE courseId = :courseId ORDER BY orderIndex ASC")
     fun getLessonsForCourse(courseId: String): Flow<List<CachedLessonEntity>>
