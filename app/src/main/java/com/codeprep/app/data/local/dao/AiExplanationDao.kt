@@ -9,15 +9,30 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AiExplanationDao {
-    @Query("SELECT * FROM ai_explanations WHERE question = :question AND (:lessonId IS NULL OR contextLessonId = :lessonId) AND cachedAt > :minTimestamp LIMIT 1")
-    suspend fun getCachedAnswer(question: String, lessonId: String?, minTimestamp: Long): AiExplanationEntity?
+    @Query(
+        """
+        SELECT * FROM ai_explanations
+        WHERE userId = :userId
+        AND question = :question
+        AND ((:lessonId IS NULL AND contextLessonId IS NULL) OR contextLessonId = :lessonId)
+        AND cachedAt > :minTimestamp
+        ORDER BY cachedAt DESC
+        LIMIT 1
+        """
+    )
+    suspend fun getCachedAnswer(
+        userId: String,
+        question: String,
+        lessonId: String?,
+        minTimestamp: Long
+    ): AiExplanationEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun cacheAnswer(entity: AiExplanationEntity)
 
-    @Query("SELECT * FROM ai_explanations ORDER BY cachedAt DESC")
-    fun getHistory(): Flow<List<AiExplanationEntity>>
+    @Query("SELECT * FROM ai_explanations WHERE userId = :userId ORDER BY cachedAt DESC")
+    fun getHistory(userId: String): Flow<List<AiExplanationEntity>>
 
-    @Query("SELECT COUNT(*) FROM ai_explanations WHERE cachedAt > :since")
-    suspend fun getQuestionCountSince(since: Long): Int
+    @Query("SELECT COUNT(*) FROM ai_explanations WHERE userId = :userId AND cachedAt > :since")
+    suspend fun getQuestionCountSince(userId: String, since: Long): Int
 }

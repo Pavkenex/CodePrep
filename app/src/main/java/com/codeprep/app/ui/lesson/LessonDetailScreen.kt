@@ -18,22 +18,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.codeprep.app.domain.model.LessonContext
+import com.codeprep.app.ui.ai.AskAiBottomSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LessonDetailScreen(
     viewModel: LessonViewModel = hiltViewModel(),
-    onStartQuiz: (String) -> Unit,
-    onAskAI: (String, String, String) -> Unit
+    onStartQuiz: (String) -> Unit
 ) {
     val lesson by viewModel.lesson.collectAsState()
+    val courseTitle by viewModel.courseTitle.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val quizBlockMessage by viewModel.quizBlockMessage.collectAsState()
+    var showAiSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.startQuizEvent.collectLatest { lessonId ->
@@ -61,7 +67,7 @@ fun LessonDetailScreen(
                     }
 
                     OutlinedButton(
-                        onClick = { onAskAI(l.lessonId, l.title, l.content) },
+                        onClick = { showAiSheet = true },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Pitaj AI")
@@ -99,6 +105,20 @@ fun LessonDetailScreen(
             Text(
                 text = "Lekcija nije dostupna offline.",
                 style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+
+    if (showAiSheet) {
+        lesson?.let { activeLesson ->
+            AskAiBottomSheet(
+                lessonContext = LessonContext(
+                    lessonId = activeLesson.lessonId,
+                    courseTitle = courseTitle?.takeIf { it.isNotBlank() } ?: activeLesson.courseId,
+                    lessonTitle = activeLesson.title,
+                    theorySummary = activeLesson.content
+                ),
+                onDismiss = { showAiSheet = false }
             )
         }
     }

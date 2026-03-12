@@ -35,6 +35,9 @@ class LessonViewModel @Inject constructor(
     private val _lesson = MutableStateFlow<CachedLessonEntity?>(null)
     val lesson: StateFlow<CachedLessonEntity?> = _lesson.asStateFlow()
 
+    private val _courseTitle = MutableStateFlow<String?>(null)
+    val courseTitle: StateFlow<String?> = _courseTitle.asStateFlow()
+
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -46,7 +49,9 @@ class LessonViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _lesson.value = courseRepository.getLesson(lessonId)
+            val loadedLesson = courseRepository.getLesson(lessonId)
+            _lesson.value = loadedLesson
+            _courseTitle.value = loadedLesson?.let { courseRepository.getCourseTitle(it.courseId) }
             _isLoading.value = false
 
             if (userId.isNotBlank()) {

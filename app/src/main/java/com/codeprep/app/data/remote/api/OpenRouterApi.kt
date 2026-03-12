@@ -4,8 +4,8 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface OpenRouterApi {
-    @POST("chat/completitions")
-    suspend fun askQuestion( @Body request: AiRequest):AiApiResponse
+    @POST("chat/completions")
+    suspend fun askQuestion(@Body request: AiRequest): AiApiResponse
 }
 
 data class AiRequest(

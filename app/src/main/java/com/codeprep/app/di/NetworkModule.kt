@@ -25,7 +25,24 @@ object NetworkModule {
                     .addHeader("Authorization", "Bearer ${AiConfig.apiKey}")
                     .addHeader("Content-Type", "application/json")
                     .build()
-                chain.proceed(request)
+
+                var response = chain.proceed(request)
+                var retryCount = 0
+
+                while (!response.isSuccessful && response.code == 429 && retryCount < 3) {
+                    response.close()
+                    retryCount++
+                    val waitTimeMs = (1 shl retryCount) * 1000L
+                    try {
+                        Thread.sleep(waitTimeMs)
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        break
+                    }
+                    response = chain.proceed(request)
+                }
+
+                response
             }
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY

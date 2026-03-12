@@ -77,6 +77,10 @@ class CourseRepository @Inject constructor(
         )
     }
 
+    suspend fun getCourseTitle(courseId: String): String? {
+        return courseDao.getCourseById(courseId)?.title?.takeIf { it.isNotBlank() }
+    }
+
     suspend fun getLesson(lessonId: String): CachedLessonEntity? {
         val cached = courseDao.getLesson(lessonId)
         if (cached != null) return cached
