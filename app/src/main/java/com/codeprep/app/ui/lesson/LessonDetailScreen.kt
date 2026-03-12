@@ -15,12 +15,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LessonDetailScreen(
@@ -30,6 +33,13 @@ fun LessonDetailScreen(
 ) {
     val lesson by viewModel.lesson.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val quizBlockMessage by viewModel.quizBlockMessage.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.startQuizEvent.collectLatest { lessonId ->
+            onStartQuiz(lessonId)
+        }
+    }
 
     lesson?.let { l ->
         LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -44,7 +54,7 @@ fun LessonDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
-                        onClick = { onStartQuiz(l.lessonId) },
+                        onClick = { viewModel.onStartQuizClicked() },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Započni kviz")
@@ -55,6 +65,19 @@ fun LessonDetailScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Pitaj AI")
+                    }
+                }
+
+                if (quizBlockMessage != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = quizBlockMessage.orEmpty(),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    LaunchedEffect(quizBlockMessage) {
+                        delay(2500)
+                        viewModel.clearQuizBlockMessage()
                     }
                 }
             }
