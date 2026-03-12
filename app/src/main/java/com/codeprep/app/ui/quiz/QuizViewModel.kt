@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeprep.app.data.local.entity.Question
 import com.codeprep.app.data.repository.CourseRepository
+import com.codeprep.app.data.repository.LessonProgressRepository
 import com.codeprep.app.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,7 @@ data class QuizUiState(
     val isAnswered: Boolean = false,
     val score: Int = 0,
     val xpEarned: Int = 0,
+    val mistakeCount: Int = 0,
     val finished: Boolean = false,
     val userHearts: Int = 0,
     val isLoading: Boolean = true,
@@ -36,6 +38,7 @@ data class QuizUiState(
 class QuizViewModel @Inject constructor(
     private val courseRepository: CourseRepository,
     private val userRepository: UserRepository,
+    private val lessonProgressRepository: LessonProgressRepository,
     auth: FirebaseAuth,
     savedStateHandle: SavedStateHandle
     ): ViewModel()  {
@@ -54,7 +57,12 @@ class QuizViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), QuizUiState())
 
     init {
-        loadQuestions()
+        viewModelScope.launch {
+            if (userId.isNotBlank()) {
+                userRepository.refillHearts(userId)
+            }
+            loadQuestions()
+        }
     }
 
     private fun loadQuestions() {
@@ -96,7 +104,8 @@ class QuizViewModel @Inject constructor(
             quizState.update { state->
                 state.copy(
                     isAnswered = true,
-                    selectedIndex = index
+                    selectedIndex = index,
+                    mistakeCount = state.mistakeCount + 1
                 )
             }
             if (userId.isNotBlank()) {
@@ -122,18 +131,25 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    private fun saveXpToDatabase(xpEarned: Int){
-        if(xpEarned > 0 && userId.isNotBlank()){
-            viewModelScope.launch {
-                userRepository.addXp(userId,xpEarned)
+    fun onFinishClicked() {
+        val currentState = quizState.value
+        val xp = currentState.xpEarned
+
+        if (userId.isBlank()) return
+
+        viewModelScope.launch {
+            lessonProgressRepository.saveAttempt(
+                userId = userId,
+                lessonId = lessonId,
+                score = currentState.score,
+                totalQuestions = currentState.questions.size,
+                mistakeCount = currentState.mistakeCount
+            )
+
+            if(xp > 0){
+                userRepository.addXp(userId, xp)
             }
         }
     }
-
-    fun onFinishClicked() {
-        val xp = quizState.value.xpEarned
-        saveXpToDatabase(xp)
-    }
-
 
 }

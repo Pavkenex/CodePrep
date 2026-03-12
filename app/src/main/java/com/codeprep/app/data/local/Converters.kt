@@ -3,6 +3,7 @@ package com.codeprep.app.data.local
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.time.Instant
 
 class Converters {
     private val gson = Gson()
@@ -29,5 +30,15 @@ class Converters {
     fun toCodeSnippetList(value: String): List<CodeSnippet> {
         val listType = object : TypeToken<List<CodeSnippet>>() {}.type
         return gson.fromJson(value, listType) ?: emptyList()
+    }
+
+    @TypeConverter
+    fun fromTimestamp(value: Long?): Instant? {
+        return value?.let { Instant.ofEpochMilli(it) }
+    }
+
+    @TypeConverter
+    fun dateToTimestamp(instant: Instant?): Long? {
+        return instant?.toEpochMilli()
     }
 }

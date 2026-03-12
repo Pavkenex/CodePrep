@@ -1,12 +1,18 @@
 package com.codeprep.app.data.local.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
+import java.time.Instant
 
-@Entity(tableName = "lesson_progress")
+@Entity(
+    tableName = "lesson_progress",
+    primaryKeys = ["userId", "lessonId"]
+)
 data class LessonProgressEntity(
-    @PrimaryKey val lessonId: String,
+    val userId: String,
+    val lessonId: String,
     val completed: Boolean,
+    val perfectRun: Boolean,
     val score: Int,
-    val lastAttempt: Long
+    val mistakeCount: Int,
+    val lastAttemptAt: Instant?
 )

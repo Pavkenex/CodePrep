@@ -2,6 +2,8 @@ package com.codeprep.app.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.time.Instant
+
 
 @Entity(tableName = "user_progress")
 data class UserProgressEntity(
@@ -9,9 +11,9 @@ data class UserProgressEntity(
     val nickname: String,
     val xp: Int,
     val level: Int,
-    val streak: Int,
+    var streak: Int,
     val hearts: Int,
-    val heartsLockedUntil: Long?,
-    val lastActiveDate: Long,
-    val updatedAt: Long
+    val lastHeartLostAt: Instant?,
+    val lastActiveDate: Instant?,
+    val updatedAt: Instant?
 )
