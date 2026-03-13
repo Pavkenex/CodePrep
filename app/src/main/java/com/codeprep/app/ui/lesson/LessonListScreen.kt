@@ -1,16 +1,10 @@
 package com.codeprep.app.ui.lesson
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,9 +12,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.codeprep.app.ui.components.LessonPathNode
+import com.codeprep.app.ui.components.NodeState
+import com.codeprep.app.ui.theme.*
 
 @Composable
 fun LessonListScreen(
@@ -30,76 +28,99 @@ fun LessonListScreen(
     val state by viewModel.uiState.collectAsState()
     val lessons = state.lessons
 
-    if (lessons.isEmpty()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Nema dostupnih lekcija za izabrani modul.",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Proveri internet konekciju i pokušaj ponovo.",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-        return
-    }
-
-    LazyColumn(modifier = Modifier.padding(16.dp)) {
-        item {
-            Text(
-                text = "Srce: ${state.hearts}",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
-
-        items(lessons, key = { it.lesson.lessonId }) { lessonItem ->
-            val lesson = lessonItem.lesson
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .alpha(if (lessonItem.canOpen) 1f else 0.65f)
-                    .clickable(enabled = lessonItem.canOpen) { onLessonClick(lesson.lessonId) }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        if (lessons.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(lesson.title, style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = lesson.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "No lessons available",
+                    color = TextLight,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                lessons.forEachIndexed { index, lessonItem ->
+                    val offsetX = when (index % 4) {
+                        0 -> 0.dp
+                        1 -> (-60).dp
+                        2 -> 0.dp
+                        3 -> 60.dp
+                        else -> 0.dp
+                    }
 
-                    when {
-                        !lessonItem.isUnlocked -> Text(
-                            text = "Zaključano: prethodna lekcija mora biti bez greške.",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        lessonItem.isBlockedByHearts -> Text(
-                            text = "Nemaš srca za novu lekciju trenutno.",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        lessonItem.isPerfect -> Text(
-                            text = "Završeno bez greške ✔",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        lessonItem.isCompleted -> Text(
-                            text = "Završeno.",
-                            style = MaterialTheme.typography.bodySmall
+                    val nextOffsetX = if (index < lessons.lastIndex) {
+                        when ((index + 1) % 4) {
+                            0 -> 0.dp
+                            1 -> (-60).dp
+                            2 -> 0.dp
+                            3 -> 60.dp
+                            else -> 0.dp
+                        }
+                    } else 0.dp
+
+                    // The Node
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LessonPathNode(
+                            state = when {
+                                lessonItem.isPerfect -> NodeState.PERFECT
+                                lessonItem.isCompleted -> NodeState.COMPLETED
+                                lessonItem.isUnlocked && !lessonItem.isBlockedByHearts -> NodeState.ACTIVE
+                                else -> NodeState.LOCKED
+                            },
+                            onClick = { 
+                                if (lessonItem.canOpen) onLessonClick(lessonItem.lesson.lessonId) 
+                            },
+                            modifier = Modifier.offset(x = offsetX)
                         )
                     }
+
+                    // The Path Connector to Next Node
+                    if (index < lessons.lastIndex) {
+                        val pathColor = if (lessonItem.isCompleted) SunYellow else LockedGrey
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                val centerX = size.width / 2
+                                val start = Offset(centerX + offsetX.toPx(), 0f)
+                                val end = Offset(centerX + nextOffsetX.toPx(), size.height)
+                                
+                                drawLine(
+                                    color = pathColor,
+                                    start = start,
+                                    end = end,
+                                    strokeWidth = 12.dp.toPx(),
+                                    cap = androidx.compose.ui.graphics.StrokeCap.Round
+                                )
+                            }
+                        }
+                    }
                 }
+                
+                Spacer(modifier = Modifier.height(100.dp)) // Bottom padding
             }
         }
     }

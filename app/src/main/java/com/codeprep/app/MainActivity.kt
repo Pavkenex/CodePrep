@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.statusBarsPadding
-
+import androidx.compose.ui.graphics.Color
+import com.codeprep.app.ui.components.TopBarStats
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -36,10 +38,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.codeprep.app.ui.navigation.Screen
+import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.mainNavGraph
 import com.codeprep.app.ui.theme.CodePrepTheme
+import com.codeprep.app.ui.theme.LeafGreen
+import com.codeprep.app.ui.theme.LockedGrey
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -68,14 +73,16 @@ fun RootNavGraph() {
     val startDestination = remember {
         if (FirebaseAuth.getInstance().currentUser != null) "main" else "auth"
     }
+    
+    // Bottom Nav Items - Modules is Home
     val bottomNavItems = remember {
         listOf(
-            BottomNavItem("Početna", Screen.Home.route, Icons.Default.Home),
-            BottomNavItem("Kursevi", Screen.CourseList.route, Icons.Default.School),
-            BottomNavItem("Pitaj AI", Screen.AskAI.route, Icons.Default.Psychology),
-            BottomNavItem("Profil", Screen.Profile.route, Icons.Default.Person)
+            BottomNavItem("Modules", Screen.CourseList.route, Icons.Default.Home),
+            BottomNavItem("AI Coach", Screen.AskAI.route, Icons.Default.Psychology),
+            BottomNavItem("Profile", Screen.Profile.route, Icons.Default.Person)
         )
     }
+    
     val mainRoutes = remember {
         setOf(
             Screen.Home.route,
@@ -95,7 +102,7 @@ fun RootNavGraph() {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
         val shouldShowSessionBanner = currentUserId != null && currentRoute !in setOf(
             Screen.Login.route,
             Screen.Register.route
@@ -103,16 +110,11 @@ fun RootNavGraph() {
         val shouldShowBottomNav = currentRoute in mainRoutes
 
         if (shouldShowSessionBanner) {
-            val currentAuthUser = FirebaseAuth.getInstance().currentUser
-            val resolvedNickname = currentUserProgress?.nickname?.takeIf { it.isNotBlank() }
-                ?: currentAuthUser?.displayName?.takeIf { it.isNotBlank() }
-                ?: currentAuthUser?.email?.substringBefore('@')?.takeIf { it.isNotBlank() }
-                ?: "Korisnik"
-            SessionDebugBanner(
-                nickname = resolvedNickname,
-                hearts = currentUserProgress?.hearts ?: 5,
-                streak = currentUserProgress?.streak ?: 0
-            )
+             TopBarStats(
+                 hearts = currentUserProgress?.hearts ?: 5,
+                 streak = currentUserProgress?.streak ?: 0,
+                 modifier = Modifier.statusBarsPadding()
+             )
         }
 
         NavHost(
@@ -125,7 +127,10 @@ fun RootNavGraph() {
         }
 
         if (shouldShowBottomNav) {
-            NavigationBar {
+            NavigationBar(
+                containerColor = Color.White,
+                tonalElevation = 8.dp
+            ) {
                 bottomNavItems.forEach { item ->
                     val selected = isBottomItemSelected(
                         itemRoute = item.route,
@@ -147,10 +152,17 @@ fun RootNavGraph() {
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.label
+                                contentDescription = item.label,
+                                tint = if (selected) LeafGreen else LockedGrey
                             )
                         },
-                        label = { Text(item.label) }
+                        label = { 
+                            Text(
+                                item.label,
+                                color = if (selected) LeafGreen else LockedGrey,
+                                fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
+                            ) 
+                        }
                     )
                 }
             }
