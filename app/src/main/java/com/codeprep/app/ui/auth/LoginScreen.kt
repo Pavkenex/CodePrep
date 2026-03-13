@@ -29,13 +29,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.components.GamifiedTextField
-import com.codeprep.app.ui.theme.CardinalRed
-import com.codeprep.app.ui.theme.LeafGreen
-import com.codeprep.app.ui.theme.LockedGrey
-import com.codeprep.app.ui.theme.SkyBlue
-import com.codeprep.app.ui.theme.SkyBlueDark
-import com.codeprep.app.ui.theme.TextDark
-import com.codeprep.app.ui.theme.TextLight
+import com.codeprep.app.ui.theme.*
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.codeprep.app.ui.navigation.Screen
@@ -60,7 +54,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(AppBackground)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -70,7 +64,7 @@ fun LoginScreen(
             "codePrep",
             style = MaterialTheme.typography.displayMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
-                color = LeafGreen
+                color = ElectricCyan
             ),
             modifier = Modifier.padding(bottom = 48.dp)
         )
@@ -79,9 +73,11 @@ fun LoginScreen(
             text = "Login",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = TextDark
+                color = IceWhite
             ),
-            modifier = Modifier.padding(bottom = 24.dp).align(Alignment.Start)
+            modifier = Modifier
+                .padding(bottom = 24.dp)
+                .align(Alignment.Start)
         )
 
         GamifiedTextField(
@@ -89,7 +85,12 @@ fun LoginScreen(
             onValueChange = { email = it },
             placeholder = "Email or username",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
+            backgroundColor = Charcoal,
+            textColor = IceWhite,
+            cursorColor = ElectricCyan,
+            placeholderColor = TextLight,
+            borderColor = ElectricCyan
         )
 
         GamifiedTextField(
@@ -98,7 +99,12 @@ fun LoginScreen(
             placeholder = "Password",
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 24.dp),
+            backgroundColor = Charcoal,
+            textColor = IceWhite,
+            cursorColor = ElectricCyan,
+            placeholderColor = TextLight,
+            borderColor = ElectricCyan
         )
 
         if (authState is AuthState.Error) {
@@ -114,8 +120,9 @@ fun LoginScreen(
         GamifiedButton(
             text = "LOGIN",
             onClick = { viewModel.login(email, password) },
-            backgroundColor = SkyBlue,
+            backgroundColor = ElectricCyan,
             shadowColor = SkyBlueDark,
+            textColor = Charcoal,
             enabled = authState !is AuthState.Loading,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -123,9 +130,9 @@ fun LoginScreen(
         GamifiedButton(
             text = "LOGIN WITH GOOGLE",
             onClick = { /* TODO: Google Auth */ },
-            backgroundColor = Color.White,
-            shadowColor = LockedGrey,
-            textColor = TextDark,
+            backgroundColor = Charcoal,
+            shadowColor = DeepCharcoal,
+            textColor = IceWhite,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
@@ -146,7 +153,7 @@ fun LoginScreen(
                 "SIGN UP",
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = SkyBlue
+                    color = ElectricCyan
                 ),
                 modifier = Modifier.clickable { navController.navigate(Screen.Register.route) }
             )

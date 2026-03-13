@@ -40,7 +40,7 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(AppBackground)
             .verticalScroll(scrollState)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -53,7 +53,7 @@ fun ProfileScreen(
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "Settings",
-                tint = Charcoal,
+                tint = LockedGrey,
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -69,7 +69,7 @@ fun ProfileScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
-                    .background(Color.Gray.copy(alpha = 0.1f))
+                    .background(Charcoal.copy(alpha = 0.3f))
                     .border(4.dp, ElectricCyan, CircleShape)
                     .shadow(elevation = 10.dp, shape = CircleShape, spotColor = ElectricCyan)
             )
@@ -99,7 +99,7 @@ fun ProfileScreen(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(ElectricCyan)
-                    .border(2.dp, Color.White, CircleShape)
+                    .border(2.dp, AppBackground, CircleShape)
                     .clickable { /* TODO: Edit Profile */ },
                 contentAlignment = Alignment.Center
             ) {
@@ -119,7 +119,7 @@ fun ProfileScreen(
             text = progress?.nickname ?: "User",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = Charcoal
+                color = IceWhite
             )
         )
 
@@ -159,7 +159,7 @@ fun ProfileScreen(
                 text = "Badges",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Charcoal
+                    color = IceWhite
                 )
             )
         }
@@ -220,7 +220,7 @@ fun NeonStatCard(
             text = label.uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
-                color = Color.Gray
+                color = TextLight
             )
         )
     }

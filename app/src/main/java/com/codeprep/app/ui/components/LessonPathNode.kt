@@ -42,20 +42,22 @@ fun LessonPathNode(
     
     // Colors based on state
     val mainColor = when (state) {
-        NodeState.LOCKED -> LockedGrey
-        NodeState.ACTIVE -> LeafGreen
-        NodeState.COMPLETED -> SunYellow
+        NodeState.LOCKED -> Charcoal
+        NodeState.ACTIVE -> ElectricCyan
+        NodeState.COMPLETED -> LeafGreen
         NodeState.PERFECT -> SunYellow
     }
     
     val shadowColor = when (state) {
         NodeState.LOCKED -> LockedGreyDark
-        NodeState.ACTIVE -> LeafGreenDark
-        NodeState.COMPLETED -> SunYellowDark
+        NodeState.ACTIVE -> SkyBlueDark // Deeper blue for Cyan shadow
+        NodeState.COMPLETED -> LeafGreenDark
         NodeState.PERFECT -> SunYellowDark
     }
 
-    val iconColor = if (state == NodeState.LOCKED) LockedGreyDark else Color.White
+    val iconColor = if (state == NodeState.LOCKED) LockedGrey else Charcoal
+
+    val borderColor = if (state == NodeState.LOCKED) LockedGrey else Color.White.copy(alpha = 0.5f)
 
     val topOffset = if (isPressed) elevationHeight else 0.dp
 
@@ -88,8 +90,8 @@ fun LessonPathNode(
                 .clip(CircleShape)
                 .background(mainColor)
                 .border(
-                    width = if (state == NodeState.ACTIVE) 4.dp else 0.dp,
-                    color = Color.White.copy(alpha = 0.5f),
+                    width = if (state == NodeState.LOCKED) 2.dp else if (state == NodeState.ACTIVE) 4.dp else 0.dp,
+                    color = borderColor,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center

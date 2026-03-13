@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 // Neon Terminal Palette
 val ElectricCyan = Color(0xFF00E5FF)
 val Charcoal = Color(0xFF2D2D2D)
+val DeepCharcoal = Color(0xFF1E1E1E)
+val AppBackground = Color(0xFF121212) // Dark Grey replacement for TrueBlack
 val IceWhite = Color(0xFFF5F7FA)
 val TrueBlack = Color(0xFF000000)
 

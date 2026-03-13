@@ -26,9 +26,14 @@ fun GamifiedTextField(
     modifier: Modifier = Modifier,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    isError: Boolean = false
+    isError: Boolean = false,
+    backgroundColor: Color = Charcoal,
+    textColor: Color = IceWhite,
+    cursorColor: Color = ElectricCyan,
+    placeholderColor: Color = TextLight,
+    borderColor: Color = ElectricCyan
 ) {
-    val borderColor = if (isError) CardinalRed else LockedGrey
+    val currentBorderColor = if (isError) CardinalRed else borderColor
     
     BasicTextField(
         value = value,
@@ -36,19 +41,20 @@ fun GamifiedTextField(
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
-            .border(2.dp, borderColor, RoundedCornerShape(16.dp))
-            .background(OffWhite, RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp),
+            .border(2.dp, currentBorderColor, RoundedCornerShape(16.dp))
+            .background(backgroundColor, RoundedCornerShape(16.dp))
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 12.dp), // Added vertical padding for better text centering
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
-        textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextDark),
-        cursorBrush = SolidColor(SkyBlue),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = textColor),
+        cursorBrush = SolidColor(cursorColor),
         decorationBox = { innerTextField ->
             Box(contentAlignment = Alignment.CenterStart) {
                 if (value.isEmpty()) {
                     Text(
                         text = placeholder,
-                        style = MaterialTheme.typography.bodyLarge.copy(color = TextLight)
+                        style = MaterialTheme.typography.bodyLarge.copy(color = placeholderColor)
                     )
                 }
                 innerTextField()

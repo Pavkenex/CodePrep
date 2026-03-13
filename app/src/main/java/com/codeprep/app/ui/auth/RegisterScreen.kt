@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.codeprep.app.ui.navigation.Screen
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +48,7 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(AppBackground)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -57,7 +57,7 @@ fun RegisterScreen(
             text = "Create Profile",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = TextDark
+                color = ElectricCyan
             ),
             modifier = Modifier.padding(bottom = 32.dp)
         )
@@ -66,7 +66,12 @@ fun RegisterScreen(
             value = fullName,
             onValueChange = { fullName = it },
             placeholder = "Full Name",
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
+            backgroundColor = Charcoal,
+            textColor = IceWhite,
+            cursorColor = ElectricCyan,
+            placeholderColor = TextLight,
+            borderColor = ElectricCyan
         )
 
         GamifiedTextField(
@@ -74,7 +79,12 @@ fun RegisterScreen(
             onValueChange = { email = it },
             placeholder = "Email",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
+            backgroundColor = Charcoal,
+            textColor = IceWhite,
+            cursorColor = ElectricCyan,
+            placeholderColor = TextLight,
+            borderColor = ElectricCyan
         )
 
         GamifiedTextField(
@@ -83,7 +93,12 @@ fun RegisterScreen(
             placeholder = "Password",
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
+            backgroundColor = Charcoal,
+            textColor = IceWhite,
+            cursorColor = ElectricCyan,
+            placeholderColor = TextLight,
+            borderColor = ElectricCyan
         )
 
         GamifiedTextField(
@@ -92,7 +107,12 @@ fun RegisterScreen(
             placeholder = "Confirm Password",
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 24.dp),
+            backgroundColor = Charcoal,
+            textColor = IceWhite,
+            cursorColor = ElectricCyan,
+            placeholderColor = TextLight,
+            borderColor = ElectricCyan
         )
 
         if (authState is AuthState.Error) {
@@ -112,8 +132,9 @@ fun RegisterScreen(
                     viewModel.register(fullName, email, password)
                 }
             },
-            backgroundColor = LeafGreen,
-            shadowColor = LeafGreenDark,
+            backgroundColor = ElectricCyan,
+            shadowColor = SkyBlueDark,
+            textColor = Charcoal,
             enabled = authState !is AuthState.Loading,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -121,9 +142,9 @@ fun RegisterScreen(
         GamifiedButton(
             text = "SIGN UP WITH GOOGLE",
             onClick = { /* TODO: Google Auth */ },
-            backgroundColor = Color.White,
-            shadowColor = LockedGrey,
-            textColor = TextDark,
+            backgroundColor = Charcoal,
+            shadowColor = DeepCharcoal,
+            textColor = IceWhite,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
@@ -144,7 +165,7 @@ fun RegisterScreen(
                 "LOGIN",
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = SkyBlue
+                    color = ElectricCyan
                 ),
                 modifier = Modifier.clickable { navController.navigate(Screen.Login.route) }
             )
