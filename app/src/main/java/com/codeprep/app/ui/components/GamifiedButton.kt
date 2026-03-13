@@ -25,9 +25,9 @@ fun GamifiedButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = SkyBlue,
+    backgroundColor: Color = ElectricCyan,
     shadowColor: Color = SkyBlueDark,
-    textColor: Color = Color.White,
+    textColor: Color = Charcoal,
     enabled: Boolean = true,
     height: Dp = 50.dp,
     elevationHeight: Dp = 4.dp
@@ -58,7 +58,7 @@ fun GamifiedButton(
                 .fillMaxWidth()
                 .height(height) // Same height as main button
                 .clip(RoundedCornerShape(16.dp))
-                .background(if (enabled) shadowColor else LockedGreyDark)
+                .background(if (enabled) shadowColor else AppBackground)
         )
 
         // Main Button Layer (Animated Top)
@@ -69,7 +69,7 @@ fun GamifiedButton(
                 .fillMaxWidth()
                 .height(height)
                 .clip(RoundedCornerShape(16.dp))
-                .background(if (enabled) backgroundColor else LockedGrey)
+                .background(if (enabled) backgroundColor else DeepCharcoal)
                 .padding(horizontal = 16.dp), // Padding inside button
             contentAlignment = Alignment.Center
         ) {
@@ -78,7 +78,7 @@ fun GamifiedButton(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = if (enabled) textColor else LockedGreyDark
+                    color = if (enabled) textColor else TextLight
                 )
             )
         }

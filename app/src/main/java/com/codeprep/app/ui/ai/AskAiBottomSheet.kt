@@ -1,13 +1,13 @@
 package com.codeprep.app.ui.ai
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +29,9 @@ import com.codeprep.app.data.remote.api.AiConfig
 import com.codeprep.app.domain.model.AiResponse
 import com.codeprep.app.domain.model.LessonContext
 
+import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.theme.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AskAiBottomSheet(
@@ -44,7 +47,9 @@ fun AskAiBottomSheet(
         onDismissRequest = {
             viewModel.clearAnswer()
             onDismiss()
-        }
+        },
+        containerColor = AppBackground,
+        contentColor = TextLight
     ) {
         Column(
             modifier = Modifier
@@ -54,39 +59,53 @@ fun AskAiBottomSheet(
         ) {
             Text(
                 text = "Pitaj AI o lekciji",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = ElectricCyan
             )
             Text(
                 text = "${lessonContext.courseTitle} > ${lessonContext.lessonTitle}",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = LockedGrey
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = question,
                 onValueChange = { question = it },
-                label = { Text("Tvoje pitanje...") },
+                label = { Text("Tvoje pitanje...", color = TextLight) },
                 modifier = Modifier.fillMaxWidth(),
-                maxLines = 3
+                maxLines = 3,
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ElectricCyan,
+                    unfocusedBorderColor = Charcoal,
+                    cursorColor = ElectricCyan,
+                    focusedTextColor = TextLight,
+                    unfocusedTextColor = TextLight,
+                    focusedContainerColor = Charcoal,
+                    unfocusedContainerColor = Charcoal
+                )
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            Button(
+            GamifiedButton(
+                text = "Pitaj",
                 onClick = { viewModel.ask(question, lessonContext) },
+                backgroundColor = ElectricCyan,
+                textColor = TrueBlack,
                 enabled = question.isNotBlank() && !isLoading,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                if (isLoading) {
+            )
+
+            if (isLoading) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = ElectricCyan,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("AI razmišlja...")
-                } else {
-                    Text("Pitaj")
+                    Text("AI razmišlja...", color = TextLight)
                 }
             }
 
@@ -103,18 +122,18 @@ fun AiResponseContent(response: AiResponse?) {
         is AiResponse.Success -> {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                colors = CardDefaults.cardColors(containerColor = Charcoal)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     if (response.fromCache) {
                         Text(
                             text = "Iz keša",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = LockedGrey
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                     }
-                    Text(response.answer, style = MaterialTheme.typography.bodyMedium)
+                    Text(response.answer, style = MaterialTheme.typography.bodyMedium, color = TextLight)
                 }
             }
         }
@@ -122,19 +141,19 @@ fun AiResponseContent(response: AiResponse?) {
         is AiResponse.Fallback -> {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                colors = CardDefaults.cardColors(containerColor = LockedGreyDark)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         text = "AI nije dostupan. Evo sažetka lekcije:",
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = SunYellow
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = response.summary,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = TextLight
                     )
                 }
             }
@@ -144,7 +163,7 @@ fun AiResponseContent(response: AiResponse?) {
             Text(
                 text = response.message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error
+                color = CardinalRed
             )
         }
 
@@ -152,7 +171,7 @@ fun AiResponseContent(response: AiResponse?) {
             Text(
                 text = "Dostignut je dnevni limit (${AiConfig.MAX_QUESTIONS_PER_DAY} pitanja).",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error
+                color = CardinalRed
             )
         }
 

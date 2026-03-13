@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,9 +44,12 @@ import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.mainNavGraph
+import com.codeprep.app.ui.theme.AppBackground
+import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.CodePrepTheme
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.LockedGrey
+import com.codeprep.app.ui.theme.TrueBlack
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -74,10 +79,11 @@ fun RootNavGraph() {
         if (FirebaseAuth.getInstance().currentUser != null) "main" else "auth"
     }
     
-    // Bottom Nav Items - Modules is Home
+    // Bottom Nav Items - Added Home/Dashboard
     val bottomNavItems = remember {
         listOf(
-            BottomNavItem("Modules", Screen.CourseList.route, Icons.Default.Home),
+            BottomNavItem("Home", Screen.Home.route, Icons.Default.Home),
+            BottomNavItem("Modules", Screen.CourseList.route, Icons.Default.School),
             BottomNavItem("AI Coach", Screen.AskAI.route, Icons.Default.Psychology),
             BottomNavItem("Profile", Screen.Profile.route, Icons.Default.Person)
         )
@@ -128,8 +134,8 @@ fun RootNavGraph() {
 
         if (shouldShowBottomNav) {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
+                containerColor = AppBackground,
+                tonalElevation = 0.dp
             ) {
                 bottomNavItems.forEach { item ->
                     val selected = isBottomItemSelected(
@@ -152,17 +158,22 @@ fun RootNavGraph() {
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.label,
-                                tint = if (selected) ElectricCyan else LockedGrey
+                                contentDescription = item.label
                             )
                         },
                         label = { 
                             Text(
                                 item.label,
-                                color = if (selected) ElectricCyan else LockedGrey,
-                                fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                             ) 
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = ElectricCyan,
+                            selectedTextColor = ElectricCyan,
+                            indicatorColor = Charcoal,
+                            unselectedIconColor = LockedGrey,
+                            unselectedTextColor = LockedGrey
+                        )
                     )
                 }
             }
@@ -172,6 +183,8 @@ fun RootNavGraph() {
 
 private fun isBottomItemSelected(itemRoute: String, currentRoute: String?): Boolean {
     return when (itemRoute) {
+        Screen.Home.route -> currentRoute == Screen.Home.route
+
         Screen.CourseList.route -> currentRoute in setOf(
             Screen.CourseList.route,
             Screen.LessonList.route,
@@ -193,41 +206,3 @@ private data class BottomNavItem(
     val route: String,
     val icon: ImageVector
 )
-
-@Composable
-private fun SessionDebugBanner(
-    nickname: String,
-    hearts: Int,
-    streak: Int
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 2.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "username: $nickname",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = "hearts: $hearts",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "streak: $streak",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}

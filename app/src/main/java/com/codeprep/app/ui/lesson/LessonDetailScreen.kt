@@ -1,5 +1,6 @@
 package com.codeprep.app.ui.lesson
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -9,10 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +28,9 @@ import com.codeprep.app.domain.model.LessonContext
 import com.codeprep.app.ui.ai.AskAiBottomSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+
+import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.theme.*
 
 @Composable
 fun LessonDetailScreen(
@@ -47,79 +49,96 @@ fun LessonDetailScreen(
         }
     }
 
-    lesson?.let { l ->
-        LazyColumn(modifier = Modifier.padding(16.dp)) {
-            item {
-                Text(l.title, style = MaterialTheme.typography.headlineMedium)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(l.content, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Button(
-                        onClick = { viewModel.onStartQuizClicked() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Započni kviz")
-                    }
-
-                    OutlinedButton(
-                        onClick = { showAiSheet = true },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Pitaj AI")
-                    }
-                }
-
-                if (quizBlockMessage != null) {
-                    Spacer(modifier = Modifier.height(12.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppBackground)
+    ) {
+        lesson?.let { l ->
+            LazyColumn(modifier = Modifier.padding(16.dp)) {
+                item {
                     Text(
-                        text = quizBlockMessage.orEmpty(),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
+                        text = l.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = ElectricCyan
                     )
-                    LaunchedEffect(quizBlockMessage) {
-                        delay(2500)
-                        viewModel.clearQuizBlockMessage()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = l.content,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextLight
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        GamifiedButton(
+                            text = "Započni kviz",
+                            onClick = { viewModel.onStartQuizClicked() },
+                            backgroundColor = ElectricCyan,
+                            textColor = TrueBlack,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        GamifiedButton(
+                            text = "Pitaj AI",
+                            onClick = { showAiSheet = true },
+                            backgroundColor = Charcoal,
+                            textColor = ElectricCyan,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    if (quizBlockMessage != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = quizBlockMessage.orEmpty(),
+                            color = CardinalRed,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        LaunchedEffect(quizBlockMessage) {
+                            delay(2500)
+                            viewModel.clearQuizBlockMessage()
+                        }
                     }
                 }
             }
+        } ?: if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = ElectricCyan)
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Lekcija nije dostupna offline.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = LockedGrey
+                )
+            }
         }
-    } ?: if (isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Lekcija nije dostupna offline.",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
 
-    if (showAiSheet) {
-        lesson?.let { activeLesson ->
-            AskAiBottomSheet(
-                lessonContext = LessonContext(
-                    lessonId = activeLesson.lessonId,
-                    courseTitle = courseTitle?.takeIf { it.isNotBlank() } ?: activeLesson.courseId,
-                    lessonTitle = activeLesson.title,
-                    theorySummary = activeLesson.content
-                ),
-                onDismiss = { showAiSheet = false }
-            )
+        if (showAiSheet) {
+            lesson?.let { activeLesson ->
+                AskAiBottomSheet(
+                    lessonContext = LessonContext(
+                        lessonId = activeLesson.lessonId,
+                        courseTitle = courseTitle?.takeIf { it.isNotBlank() } ?: activeLesson.courseId,
+                        lessonTitle = activeLesson.title,
+                        theorySummary = activeLesson.content
+                    ),
+                    onDismiss = { showAiSheet = false }
+                )
+            }
         }
     }
 }

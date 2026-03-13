@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,6 +29,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 
+import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.theme.*
+
 @Composable
 fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                onQuizFinished:()-> Unit
@@ -39,13 +40,14 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = AppBackground,
         topBar = {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "❤️ ${state.userHearts}", style = MaterialTheme.typography.titleLarge)
-                Text(text = "Score: ${state.score}", style = MaterialTheme.typography.titleMedium)
+                Text(text = "❤️ ${state.userHearts}", style = MaterialTheme.typography.titleLarge, color = CardinalRed)
+                Text(text = "Score: ${state.score}", style = MaterialTheme.typography.titleMedium, color = ElectricCyan)
             }
         }
     ) { paddingValues ->
@@ -53,6 +55,9 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
         if (state.finished) {
             AlertDialog(
                 onDismissRequest = { },
+                containerColor = Charcoal,
+                titleContentColor = ElectricCyan,
+                textContentColor = TextLight,
                 title = {
                     Text(
                         text = "Kviz završen!",
@@ -67,22 +72,23 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                             (correctAnswers.toFloat() / totalQuestions * 100).toInt()
                         } else 0
 
-                        Text("Vaš uspeh: $percentage%", style = MaterialTheme.typography.bodyLarge)
-                        Text("Osvojeno XP: ${state.xpEarned} ✨", style = MaterialTheme.typography.bodyMedium)
+                        Text("Vaš uspeh: $percentage%", style = MaterialTheme.typography.bodyLarge, color = ElectricCyan)
+                        Text("Osvojeno XP: ${state.xpEarned} ✨", style = MaterialTheme.typography.bodyMedium, color = SunYellow)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Tačnih odgovora: $correctAnswers / $totalQuestions")
+                        Text("Tačnih odgovora: $correctAnswers / $totalQuestions", color = TextLight)
                     }
                 },
                 confirmButton = {
-                    Button(
+                    GamifiedButton(
+                        text = "Završi",
                         onClick = {
                             viewModel.onFinishClicked()
                             onQuizFinished()
                         },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Završi")
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = ElectricCyan,
+                        textColor = TrueBlack
+                    )
                 }
             )
         }
@@ -97,9 +103,9 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
             when {
                 state.isLoading -> {
                     Spacer(modifier = Modifier.weight(1f))
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = ElectricCyan)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Učitavanje pitanja...")
+                    Text("Učitavanje pitanja...", color = TextLight)
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
@@ -108,7 +114,8 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                     Text(
                         text = state.loadError ?: "Pitanja nisu dostupna.",
                         style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = LockedGrey
                     )
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -119,7 +126,8 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                         Text(
                             text = question.text,
                             style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            color = TextLight
                         )
 
                         if (!question.codeSnippet.isNullOrBlank()) {
@@ -137,33 +145,37 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                                 isCorrectAnswer = index == question.correctIndex,
                                 isSelected = index == state.selectedIndex
                             )
+                            
+                            val textColor = if (state.isAnswered && (index == question.correctIndex || index == state.selectedIndex)) TrueBlack else TextLight
 
-                            Button(
+                            GamifiedButton(
+                                text = optionText,
                                 onClick = {
                                     viewModel.submitAnswer(index)
                                 },
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+                                backgroundColor = buttonColor,
+                                textColor = textColor,
                                 enabled = !state.isAnswered
-                            ) {
-                                Text(text = optionText)
-                            }
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))
 
                         if (state.isAnswered) {
-                            Button(
+                            GamifiedButton(
+                                text = "Sledeće pitanje",
                                 onClick = { viewModel.nextQuestion() },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Text("Sledeće pitanje")
-                            }
+                                backgroundColor = ElectricCyan,
+                                textColor = TrueBlack
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
 
                             if (state.selectedIndex != question.correctIndex) {
-                                Text("Pogrešno! Izgubili ste srce 💔", color = Color.Red)
+                                Text("Pogrešno! Izgubili ste srce 💔", color = CardinalRed)
                             } else {
-                                Text("Tačno! +10 XP ✨", color = Color.Green)
+                                Text("Tačno! +10 XP ✨", color = LeafGreen)
                             }
                         }
                     }
@@ -176,10 +188,10 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
 @Composable
 fun getButtonColor(isAnswered: Boolean, isCorrectAnswer: Boolean, isSelected: Boolean): Color {
     return when {
-        !isAnswered -> MaterialTheme.colorScheme.secondary
-        isCorrectAnswer -> Color.Green
-        isSelected && !isCorrectAnswer -> Color.Red
-        else -> Color.Gray
+        !isAnswered -> Charcoal
+        isCorrectAnswer -> LeafGreen
+        isSelected && !isCorrectAnswer -> CardinalRed
+        else -> LockedGrey
     }
 }
 
@@ -190,14 +202,16 @@ private fun CodeSnippetBlock(
 ) {
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        shape = MaterialTheme.shapes.medium
+        color = DeepCharcoal,
+        shape = MaterialTheme.shapes.medium,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Charcoal)
     ) {
         SelectionContainer {
             Text(
                 text = snippet.trim(),
                 style = MaterialTheme.typography.bodySmall,
                 fontFamily = FontFamily.Monospace,
+                color = ElectricCyan,
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState())
                     .padding(12.dp)

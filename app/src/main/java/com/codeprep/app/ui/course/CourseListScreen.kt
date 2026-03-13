@@ -23,7 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 fun CourseListScreen(
@@ -35,13 +35,13 @@ fun CourseListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(AppBackground)
     ) {
         Text(
             text = "Modules",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
-                color = TextDark
+                color = ElectricCyan
             ),
             modifier = Modifier.padding(24.dp)
         )
@@ -86,8 +86,8 @@ fun GamifiedCourseCard(
     // Reusing GamifiedButton style but as a card
     val height = 100.dp
     val elevationHeight = 4.dp
-    val backgroundColor = Color.White
-    val shadowColor = LockedGrey
+    val backgroundColor = Charcoal
+    val shadowColor = DeepCharcoal
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -122,7 +122,7 @@ fun GamifiedCourseCard(
                 .height(height)
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
-                .border(2.dp, LockedGrey, RoundedCornerShape(16.dp))
+                .border(2.dp, ElectricCyan, RoundedCornerShape(16.dp))
                 .padding(16.dp)
         ) {
             Row(
@@ -133,12 +133,15 @@ fun GamifiedCourseCard(
                 Box(
                     modifier = Modifier
                         .size(60.dp)
-                        .background(SkyBlue, RoundedCornerShape(12.dp)),
+                        .background(ElectricCyan, RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = title.take(1).uppercase(),
-                        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White)
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            color = Charcoal,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
                 
@@ -149,7 +152,7 @@ fun GamifiedCourseCard(
                         text = title,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = TextDark
+                            color = IceWhite
                         )
                     )
                     Text(
