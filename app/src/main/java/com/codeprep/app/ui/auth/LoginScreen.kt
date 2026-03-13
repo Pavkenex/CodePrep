@@ -1,24 +1,45 @@
 package com.codeprep.app.ui.auth
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.components.GamifiedTextField
+import com.codeprep.app.ui.theme.CardinalRed
+import com.codeprep.app.ui.theme.LeafGreen
+import com.codeprep.app.ui.theme.LockedGrey
+import com.codeprep.app.ui.theme.SkyBlue
+import com.codeprep.app.ui.theme.SkyBlueDark
+import com.codeprep.app.ui.theme.TextDark
+import com.codeprep.app.ui.theme.TextLight
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.codeprep.app.ui.navigation.Screen
-import androidx.hilt.navigation.compose.hiltViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavHostController,
@@ -39,122 +60,74 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // App Logo placeholder
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(bottom = 32.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Lock, // Placeholder for logo
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(60.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            Text(
-                "CodePrep",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 2.sp
-            )
-        }
-
+        // App Logo / Title
         Text(
-            text = "Welcome Back",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 8.dp)
+            "codePrep",
+            style = MaterialTheme.typography.displayMedium.copy(
+                fontWeight = FontWeight.ExtraBold,
+                color = LeafGreen
+            ),
+            modifier = Modifier.padding(bottom = 48.dp)
         )
 
         Text(
-            text = "Sign in to continue",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-            modifier = Modifier.padding(bottom = 32.dp)
+            text = "Login",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            ),
+            modifier = Modifier.padding(bottom = 24.dp).align(Alignment.Start)
         )
 
-        OutlinedTextField(
+        GamifiedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email Address") },
-            placeholder = { Text("Enter your email") },
-            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = "Email or username",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
+        GamifiedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            placeholder = { Text("Enter your password") },
-            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = "Password",
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true
+            modifier = Modifier.padding(bottom = 24.dp)
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            TextButton(onClick = { /* TODO: Forgot Password */ }) {
-                Text(
-                    "Forgot Password?",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
 
         if (authState is AuthState.Error) {
             Text(
                 text = (authState as AuthState.Error).message,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom = 8.dp)
+                color = CardinalRed,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
         }
 
-        Button(
-            onClick = {
-                viewModel.login(email, password)
-            },
+        GamifiedButton(
+            text = "LOGIN",
+            onClick = { viewModel.login(email, password) },
+            backgroundColor = SkyBlue,
+            shadowColor = SkyBlueDark,
             enabled = authState !is AuthState.Loading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            if (authState is AuthState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Text("Login", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
-        }
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        GamifiedButton(
+            text = "LOGIN WITH GOOGLE",
+            onClick = { /* TODO: Google Auth */ },
+            backgroundColor = Color.White,
+            shadowColor = LockedGrey,
+            textColor = TextDark,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -162,17 +135,21 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "Don't have an account?",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
-            TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
-                Text(
-                    "Register",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+                "DON'T HAVE AN ACCOUNT?",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = TextLight
                 )
-            }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                "SIGN UP",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = SkyBlue
+                ),
+                modifier = Modifier.clickable { navController.navigate(Screen.Register.route) }
+            )
         }
     }
 }
