@@ -2,15 +2,13 @@ package com.codeprep.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Neon Terminal Palette
+val ElectricCyan = Color(0xFF00E5FF)
+val Charcoal = Color(0xFF2D2D2D)
+val IceWhite = Color(0xFFF5F7FA)
+val TrueBlack = Color(0xFF000000)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
-
-// Gamified Palette (Duolingo-inspired)
+// Functional colors (kept from previous palette for compatibility)
 val LeafGreen = Color(0xFF58CC02)
 val LeafGreenDark = Color(0xFF58A700)
 val SkyBlue = Color(0xFF1CB0F6)
@@ -25,11 +23,3 @@ val TextDark = Color(0xFF4B4B4B)
 val TextLight = Color(0xFF777777)
 val White = Color(0xFFFFFFFF)
 val OffWhite = Color(0xFFF7F7F7)
-
-// Dark Blue Palette
-val DarkBlue900 = Color(0xFF0D1B2A)
-val DarkBlue800 = Color(0xFF1B263B)
-val DarkBlue700 = Color(0xFF415A77)
-val DarkBlue600 = Color(0xFF5A7D9B)
-val BlueAccent = Color(0xFF778DA9)
-val LightBlueAccent = Color(0xFFE0E1DD)

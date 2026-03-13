@@ -43,7 +43,7 @@ import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.mainNavGraph
 import com.codeprep.app.ui.theme.CodePrepTheme
-import com.codeprep.app.ui.theme.LeafGreen
+import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.LockedGrey
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
@@ -102,7 +102,7 @@ fun RootNavGraph() {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val shouldShowSessionBanner = currentUserId != null && currentRoute !in setOf(
             Screen.Login.route,
             Screen.Register.route
@@ -128,7 +128,7 @@ fun RootNavGraph() {
 
         if (shouldShowBottomNav) {
             NavigationBar(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 bottomNavItems.forEach { item ->
@@ -153,13 +153,13 @@ fun RootNavGraph() {
                             Icon(
                                 imageVector = item.icon,
                                 contentDescription = item.label,
-                                tint = if (selected) LeafGreen else LockedGrey
+                                tint = if (selected) ElectricCyan else LockedGrey
                             )
                         },
                         label = { 
                             Text(
                                 item.label,
-                                color = if (selected) LeafGreen else LockedGrey,
+                                color = if (selected) ElectricCyan else LockedGrey,
                                 fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
                             ) 
                         }

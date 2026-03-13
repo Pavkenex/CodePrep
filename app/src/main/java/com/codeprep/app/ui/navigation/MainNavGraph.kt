@@ -10,6 +10,8 @@ import com.codeprep.app.ui.course.CourseListScreen
 import com.codeprep.app.ui.home.HomeScreen
 import com.codeprep.app.ui.lesson.LessonDetailScreen
 import com.codeprep.app.ui.lesson.LessonListScreen
+import com.codeprep.app.ui.profile.ProfileScreen
+import com.google.firebase.auth.FirebaseAuth
 import com.codeprep.app.ui.quiz.QuizScreen
 
 fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
@@ -51,7 +53,16 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.AskAI.route) { AskAiScreen() }
-        composable(Screen.Profile.route) { Text("Profile") }
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                onLogout = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate("auth") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Screen.FriendSuggestion.route) { Text("Friends") }
     }
 }

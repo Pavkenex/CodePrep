@@ -12,45 +12,36 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = BlueAccent,
-    secondary = DarkBlue700,
-    tertiary = LightBlueAccent,
-    background = DarkBlue900,
-    surface = DarkBlue800,
-    onPrimary = Color.Black,
-    onSecondary = Color.White,
-    onTertiary = Color.Black,
-    onBackground = Color.White,
-    onSurface = Color.White
+    primary = ElectricCyan,
+    secondary = IceWhite,
+    tertiary = ElectricCyan,
+    background = TrueBlack,
+    surface = Charcoal,
+    onPrimary = TrueBlack,
+    onSecondary = TrueBlack,
+    onTertiary = TrueBlack,
+    onBackground = ElectricCyan,
+    onSurface = IceWhite
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = DarkBlue800,
-    secondary = DarkBlue700,
-    tertiary = DarkBlue600,
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = ElectricCyan,
+    secondary = Charcoal,
+    tertiary = ElectricCyan,
+    background = IceWhite,
+    surface = Color.White,
+    onPrimary = Charcoal,
+    onSecondary = ElectricCyan,
+    onTertiary = Charcoal,
+    onBackground = Charcoal,
+    onSurface = Charcoal
 )
 
 @Composable
 fun CodePrepTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true, // Force Dark Mode for Neon Terminal theme
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
