@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeprep.app.data.local.entity.UserProgressEntity
 import com.codeprep.app.data.repository.UserRepository
+import com.codeprep.app.work.WorkScheduler
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SessionBootstrapViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val workScheduler: WorkScheduler
 ) : ViewModel() {
 
     private var refreshedUserId: String? = null
@@ -39,11 +41,13 @@ class SessionBootstrapViewModel @Inject constructor(
         if (userId == null) {
             refreshedUserId = null
         }
+        syncSessionWorkers(userId)
         _currentUserId.value = userId
     }
 
     init {
         auth.addAuthStateListener(authStateListener)
+        syncSessionWorkers(auth.currentUser?.uid)
     }
 
     fun refreshHeartsOnSessionStart() {
@@ -66,6 +70,16 @@ class SessionBootstrapViewModel @Inject constructor(
         val current = auth.currentUser
         return current?.displayName?.takeIf { it.isNotBlank() }
             ?: current?.email?.substringBefore('@')?.takeIf { it.isNotBlank() }
+    }
+
+    private fun syncSessionWorkers(userId: String?) {
+        viewModelScope.launch {
+            if (userId.isNullOrBlank()) {
+                workScheduler.cancelSessionWorkers()
+            } else {
+                workScheduler.enqueueSessionWorkers(userId)
+            }
+        }
     }
 
     override fun onCleared() {

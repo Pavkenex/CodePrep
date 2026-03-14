@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">CodePrep</string>
+    <string name="notification_channel_hearts_name">Heart updates</string>
+    <string name="notification_channel_hearts_description">Notifications when your hearts are full again.</string>
+    <string name="notification_channel_streak_name">Streak reminders</string>
+    <string name="notification_channel_streak_description">Reminders before your streak resets.</string>
+    <string name="notification_hearts_title">Srca su ti opet puna</string>
+    <string name="notification_hearts_body">Mozes da nastavis sa lekcijama bez cekanja.</string>
+    <string name="notification_streak_title">Streak ti je u opasnosti</string>
+    <string name="notification_streak_body">Uradi jednu lekciju uskoro da ne izgubis streak.</string>
 </resources>

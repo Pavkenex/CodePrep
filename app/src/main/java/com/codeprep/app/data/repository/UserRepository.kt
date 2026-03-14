@@ -4,8 +4,10 @@ import com.codeprep.app.data.local.dao.UserProgressDao
 import com.codeprep.app.data.local.entity.UserProgressEntity
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
@@ -30,17 +32,15 @@ class UserRepository @Inject constructor(
         userId: String,
         transform: (UserProgressEntity) -> UserProgressEntity
     ) {
-
         val current = userDao.getUserById(userId) ?: return
+        val transformed = transform(current)
+        if (transformed == current) return
 
-        val updated = transform(current).copy(
+        val updated = transformed.copy(
             updatedAt = Instant.now()
         )
 
         userDao.upsert(updated)
-
-       //TODO Ova linija ce biti uklonjena jer ce worker sinhronizovati u odredjenom periodu sa bazom kako bi se smanjio broj zahteva ka firebase-u
-        firestore.collection("users").document(userId).set(updated)
     }
 
 
@@ -97,12 +97,19 @@ class UserRepository @Inject constructor(
         }
     }
 
-    suspend fun streakCheck(userId: String){
-        val user = userDao.getUserById(userId)
-        if (ChronoUnit.DAYS.between(user?.lastActiveDate, Instant.now())>=1){
-            user?.streak =0
+    suspend fun streakCheck(userId: String) {
+        updateProgress(userId) { user ->
+            val lastActiveDay = user.lastActiveDate?.atZone(ZoneOffset.UTC)?.toLocalDate()
+                ?: return@updateProgress user
+            val today = Instant.now().atZone(ZoneOffset.UTC).toLocalDate()
+
+            if (lastActiveDay.plusDays(1).isBefore(today) && user.streak != 0) {
+                user.copy(streak = 0)
+            } else {
+                user
+            }
         }
-        //Mozda refaktor ukoliko ponudim opciju korisniku da odgleda reklamu ili nesto slicno  kako bi produzio streak
+        // Mozda refaktor ukoliko ponudim opciju korisniku da odgleda reklamu ili nesto slicno kako bi produzio streak
     }
 
     suspend fun registerLessonActivity(userId: String){
@@ -184,6 +191,70 @@ class UserRepository @Inject constructor(
         }
     }
 
+    suspend fun syncProgress(userId: String): SyncOutcome {
+        if (userId.isBlank()) return SyncOutcome.NoOp
+
+        val local = userDao.getUserById(userId)
+        val remoteSnapshot = firestore.collection("users").document(userId).get().await()
+        val remote = remoteSnapshot.takeIf { it.exists() }?.toUserProgressEntity(userId)
+
+        return when {
+            local == null && remote == null -> SyncOutcome.NoOp
+            local != null && remote == null -> {
+                pushProgressToRemote(local)
+                SyncOutcome.PushedLocal
+            }
+            local == null && remote != null -> {
+                userDao.upsert(remote)
+                SyncOutcome.PulledRemote
+            }
+            local != null && remote != null -> {
+                val localUpdatedAt = local.updatedAt ?: Instant.EPOCH
+                val remoteUpdatedAt = remote.updatedAt ?: Instant.EPOCH
+
+                when {
+                    localUpdatedAt.isAfter(remoteUpdatedAt) -> {
+                        pushProgressToRemote(local)
+                        SyncOutcome.PushedLocal
+                    }
+                    remoteUpdatedAt.isAfter(localUpdatedAt) -> {
+                        userDao.upsert(remote)
+                        SyncOutcome.PulledRemote
+                    }
+                    else -> SyncOutcome.NoOp
+                }
+            }
+            else -> SyncOutcome.NoOp
+        }
+    }
+
+    fun calculateTimeUntilFullHearts(progress: UserProgressEntity, now: Instant = Instant.now()): Duration? {
+        if (progress.hearts >= MAX_HEARTS || progress.lastHeartLostAt == null) return null
+
+        val missingHearts = (MAX_HEARTS - progress.hearts).coerceAtLeast(0)
+        val fullRefillAt = progress.lastHeartLostAt.plus(
+            (missingHearts * HEART_REFILL_MINUTES).toLong(),
+            ChronoUnit.MINUTES
+        )
+
+        return Duration.between(now, fullRefillAt)
+    }
+
+    fun calculateStreakResetTime(progress: UserProgressEntity): Instant? {
+        val lastActiveDay = progress.lastActiveDate?.atZone(ZoneOffset.UTC)?.toLocalDate() ?: return null
+        return lastActiveDay
+            .plusDays(2)
+            .atStartOfDay(ZoneOffset.UTC)
+            .toInstant()
+    }
+
+    private suspend fun pushProgressToRemote(progress: UserProgressEntity) {
+        firestore.collection("users")
+            .document(progress.userId)
+            .set(progress, SetOptions.merge())
+            .await()
+    }
+
     private fun createDefaultProgress(userId: String, nickname: String = ""): UserProgressEntity {
         return UserProgressEntity(
             userId = userId,
@@ -210,5 +281,16 @@ class UserRepository @Inject constructor(
             lastActiveDate = getTimestamp("lastActiveDate")?.toInstant() ?: Instant.now(),
             updatedAt = getTimestamp("updatedAt")?.toInstant() ?: Instant.now()
         )
+    }
+
+    sealed interface SyncOutcome {
+        data object NoOp : SyncOutcome
+        data object PulledRemote : SyncOutcome
+        data object PushedLocal : SyncOutcome
+    }
+
+    companion object {
+        const val MAX_HEARTS = 5
+        const val HEART_REFILL_MINUTES = 30
     }
 }
