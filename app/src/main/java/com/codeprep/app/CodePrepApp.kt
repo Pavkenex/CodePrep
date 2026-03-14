@@ -1,8 +1,28 @@
 package com.codeprep.app
 
 import android.app.Application
+import androidx.work.Configuration
+import androidx.hilt.work.HiltWorkerFactory
+import com.codeprep.app.notifications.CodePrepNotificationManager
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class CodePrepApp : Application() {
+class CodePrepApp : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject
+    lateinit var notificationManager: CodePrepNotificationManager
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
+
+    override fun onCreate() {
+        super.onCreate()
+        notificationManager.createChannels()
+    }
 }
