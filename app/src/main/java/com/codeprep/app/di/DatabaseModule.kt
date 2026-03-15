@@ -34,4 +34,7 @@ object DatabaseModule {
 
     @Provides
     fun provideLessonProgressDao(db: CodePrepDatabase) = db.lessonProgressDao()
+
+    @Provides
+    fun provideFriendsDao(db: CodePrepDatabase) = db.friendsDao()
 }

@@ -4,16 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.ui.graphics.Color
-import com.codeprep.app.ui.components.TopBarStats
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -24,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,11 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.codeprep.app.ui.navigation.Screen
 import com.codeprep.app.ui.components.TopBarStats
+import com.codeprep.app.ui.navigation.Screen
 import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.mainNavGraph
@@ -49,7 +44,6 @@ import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.CodePrepTheme
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.LockedGrey
-import com.codeprep.app.ui.theme.TrueBlack
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -98,7 +92,8 @@ fun RootNavGraph() {
             Screen.Quiz.route,
             Screen.AskAI.route,
             Screen.Profile.route,
-            Screen.FriendSuggestion.route
+            Screen.AddFriends.route,
+            Screen.FriendProfile.route
         )
     }
 
@@ -146,13 +141,10 @@ fun RootNavGraph() {
                         selected = selected,
                         onClick = {
                             if (!selected) {
-                                navController.navigate(item.route) {
-                                    popUpTo("main") {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                navigateToTopLevelRoute(
+                                    navController = navController,
+                                    route = item.route
+                                )
                             }
                         },
                         icon = {
@@ -181,6 +173,23 @@ fun RootNavGraph() {
     }
 }
 
+private fun navigateToTopLevelRoute(
+    navController: NavHostController,
+    route: String
+) {
+    val popped = navController.popBackStack(route, inclusive = false)
+    val currentRoute = navController.currentDestination?.route
+    if (popped && currentRoute == route) return
+
+    navController.navigate(route) {
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
 private fun isBottomItemSelected(itemRoute: String, currentRoute: String?): Boolean {
     return when (itemRoute) {
         Screen.Home.route -> currentRoute == Screen.Home.route
@@ -194,7 +203,8 @@ private fun isBottomItemSelected(itemRoute: String, currentRoute: String?): Bool
 
         Screen.Profile.route -> currentRoute in setOf(
             Screen.Profile.route,
-            Screen.FriendSuggestion.route
+            Screen.AddFriends.route,
+            Screen.FriendProfile.route
         )
 
         else -> currentRoute == itemRoute

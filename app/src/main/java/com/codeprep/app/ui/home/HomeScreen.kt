@@ -34,6 +34,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +44,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.ElectricCyan
@@ -50,10 +53,12 @@ import com.codeprep.app.ui.theme.TrueBlack
 
 @Composable
 fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
     onCoursesClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -64,18 +69,22 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // 1. Header
-        HeaderSection()
+        HeaderSection(nickname = uiState.nickname)
 
         // 2. System Uptime (Streak)
-        SystemUptimeSection(days = 12)
+        SystemUptimeSection(days = uiState.streak)
 
         // 3. Daily Debugger Widget
-        DailyDebuggerWidget {
-            Toast.makeText(context, "Opening Debugger...", Toast.LENGTH_SHORT).show()
+        DailyChallengeWidget {
+            Toast.makeText(context, "Opening Daily Challenge...", Toast.LENGTH_SHORT).show()
         }
 
         // 4. System Status Widget
-        SystemStatusWidget()
+        SystemStatusWidget(
+            level = uiState.level,
+            currentXp = uiState.currentLevelXp,
+            xpRequired = uiState.xpRequiredForNextLevel
+        )
 
         // 5. Navigation
         LaunchModulesButton(onClick = onCoursesClick)
@@ -83,7 +92,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HeaderSection() {
+fun HeaderSection(nickname: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -114,7 +123,7 @@ fun HeaderSection() {
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = "Dev_User_01",
+                text = nickname,
                 color = ElectricCyan,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
@@ -148,7 +157,7 @@ fun SystemUptimeSection(days: Int) {
             ) {
                 Column {
                     Text(
-                        text = " DAYS",
+                        text = "$days DAYS",
                         color = Color.White,
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
@@ -173,7 +182,7 @@ fun SystemUptimeSection(days: Int) {
 }
 
 @Composable
-fun DailyDebuggerWidget(onClick: () -> Unit) {
+fun DailyChallengeWidget(onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -191,7 +200,7 @@ fun DailyDebuggerWidget(onClick: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "DAILY DEBUGGER",
+                    text = "DAILY CHALLENGE",
                     color = Color.Red,
                     style = MaterialTheme.typography.titleMedium,
                     fontFamily = FontFamily.Monospace,
@@ -200,13 +209,13 @@ fun DailyDebuggerWidget(onClick: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "// A wild bug appeared in module 3.",
+                text = "// Danasnji izazov ti donosi brzo logiciranje i jedan mini win.",
                 color = Color.White,
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = ">> INIT_FIX_SEQUENCE()",
+                text = ">> OPEN_DAILY_CHALLENGE()",
                 color = ElectricCyan,
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodyMedium,
@@ -217,7 +226,13 @@ fun DailyDebuggerWidget(onClick: () -> Unit) {
 }
 
 @Composable
-fun SystemStatusWidget() {
+fun SystemStatusWidget(
+    level: Int,
+    currentXp: Int,
+    xpRequired: Int
+) {
+    val progress = if (xpRequired == 0) 0f else currentXp / xpRequired.toFloat()
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Charcoal),
         modifier = Modifier.fillMaxWidth()
@@ -236,20 +251,20 @@ fun SystemStatusWidget() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Core Modules",
+                    text = "Level $level",
                     color = Color.White,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = "OPTIMAL",
-                    color = Color.Green,
+                    text = "$currentXp / $xpRequired XP",
+                    color = ElectricCyan,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(
-                progress = { 0.85f },
+                progress = { progress.coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
