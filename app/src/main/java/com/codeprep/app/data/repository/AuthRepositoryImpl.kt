@@ -1,11 +1,14 @@
 package com.codeprep.app.data.repository
 
+import com.codeprep.app.data.friends.DEFAULT_AVATAR_PRESET_ID
+import com.codeprep.app.data.friends.buildNicknameSearchTerms
 import com.codeprep.app.data.local.dao.UserProgressDao
 import com.codeprep.app.data.local.entity.UserProgressEntity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import javax.inject.Inject
@@ -115,6 +118,8 @@ class AuthRepositoryImpl @Inject constructor(
             firestore.collection("users").document(userId).set(
                 mapOf(
                     "nickname" to nickname,
+                    "nicknameLower" to nickname.trim().lowercase(),
+                    "nicknameSearchTerms" to buildNicknameSearchTerms(nickname),
                     "email" to email,
                     "xp" to xp,
                     "level" to level,
@@ -123,8 +128,13 @@ class AuthRepositoryImpl @Inject constructor(
                     "lastHeartLostAt" to lastHeartLostAt,
                     "lastActiveDate" to lastActiveDate,
                     "updatedAt" to updatedAt,
-                    "friends" to emptyList<String>()
-                )
+                    "friends" to emptyList<String>(),
+                    "incomingFriendRequests" to emptyList<String>(),
+                    "outgoingFriendRequests" to emptyList<String>(),
+                    "avatarPresetId" to DEFAULT_AVATAR_PRESET_ID,
+                    "badgeIds" to emptyList<String>()
+                ),
+                SetOptions.merge()
             ).await()
         } catch (_: Exception) {
             // Will be synced later

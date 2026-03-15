@@ -4,7 +4,10 @@ import androidx.compose.material3.Text
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import com.codeprep.app.ui.friends.AddFriendsScreen
+import com.codeprep.app.ui.friends.FriendProfileScreen
 import com.codeprep.app.ui.ai.AskAiScreen
 import com.codeprep.app.ui.course.CourseListScreen
 import com.codeprep.app.ui.home.HomeScreen
@@ -55,6 +58,10 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
         composable(Screen.AskAI.route) { AskAiScreen() }
         composable(Screen.Profile.route) {
             ProfileScreen(
+                onAddFriends = { navController.navigate(Screen.AddFriends.route) },
+                onFriendClick = { friendId ->
+                    navController.navigate(Screen.FriendProfile.createRoute(friendId))
+                },
                 onLogout = {
                     FirebaseAuth.getInstance().signOut()
                     navController.navigate("auth") {
@@ -63,6 +70,21 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Screen.FriendSuggestion.route) { Text("Friends") }
+        composable(Screen.AddFriends.route) {
+            AddFriendsScreen(
+                onBack = { navController.popBackStack() },
+                onFriendClick = { friendId ->
+                    navController.navigate(Screen.FriendProfile.createRoute(friendId))
+                }
+            )
+        }
+        composable(
+            route = Screen.FriendProfile.route,
+            arguments = listOf(navArgument("friendId") { nullable = false })
+        ) {
+            FriendProfileScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
