@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -42,28 +41,32 @@ class SessionBootstrapViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    val heartRefillCountdown: StateFlow<Duration?> = combine(currentUserId, currentUserProgress) { userId, progress ->
-        userId to progress
-    }
-        .flatMapLatest { (userId, progress) ->
-            if (userId.isNullOrBlank() || progress == null) {
-                flowOf(null)
+    val heartRefillCountdown: StateFlow<Duration?> = currentUserId
+        .flatMapLatest { userId ->
+            if (userId.isNullOrBlank()) {
+                flowOf<Duration?>(null)
             } else {
-                flow {
-                    while (true) {
-                        val remaining = userRepository.calculateTimeUntilNextHeart(progress)
-                        if (remaining == null) {
-                            emit(null)
-                            return@flow
-                        }
+                userRepository.getUserProgress(userId).flatMapLatest { progress ->
+                    if (progress == null) {
+                        flowOf<Duration?>(null)
+                    } else {
+                        flow<Duration?> {
+                            while (true) {
+                                val remaining = userRepository.calculateTimeUntilNextHeart(progress)
+                                if (remaining == null) {
+                                    emit(null)
+                                    return@flow
+                                }
 
-                        emit(remaining)
-                        if (remaining.isZero) {
-                            userRepository.refillHearts(userId)
-                            return@flow
-                        }
+                                emit(remaining)
+                                if (remaining.isZero) {
+                                    userRepository.refillHearts(progress.userId)
+                                    return@flow
+                                }
 
-                        delay(1_000)
+                                delay(1_000)
+                            }
+                        }
                     }
                 }
             }
