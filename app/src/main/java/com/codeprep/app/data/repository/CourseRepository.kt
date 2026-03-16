@@ -1,5 +1,6 @@
 package com.codeprep.app.data.repository
 
+import android.util.Log
 import com.codeprep.app.data.local.CodeSnippet
 import com.codeprep.app.data.local.dao.CourseDao
 import com.codeprep.app.data.local.entity.CachedCourseEntity
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
 import javax.inject.Inject
 
 class CourseRepository @Inject constructor(
@@ -176,6 +178,81 @@ class CourseRepository @Inject constructor(
         }
     }
 
+    suspend fun getDailyQuestion(date: LocalDate = LocalDate.now()): Question? {
+        val questions = try {
+            val collectionGroupQuestions = firestore.collectionGroup("questions")
+                .get()
+                .await()
+                .documents
+
+            Log.d(TAG, "Daily challenge collectionGroup returned ${collectionGroupQuestions.size} docs")
+
+            collectionGroupQuestions
+                .mapNotNull { document -> document.toQuestionOrNull() }
+                .filter { it.quizEnabled }
+                .sortedWith(compareBy<Question> { it.randomKey }.thenBy { it.id })
+        } catch (error: Exception) {
+            Log.w(TAG, "Daily challenge collectionGroup query failed: ${error.message}", error)
+            emptyList()
+        }
+
+        val resolvedQuestions = if (questions.isNotEmpty()) {
+            questions
+        } else {
+            Log.d(TAG, "Falling back to modules/*/lessons/*/questions scan for daily challenge")
+            fetchAllQuestionsFromModules()
+        }
+
+        if (resolvedQuestions.isEmpty()) {
+            Log.w(TAG, "No daily challenge candidates found in Firestore")
+            return null
+        }
+
+        val index = Math.floorMod(date.toEpochDay().toInt(), resolvedQuestions.size)
+        val selectedQuestion = resolvedQuestions[index]
+        Log.d(TAG, "Selected daily challenge ${selectedQuestion.id} for $date from ${resolvedQuestions.size} candidates")
+        return selectedQuestion
+    }
+
+    private suspend fun fetchAllQuestionsFromModules(): List<Question> {
+        return try {
+            val modules = firestore.collection("modules")
+                .orderBy("orderIndex")
+                .get()
+                .await()
+                .documents
+
+            val questions = mutableListOf<Question>()
+
+            for (module in modules) {
+                val lessons = module.reference.collection("lessons")
+                    .orderBy("orderIndex")
+                    .get()
+                    .await()
+                    .documents
+
+                for (lesson in lessons) {
+                    val lessonQuestions = lesson.reference.collection("questions")
+                        .orderBy("orderIndex")
+                        .get()
+                        .await()
+                        .documents
+                        .mapNotNull { document -> document.toQuestionOrNull() }
+                        .filter { it.quizEnabled }
+
+                    questions += lessonQuestions
+                }
+            }
+
+            Log.d(TAG, "Module scan found ${questions.size} daily challenge candidates")
+
+            questions.sortedWith(compareBy<Question> { it.randomKey }.thenBy { it.id })
+        } catch (error: Exception) {
+            Log.w(TAG, "Module scan for daily challenge failed: ${error.message}", error)
+            emptyList()
+        }
+    }
+
     private fun DocumentSnapshot.toQuestionOrNull(): Question? {
         val text = getString("text") ?: return null
         val options = (get("options") as? List<*>)?.mapNotNull { it as? String }.orEmpty()
@@ -191,11 +268,32 @@ class CourseRepository @Inject constructor(
 
         return Question(
             id = id,
+            title = getString("title") ?: "",
+            moduleId = getString("moduleId")
+                ?: getString("courseId")
+                ?: reference.parent.parent?.parent?.parent?.id.orEmpty(),
+            lessonId = getString("lessonId")
+                ?: reference.parent.parent?.id.orEmpty(),
+            lessonRefPath = getString("lessonRefPath")
+                ?: reference.parent.parent?.path.orEmpty(),
             text = text,
             options = options,
             correctIndex = correctIndex.coerceIn(0, options.lastIndex),
             explanation = getString("explanation") ?: "",
+            type = getString("type") ?: "",
+            difficulty = getString("difficulty") ?: "",
+            difficultyWeight = getDouble("difficultyWeight") ?: 0.0,
+            tags = getStringList("tags"),
+            format = getString("format") ?: "single_choice",
+            quizEnabled = getBoolean("quizEnabled") ?: true,
+            randomKey = getLong("randomKey") ?: 0L,
+            orderIndex = getLong("orderIndex")?.toInt() ?: 0,
+            seedVersion = getString("seedVersion") ?: "",
             codeSnippet = snippet?.takeIf { it.isNotBlank() }
         )
+    }
+
+    private companion object {
+        const val TAG = "CourseRepository"
     }
 }
