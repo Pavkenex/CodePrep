@@ -266,7 +266,7 @@ class UserRepository @Inject constructor(
             xp = 0,
             level = 1,
             streak = 0,
-            hearts = 5,
+            hearts = MAX_HEARTS,
             lastHeartLostAt = null,
             lastActiveDate = null,
             updatedAt = Instant.now()
@@ -280,7 +280,7 @@ class UserRepository @Inject constructor(
             xp = getLong("xp")?.toInt() ?: 0,
             level = getLong("level")?.toInt() ?: 1,
             streak = getLong("streak")?.toInt() ?: 0,
-            hearts = getLong("hearts")?.toInt() ?: 5,
+            hearts = getLong("hearts")?.toInt() ?: MAX_HEARTS,
             lastHeartLostAt = getTimestamp("lastHeartLostAt")?.toInstant(),
             lastActiveDate = getTimestamp("lastActiveDate")?.toInstant(),
             updatedAt = getTimestamp("updatedAt")?.toInstant() ?: Instant.now()
