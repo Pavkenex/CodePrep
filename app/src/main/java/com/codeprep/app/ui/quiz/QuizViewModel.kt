@@ -60,6 +60,7 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             if (userId.isNotBlank()) {
                 userRepository.refillHearts(userId)
+                userRepository.registerStreakActivity(userId)
             }
             loadQuestions()
         }

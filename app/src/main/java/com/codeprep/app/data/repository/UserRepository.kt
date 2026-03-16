@@ -112,7 +112,7 @@ class UserRepository @Inject constructor(
         // Mozda refaktor ukoliko ponudim opciju korisniku da odgleda reklamu ili nesto slicno kako bi produzio streak
     }
 
-    suspend fun registerLessonActivity(userId: String){
+    suspend fun registerStreakActivity(userId: String) {
         updateProgress(userId) { user ->
             val now = Instant.now()
             val today = now.atZone(ZoneOffset.UTC).toLocalDate()
@@ -264,7 +264,7 @@ class UserRepository @Inject constructor(
             streak = 0,
             hearts = 5,
             lastHeartLostAt = null,
-            lastActiveDate = Instant.now(),
+            lastActiveDate = null,
             updatedAt = Instant.now()
         )
     }
@@ -278,7 +278,7 @@ class UserRepository @Inject constructor(
             streak = getLong("streak")?.toInt() ?: 0,
             hearts = getLong("hearts")?.toInt() ?: 5,
             lastHeartLostAt = getTimestamp("lastHeartLostAt")?.toInstant(),
-            lastActiveDate = getTimestamp("lastActiveDate")?.toInstant() ?: Instant.now(),
+            lastActiveDate = getTimestamp("lastActiveDate")?.toInstant(),
             updatedAt = getTimestamp("updatedAt")?.toInstant() ?: Instant.now()
         )
     }

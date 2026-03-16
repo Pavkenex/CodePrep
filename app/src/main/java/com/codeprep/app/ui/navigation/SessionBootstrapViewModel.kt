@@ -3,6 +3,7 @@ package com.codeprep.app.ui.navigation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeprep.app.data.local.entity.UserProgressEntity
+import com.codeprep.app.data.repository.LessonProgressRepository
 import com.codeprep.app.data.repository.UserRepository
 import com.codeprep.app.work.WorkScheduler
 import com.google.firebase.auth.FirebaseAuth
@@ -22,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SessionBootstrapViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val lessonProgressRepository: LessonProgressRepository,
     private val auth: FirebaseAuth,
     private val workScheduler: WorkScheduler
 ) : ViewModel() {
@@ -42,12 +44,14 @@ class SessionBootstrapViewModel @Inject constructor(
             refreshedUserId = null
         }
         syncSessionWorkers(userId)
+        refreshSessionData(userId)
         _currentUserId.value = userId
     }
 
     init {
         auth.addAuthStateListener(authStateListener)
         syncSessionWorkers(auth.currentUser?.uid)
+        refreshSessionData(auth.currentUser?.uid)
     }
 
     fun refreshHeartsOnSessionStart() {
@@ -78,6 +82,19 @@ class SessionBootstrapViewModel @Inject constructor(
                 workScheduler.cancelSessionWorkers()
             } else {
                 workScheduler.enqueueSessionWorkers(userId)
+            }
+        }
+    }
+
+    private fun refreshSessionData(userId: String?) {
+        if (userId.isNullOrBlank()) return
+
+        viewModelScope.launch {
+            try {
+                userRepository.syncProgress(userId)
+                lessonProgressRepository.syncProgress(userId)
+            } catch (_: Exception) {
+                // Background worker will retry when connectivity improves.
             }
         }
     }

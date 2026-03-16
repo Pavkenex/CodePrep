@@ -11,10 +11,16 @@ interface LessonProgressDao {
     @Query("SELECT * FROM lesson_progress WHERE userId = :userId")
     fun observeByUser(userId: String): Flow<List<LessonProgressEntity>>
 
+    @Query("SELECT * FROM lesson_progress WHERE userId = :userId")
+    suspend fun getByUser(userId: String): List<LessonProgressEntity>
+
     @Query("SELECT * FROM lesson_progress WHERE userId = :userId AND lessonId = :lessonId LIMIT 1")
     suspend fun getByUserAndLesson(userId: String, lessonId: String): LessonProgressEntity?
 
     @Upsert
     suspend fun upsert(progress: LessonProgressEntity)
+
+    @Upsert
+    suspend fun upsertAll(progressList: List<LessonProgressEntity>)
 }
 

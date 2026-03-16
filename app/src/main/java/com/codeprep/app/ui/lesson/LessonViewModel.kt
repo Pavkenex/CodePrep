@@ -55,7 +55,7 @@ class LessonViewModel @Inject constructor(
             _isLoading.value = false
 
             if (userId.isNotBlank()) {
-                userRepository.registerLessonActivity(userId)
+                userRepository.registerStreakActivity(userId)
             }
         }
     }
