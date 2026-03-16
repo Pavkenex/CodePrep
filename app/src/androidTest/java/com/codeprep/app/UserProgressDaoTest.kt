@@ -6,21 +6,20 @@ import androidx.test.core.app.ApplicationProvider
 import com.codeprep.app.data.local.CodePrepDatabase
 import com.codeprep.app.data.local.dao.UserProgressDao
 import com.codeprep.app.data.local.entity.UserProgressEntity
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
-import kotlin.jvm.Throws
-
+import java.time.Instant
 
 class UserProgressDaoTest {
     private lateinit var db: CodePrepDatabase
     private lateinit var dao: UserProgressDao
 
     @Before
-    fun createDb(){
+    fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
 
         db = Room.inMemoryDatabaseBuilder(context, CodePrepDatabase::class.java).build()
@@ -29,12 +28,12 @@ class UserProgressDaoTest {
 
     @After
     @Throws(IOException::class)
-    fun closeDb(){
+    fun closeDb() {
         db.close()
     }
 
     @Test
-    fun writeUserProgressAndReadInList() = runTest {
+    fun writeUserProgressAndReadById() = runTest {
         val userStats = UserProgressEntity(
             userId = "test_user_1",
             nickname = "Pavke",
@@ -42,21 +41,17 @@ class UserProgressDaoTest {
             level = 2,
             streak = 5,
             hearts = 3,
-            heartsLockedUntil = null, // Može biti null jer je Long?
-            lastActiveDate = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
+            lastHeartLostAt = Instant.parse("2026-03-16T10:00:00Z"),
+            lastActiveDate = Instant.parse("2026-03-16T09:00:00Z"),
+            updatedAt = Instant.parse("2026-03-16T10:00:00Z")
         )
 
-        // B) AKCIJA (Act)
         dao.upsert(userStats)
+        val loadedStats = dao.getUserById("test_user_1")
 
-        // Pokušavamo da ga učitamo nazad koristeći ISTI ID
-        val loadedStats = dao.getProgress("test_user_1")
-
-        // C) PROVERA (Assert)
-        // Proveravamo da li smo dobili podatke nazad
         assertEquals(userStats.userId, loadedStats?.userId)
         assertEquals(150, loadedStats?.xp)
         assertEquals(2, loadedStats?.level)
+        assertEquals(3, loadedStats?.hearts)
     }
 }

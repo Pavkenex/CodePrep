@@ -67,6 +67,7 @@ fun RootNavGraph() {
     val bootstrapViewModel: SessionBootstrapViewModel = hiltViewModel()
     val currentUserId by bootstrapViewModel.currentUserId.collectAsStateWithLifecycle()
     val currentUserProgress by bootstrapViewModel.currentUserProgress.collectAsStateWithLifecycle()
+    val heartRefillCountdownText by bootstrapViewModel.heartRefillCountdownText.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val startDestination = remember {
@@ -114,6 +115,7 @@ fun RootNavGraph() {
              TopBarStats(
                  hearts = currentUserProgress?.hearts ?: 5,
                  streak = currentUserProgress?.streak ?: 0,
+                 heartTimerText = heartRefillCountdownText,
                  modifier = Modifier.statusBarsPadding()
              )
         }
