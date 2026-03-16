@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.util.Locale
 import javax.inject.Inject
 
 class CourseRepository @Inject constructor(
@@ -155,22 +156,10 @@ class CourseRepository @Inject constructor(
         println("✅ Found lesson: ${cachedLesson.title} with courseId: ${cachedLesson.courseId}")
 
         return try {
-            // Koristimo sačuvani courseId za pristup pitanjima
-            val questionsSnapshot = firestore.collection("modules")
-                .document(cachedLesson.courseId)  // ← Ovo je ključno!
-                .collection("lessons")
-                .document(lessonId)
-                .collection("questions")
-                .orderBy("orderIndex")
-                .get()
-                .await()
-
-            println("📝 Found ${questionsSnapshot.documents.size} questions")
-
-            questionsSnapshot.documents.mapNotNull { document ->
-                document.toQuestionOrNull()?.also {
-                    println("✓ Question: ${it.text}")
-                }
+            val questions = fetchQuestionsForLessonFromFirestore(cachedLesson.courseId, lessonId)
+            println("📝 Found ${questions.size} questions")
+            questions.onEach {
+                println("✓ Question: ${it.text}")
             }
         } catch (e: Exception) {
             println("❌ Error fetching questions: ${e.message}")
@@ -179,77 +168,116 @@ class CourseRepository @Inject constructor(
     }
 
     suspend fun getDailyQuestion(date: LocalDate = LocalDate.now()): Question? {
-        val questions = try {
-            val collectionGroupQuestions = firestore.collectionGroup("questions")
-                .get()
-                .await()
-                .documents
+        return try {
+            fetchPublishedDailyChallenge(date)?.also { challenge ->
+                Log.d(TAG, "Selected daily challenge ${challenge.id} from daily challenge collection")
+                return challenge
+            }
 
-            Log.d(TAG, "Daily challenge collectionGroup returned ${collectionGroupQuestions.size} docs")
-
-            collectionGroupQuestions
-                .mapNotNull { document -> document.toQuestionOrNull() }
-                .filter { it.quizEnabled }
-                .sortedWith(compareBy<Question> { it.randomKey }.thenBy { it.id })
+            selectFallbackDailyQuestionFromModules(date)
         } catch (error: Exception) {
-            Log.w(TAG, "Daily challenge collectionGroup query failed: ${error.message}", error)
-            emptyList()
+            Log.w(TAG, "Daily challenge query failed: ${error.message}", error)
+            null
         }
-
-        val resolvedQuestions = if (questions.isNotEmpty()) {
-            questions
-        } else {
-            Log.d(TAG, "Falling back to modules/*/lessons/*/questions scan for daily challenge")
-            fetchAllQuestionsFromModules()
-        }
-
-        if (resolvedQuestions.isEmpty()) {
-            Log.w(TAG, "No daily challenge candidates found in Firestore")
-            return null
-        }
-
-        val index = Math.floorMod(date.toEpochDay().toInt(), resolvedQuestions.size)
-        val selectedQuestion = resolvedQuestions[index]
-        Log.d(TAG, "Selected daily challenge ${selectedQuestion.id} for $date from ${resolvedQuestions.size} candidates")
-        return selectedQuestion
     }
 
-    private suspend fun fetchAllQuestionsFromModules(): List<Question> {
-        return try {
-            val modules = firestore.collection("modules")
-                .orderBy("orderIndex")
-                .get()
-                .await()
-                .documents
+    private suspend fun fetchPublishedDailyChallenge(date: LocalDate): Question? {
+        val activeOn = date.toString()
+        val localeTag = Locale.getDefault().toLanguageTag()
+        val documents = mutableListOf<DocumentSnapshot>()
 
-            val questions = mutableListOf<Question>()
-
-            for (module in modules) {
-                val lessons = module.reference.collection("lessons")
-                    .orderBy("orderIndex")
+        for (collectionName in DAILY_CHALLENGE_COLLECTIONS) {
+            val fetchedDocuments = runCatching {
+                firestore.collection(collectionName)
+                    .whereEqualTo("activeOn", activeOn)
+                    .limit(10)
                     .get()
                     .await()
                     .documents
+            }.onFailure { error ->
+                Log.w(TAG, "Daily challenge fetch failed for $collectionName: ${error.message}", error)
+            }.getOrElse { emptyList() }
 
-                for (lesson in lessons) {
-                    val lessonQuestions = lesson.reference.collection("questions")
-                        .orderBy("orderIndex")
-                        .get()
-                        .await()
-                        .documents
-                        .mapNotNull { document -> document.toQuestionOrNull() }
-                        .filter { it.quizEnabled }
+            documents += fetchedDocuments
+        }
 
-                    questions += lessonQuestions
-                }
+        if (documents.isEmpty()) {
+            Log.d(TAG, "No daily challenge documents found for $activeOn")
+            return null
+        }
+
+        val published = documents
+            .filter { document -> document.getString("status").equals("published", ignoreCase = true) }
+            .mapNotNull { document -> document.toDailyChallengeQuestionOrNull() }
+
+        val localized = published.firstOrNull { it.lessonRefPath == localeTag }
+        return localized ?: published.firstOrNull()
+    }
+
+    private suspend fun selectFallbackDailyQuestionFromModules(date: LocalDate): Question? {
+        val modules = fetchCoursesFromFirestore()
+            .sortedBy { it.order }
+
+        if (modules.isEmpty()) {
+            Log.w(TAG, "No modules found for daily challenge fallback")
+            return null
+        }
+
+        val moduleStartIndex = cycleIndex(date.toEpochDay(), modules.size)
+        for (moduleOffset in modules.indices) {
+            val module = modules[(moduleStartIndex + moduleOffset) % modules.size]
+            val lessons = fetchLessonsForCourseFromFirestore(module.courseId)
+                .filter { it.questionCount > 0 }
+                .sortedBy { it.orderIndex }
+
+            if (lessons.isEmpty()) {
+                continue
             }
 
-            Log.d(TAG, "Module scan found ${questions.size} daily challenge candidates")
+            val lessonStartIndex = cycleIndex(date.toEpochDay() + moduleOffset, lessons.size)
+            for (lessonOffset in lessons.indices) {
+                val lesson = lessons[(lessonStartIndex + lessonOffset) % lessons.size]
+                val questions = fetchQuestionsForLessonFromFirestore(module.courseId, lesson.lessonId)
+                    .filter { it.quizEnabled }
 
-            questions.sortedWith(compareBy<Question> { it.randomKey }.thenBy { it.id })
-        } catch (error: Exception) {
-            Log.w(TAG, "Module scan for daily challenge failed: ${error.message}", error)
-            emptyList()
+                if (questions.isEmpty()) {
+                    continue
+                }
+
+                val questionIndex = cycleIndex(
+                    date.toEpochDay() + moduleOffset + lessonOffset,
+                    questions.size
+                )
+                val selectedQuestion = questions[questionIndex]
+                Log.d(
+                    TAG,
+                    "Selected daily challenge fallback ${selectedQuestion.id} from module ${module.courseId}, lesson ${lesson.lessonId}"
+                )
+                return selectedQuestion
+            }
+        }
+
+        Log.w(TAG, "No daily challenge candidates found in module fallback traversal")
+        return null
+    }
+
+    private suspend fun fetchQuestionsForLessonFromFirestore(
+        moduleId: String,
+        lessonId: String
+    ): List<Question> {
+        val questionsSnapshot = firestore.collection("modules")
+            .document(moduleId)
+            .collection("lessons")
+            .document(lessonId)
+            .collection("questions")
+            .orderBy("orderIndex")
+            .get()
+            .await()
+
+        return questionsSnapshot.documents.mapNotNull { document ->
+            document.toQuestionOrNull()?.also {
+                println("✓ Question: ${it.text}")
+            }
         }
     }
 
@@ -293,7 +321,56 @@ class CourseRepository @Inject constructor(
         )
     }
 
+    private fun DocumentSnapshot.toDailyChallengeQuestionOrNull(): Question? {
+        val prompt = getString("prompt") ?: return null
+        val options = (get("options") as? List<*>)?.mapNotNull { it as? String }.orEmpty()
+        if (options.isEmpty()) return null
+
+        val correctIndexes = (get("correctOptionIndexes") as? List<*>)?.mapNotNull { raw ->
+            when (raw) {
+                is Long -> raw.toInt()
+                is Int -> raw
+                is Double -> raw.toInt()
+                else -> null
+            }
+        }.orEmpty()
+
+        val correctIndex = correctIndexes.firstOrNull()?.coerceIn(0, options.lastIndex) ?: 0
+        val locale = getString("locale").orEmpty()
+        val selectionMode = getString("selectionMode").orEmpty()
+
+        return Question(
+            id = getString("id") ?: id,
+            title = getString("title") ?: "",
+            moduleId = "",
+            lessonId = "",
+            lessonRefPath = locale,
+            text = prompt,
+            options = options,
+            correctIndex = correctIndex,
+            explanation = getString("explanation") ?: getString("description") ?: "",
+            type = getString("challengeType") ?: "",
+            difficulty = getString("difficulty") ?: "",
+            difficultyWeight = getLong("pointsReward")?.toDouble() ?: 0.0,
+            tags = getStringList("tags"),
+            format = when (selectionMode.lowercase()) {
+                "single" -> "single_choice"
+                else -> selectionMode.ifBlank { "single_choice" }
+            },
+            quizEnabled = true,
+            randomKey = 0L,
+            orderIndex = 0,
+            seedVersion = getString("seedVersion") ?: "",
+            codeSnippet = getString("codeSnippet")?.takeIf { it.isNotBlank() }
+        )
+    }
+
     private companion object {
         const val TAG = "CourseRepository"
+        val DAILY_CHALLENGE_COLLECTIONS = listOf("dailyChallanges", "dailyChallenges")
+    }
+
+    private fun cycleIndex(seed: Long, size: Int): Int {
+        return Math.floorMod(seed, size.toLong()).toInt()
     }
 }
