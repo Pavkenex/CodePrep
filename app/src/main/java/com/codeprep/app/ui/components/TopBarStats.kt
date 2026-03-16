@@ -20,6 +20,7 @@ import com.codeprep.app.ui.theme.*
 fun TopBarStats(
     hearts: Int = 5,
     streak: Int = 0,
+    heartTimerText: String? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -33,7 +34,8 @@ fun TopBarStats(
         StatBadge(
             icon = Icons.Default.Favorite,
             value = hearts.toString(),
-            color = CardinalRed
+            color = CardinalRed,
+            detail = heartTimerText
         )
         
         // Streak
@@ -49,7 +51,8 @@ fun TopBarStats(
 fun StatBadge(
     icon: ImageVector,
     value: String,
-    color: Color
+    color: Color,
+    detail: String? = null
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
@@ -59,12 +62,22 @@ fun StatBadge(
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                color = color
+        Column {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = color
+                )
             )
-        )
+            if (detail != null) {
+                Text(
+                    text = detail,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = color
+                    )
+                )
+            }
+        }
     }
 }

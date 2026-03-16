@@ -240,6 +240,10 @@ class UserRepository @Inject constructor(
         return Duration.between(now, fullRefillAt)
     }
 
+    fun calculateTimeUntilNextHeart(progress: UserProgressEntity, now: Instant = Instant.now()): Duration? {
+        return calculateTimeUntilNextHeartAt(progress, now)
+    }
+
     fun calculateStreakResetTime(progress: UserProgressEntity): Instant? {
         val lastActiveDay = progress.lastActiveDate?.atZone(ZoneOffset.UTC)?.toLocalDate() ?: return null
         return lastActiveDay
@@ -262,7 +266,7 @@ class UserRepository @Inject constructor(
             xp = 0,
             level = 1,
             streak = 0,
-            hearts = 5,
+            hearts = MAX_HEARTS,
             lastHeartLostAt = null,
             lastActiveDate = null,
             updatedAt = Instant.now()
@@ -276,7 +280,7 @@ class UserRepository @Inject constructor(
             xp = getLong("xp")?.toInt() ?: 0,
             level = getLong("level")?.toInt() ?: 1,
             streak = getLong("streak")?.toInt() ?: 0,
-            hearts = getLong("hearts")?.toInt() ?: 5,
+            hearts = getLong("hearts")?.toInt() ?: MAX_HEARTS,
             lastHeartLostAt = getTimestamp("lastHeartLostAt")?.toInstant(),
             lastActiveDate = getTimestamp("lastActiveDate")?.toInstant(),
             updatedAt = getTimestamp("updatedAt")?.toInstant() ?: Instant.now()
@@ -292,5 +296,19 @@ class UserRepository @Inject constructor(
     companion object {
         const val MAX_HEARTS = 5
         const val HEART_REFILL_MINUTES = 30
+
+        fun calculateTimeUntilNextHeartAt(
+            progress: UserProgressEntity,
+            now: Instant = Instant.now()
+        ): Duration? {
+            if (progress.hearts >= MAX_HEARTS || progress.lastHeartLostAt == null) return null
+
+            val nextRefillAt = progress.lastHeartLostAt.plus(
+                HEART_REFILL_MINUTES.toLong(),
+                ChronoUnit.MINUTES
+            )
+            val remaining = Duration.between(now, nextRefillAt)
+            return if (remaining.isNegative) Duration.ZERO else remaining
+        }
     }
 }
