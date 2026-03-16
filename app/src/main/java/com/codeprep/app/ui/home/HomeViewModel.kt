@@ -91,7 +91,9 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val xpReward = calculateDailyChallengeXp(question)
+
+            val isCorrect = state.selectedIndex!=null && state.selectedIndex == question.correctIndex
+            val xpReward = if (isCorrect) calculateDailyChallengeXp(question) else 0
             if (userId.isNotBlank() && xpReward > 0) {
                 userRepository.addXp(userId, xpReward)
             }
@@ -102,7 +104,10 @@ class HomeViewModel @Inject constructor(
     private fun loadDailyChallenge() {
         viewModelScope.launch {
             val today = LocalDate.now()
-            val question = courseRepository.getDailyQuestion(today)
+            val question = dailyChallengeStateStore.getCachedQuestion(today)
+                ?: courseRepository.getDailyQuestion(today)?.also { fetchedQuestion ->
+                    dailyChallengeStateStore.cacheQuestion(today, fetchedQuestion)
+                }
             val isCompleted = dailyChallengeStateStore.isCompleted(userId, today)
 
             dailyChallengeState.update {
