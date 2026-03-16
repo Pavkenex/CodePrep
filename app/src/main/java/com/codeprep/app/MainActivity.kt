@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +39,7 @@ import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.Screen
 import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
+import com.codeprep.app.ui.navigation.formatHeartRefillCountdown
 import com.codeprep.app.ui.navigation.mainNavGraph
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.Charcoal
@@ -66,7 +68,6 @@ fun RootNavGraph() {
     val navController = rememberNavController()
     val bootstrapViewModel: SessionBootstrapViewModel = hiltViewModel()
     val currentUserId by bootstrapViewModel.currentUserId.collectAsStateWithLifecycle()
-    val currentUserProgress by bootstrapViewModel.currentUserProgress.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val startDestination = remember {
@@ -108,12 +109,28 @@ fun RootNavGraph() {
             Screen.Login.route,
             Screen.Register.route
         )
+        val currentUserProgress = if (shouldShowSessionBanner) {
+            bootstrapViewModel.currentUserProgress.collectAsStateWithLifecycle().value
+        } else {
+            null
+        }
+        val heartRefillCountdown = if (shouldShowSessionBanner) {
+            bootstrapViewModel.heartRefillCountdown.collectAsStateWithLifecycle().value
+        } else {
+            null
+        }
         val shouldShowBottomNav = currentRoute in mainRoutes
 
         if (shouldShowSessionBanner) {
              TopBarStats(
                  hearts = currentUserProgress?.hearts ?: 5,
                  streak = currentUserProgress?.streak ?: 0,
+                 heartTimerText = heartRefillCountdown?.let { countdown ->
+                     stringResource(
+                         R.string.heart_refill_countdown,
+                         formatHeartRefillCountdown(countdown)
+                     )
+                 },
                  modifier = Modifier.statusBarsPadding()
              )
         }

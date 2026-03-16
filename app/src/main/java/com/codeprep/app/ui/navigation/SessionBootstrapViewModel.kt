@@ -8,15 +8,18 @@ import com.codeprep.app.data.repository.UserRepository
 import com.codeprep.app.work.WorkScheduler
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Duration
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,6 +38,38 @@ class SessionBootstrapViewModel @Inject constructor(
     val currentUserProgress: StateFlow<UserProgressEntity?> = currentUserId
         .flatMapLatest { userId ->
             if (userId.isNullOrBlank()) flowOf(null) else userRepository.getUserProgress(userId)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val heartRefillCountdown: StateFlow<Duration?> = currentUserId
+        .flatMapLatest { userId ->
+            if (userId.isNullOrBlank()) {
+                flowOf<Duration?>(null)
+            } else {
+                userRepository.getUserProgress(userId).flatMapLatest { progress ->
+                    if (progress == null) {
+                        flowOf<Duration?>(null)
+                    } else {
+                        flow<Duration?> {
+                            while (true) {
+                                val remaining = userRepository.calculateTimeUntilNextHeart(progress)
+                                if (remaining == null) {
+                                    emit(null)
+                                    return@flow
+                                }
+
+                                emit(remaining)
+                                if (remaining.isZero) {
+                                    userRepository.refillHearts(progress.userId)
+                                    return@flow
+                                }
+
+                                delay(1_000)
+                            }
+                        }
+                    }
+                }
+            }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -103,4 +138,17 @@ class SessionBootstrapViewModel @Inject constructor(
         auth.removeAuthStateListener(authStateListener)
         super.onCleared()
     }
+}
+
+internal fun formatHeartRefillCountdown(remaining: Duration): String {
+    val totalSeconds = remaining.seconds.coerceAtLeast(0)
+    val hours = totalSeconds / 3_600
+    val minutes = (totalSeconds % 3_600) / 60
+    val seconds = totalSeconds % 60
+    val formatted = if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
+    }
+    return formatted
 }
