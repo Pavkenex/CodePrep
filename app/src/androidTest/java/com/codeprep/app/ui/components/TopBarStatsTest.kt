@@ -11,7 +11,7 @@ class TopBarStatsTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun topBarStats_hidesHeartTimerWhenHeartsAreFull() {
+    fun topBarStats_hidesHeartTimerWhenNoTimerTextProvided() {
         composeTestRule.setContent {
             TopBarStats(
                 hearts = 5,
