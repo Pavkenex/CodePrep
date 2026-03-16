@@ -1,0 +1,37 @@
+ while (true) {
+                    val remaining = userRepository.calculateTimeUntilNextHeart(progress)
+                    if (remaining == null) {
+                        _heartRefillCountdownText.value = null
+                        return@collectLatest
+                    }
+
+                    _heartRefillCountdownText.value = formatHeartRefillCountdown(remaining)
+                    if (remaining.isZero) {
+                        userRepository.refillHearts(userId)
+                    }
+                    delay(1_000)
+                }
+
+observeHeartRefillCountdown() runs an unbounded while (true) loop that wakes up every second. Because the ViewModel itself is always collecting currentUserProgress, this polling will keep running even when no UI is observing the countdown, which can hurt battery/CPU and trigger unnecessary recompositions. Consider deriving heartRefillCountdownText as a Flow that’s only active while subscribed (e.g., stateIn(WhileSubscribed) from a ticker flow), or otherwise stop the loop when the countdown isn’t needed/visible.
+_________________________________________________________________________
+
+ _heartRefillCountdownText.value = formatHeartRefillCountdown(remaining)
+                    if (remaining.isZero) {
+                        userRepository.refillHearts(userId)
+
+When remaining.isZero, this loop will call userRepository.refillHearts(userId) every second until currentUserProgress emits an updated value and cancels the collector. That can cause repeated DB writes / Firestore sync attempts depending on implementation timing. Consider calling refillHearts once and then breaking/suspending until progress changes (or at least gating with a local flag so it can’t be triggered repeatedly for the same refill moment)
+________________________________________________________________________
+ val formatted = if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
+    }
+    return "Next in $formatted"
+formatHeartRefillCountdown hardcodes the user-facing prefix "Next in" in code. For localization and consistency with the rest of the app’s UI strings, this should come from Android string resources (and ideally be formatted via stringResource in the UI layer rather than the ViewModel file).
+______________________________________________________________________
+
+ val composeTestRule = createComposeRule()
+
+    @Test
+    fun topBarStats_hidesHeartTimerWhenHeartsAreFull() {
+The test name topBarStats_hidesHeartTimerWhenHeartsAreFull doesn’t match what’s being asserted (the timer is hidden because heartTimerText is null, not because hearts are full). Renaming it to reflect the actual condition will make failures easier to interpret.

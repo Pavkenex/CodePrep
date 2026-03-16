@@ -38,14 +38,14 @@ class HeartRefillCountdownTest {
     fun formatHeartRefillCountdown_formatsMinutesAndSeconds() {
         val label = formatHeartRefillCountdown(Duration.ofMinutes(12).plusSeconds(43))
 
-        assertEquals("Next in 12:43", label)
+        assertEquals("12:43", label)
     }
 
     @Test
     fun formatHeartRefillCountdown_formatsHoursWhenNeeded() {
         val label = formatHeartRefillCountdown(Duration.ofHours(1).plusMinutes(2).plusSeconds(3))
 
-        assertEquals("Next in 1:02:03", label)
+        assertEquals("1:02:03", label)
     }
 
     private fun progress(hearts: Int, lastHeartLostAt: Instant?): UserProgressEntity {

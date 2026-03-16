@@ -4,6 +4,7 @@
     <string name="notification_channel_hearts_description">Notifications when your hearts are full again.</string>
     <string name="notification_channel_streak_name">Streak reminders</string>
     <string name="notification_channel_streak_description">Reminders before your streak resets.</string>
+    <string name="heart_refill_countdown">Next in %1$s</string>
     <string name="notification_hearts_title">Srca su ti opet puna</string>
     <string name="notification_hearts_body">Mozes da nastavis sa lekcijama bez cekanja.</string>
     <string name="notification_streak_title">Streak ti je u opasnosti</string>
