@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.codeprep.app.data.repository.LessonProgressRepository
 import com.codeprep.app.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.Assisted
@@ -14,6 +15,7 @@ class SyncProgressWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     private val userRepository: UserRepository,
+    private val lessonProgressRepository: LessonProgressRepository,
     private val auth: FirebaseAuth
 ) : CoroutineWorker(appContext, params) {
 
@@ -24,6 +26,7 @@ class SyncProgressWorker @AssistedInject constructor(
 
         return try {
             userRepository.syncProgress(userId)
+            lessonProgressRepository.syncProgress(userId)
             Result.success()
         } catch (_: Exception) {
             Result.retry()

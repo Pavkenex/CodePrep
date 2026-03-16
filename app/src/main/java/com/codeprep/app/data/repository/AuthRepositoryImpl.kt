@@ -69,7 +69,7 @@ class AuthRepositoryImpl @Inject constructor(
                             nickname = email.substringBefore('@'),
                             xp = 0, level = 1, streak = 0,
                             hearts = 5, lastHeartLostAt = null,
-                            lastActiveDate = Instant.now(),
+                            lastActiveDate = null,
                             updatedAt = Instant.now()
                         )
                     )
@@ -95,7 +95,7 @@ class AuthRepositoryImpl @Inject constructor(
         streak: Int = 0,
         hearts: Int = 5,
         lastHeartLostAt: Instant? = null,
-        lastActiveDate: Instant = Instant.now(),
+        lastActiveDate: Instant? = null,
         updatedAt: Instant = Instant.now()
     ): UserProgressEntity {
         val userProgress = UserProgressEntity(
@@ -152,7 +152,7 @@ class AuthRepositoryImpl @Inject constructor(
             streak = getLong("streak")?.toInt() ?: 0,
             hearts = getLong("hearts")?.toInt() ?: 5,
             lastHeartLostAt = getTimestamp("lastHeartLostAt")?.toInstant(),
-            lastActiveDate = getTimestamp("lastActiveDate")?.toInstant() ?: Instant.now(),
+            lastActiveDate = getTimestamp("lastActiveDate")?.toInstant(),
             updatedAt = getTimestamp("updatedAt")?.toInstant() ?: Instant.now()
         )
     }
