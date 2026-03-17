@@ -2,6 +2,7 @@ package com.codeprep.app.data.repository
 
 import com.codeprep.app.data.local.dao.LessonProgressDao
 import com.codeprep.app.data.local.entity.LessonProgressEntity
+import com.codeprep.app.data.repository.LessonProgressRules.mergeWith
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -25,27 +26,40 @@ class LessonProgressRepository @Inject constructor(
     suspend fun saveAttempt(
         userId: String,
         lessonId: String,
-        score: Int,
+        correctCount: Int,
         totalQuestions: Int,
-        mistakeCount: Int
-    ) {
-        val attempt = LessonProgressEntity(
+        mistakeCount: Int,
+        baseXp: Int
+    ): SaveAttemptOutcome {
+        val existing = lessonProgressDao.getByUserAndLesson(userId, lessonId)
+        val evaluation = LessonProgressRules.evaluateAttempt(
+            existing = existing,
             userId = userId,
             lessonId = lessonId,
-            completed = totalQuestions > 0,
-            perfectRun = totalQuestions > 0 && mistakeCount == 0,
-            score = score,
+            correctCount = correctCount,
+            totalQuestions = totalQuestions,
             mistakeCount = mistakeCount,
-            lastAttemptAt = Instant.now()
+            baseXp = baseXp,
+            attemptedAt = Instant.now()
         )
 
-        lessonProgressDao.upsert(attempt)
+        lessonProgressDao.upsert(evaluation.progress)
 
         try {
-            pushProgressToRemote(attempt)
+            pushProgressToRemote(evaluation.progress)
         } catch (_: Exception) {
             // Best-effort push. Session/periodic sync will retry later.
         }
+
+        return SaveAttemptOutcome(
+            progress = evaluation.progress,
+            passed = evaluation.passed,
+            perfect = evaluation.perfect,
+            xpAwarded = evaluation.xpAwarded,
+            awardedBaseXp = evaluation.awardedBaseXp,
+            awardedPerfectBonus = evaluation.awardedPerfectBonus,
+            perfectBonusXp = evaluation.perfectBonusXp
+        )
     }
 
     suspend fun syncProgress(userId: String): SyncOutcome {
@@ -75,13 +89,9 @@ class LessonProgressRepository @Inject constructor(
                 local == null && remote != null -> recordsToPull += remote
                 local != null && remote == null -> recordsToPush += local
                 local != null && remote != null -> {
-                    val localAttemptAt = local.lastAttemptAt ?: Instant.EPOCH
-                    val remoteAttemptAt = remote.lastAttemptAt ?: Instant.EPOCH
-
-                    when {
-                        remoteAttemptAt.isAfter(localAttemptAt) -> recordsToPull += remote
-                        localAttemptAt.isAfter(remoteAttemptAt) -> recordsToPush += local
-                    }
+                    val merged = local.mergeWith(remote)
+                    if (merged != local) recordsToPull += merged
+                    if (merged != remote) recordsToPush += merged
                 }
             }
         }
@@ -112,23 +122,42 @@ class LessonProgressRepository @Inject constructor(
         return mapOf(
             "completed" to completed,
             "perfectRun" to perfectRun,
-            "score" to score,
+            "bestCorrectCount" to bestCorrectCount,
+            "totalQuestions" to totalQuestions,
             "mistakeCount" to mistakeCount,
+            "completionXpAwarded" to completionXpAwarded,
+            "perfectBonusAwarded" to perfectBonusAwarded,
             "lastAttemptAt" to lastAttemptAt
         )
     }
 
     private fun DocumentSnapshot.toLessonProgressEntity(userId: String): LessonProgressEntity {
+        val bestCorrectCount = getLong("bestCorrectCount")?.toInt()
+            ?: getLong("score")?.toInt()
+            ?: 0
         return LessonProgressEntity(
             userId = userId,
             lessonId = id,
             completed = getBoolean("completed") ?: false,
             perfectRun = getBoolean("perfectRun") ?: false,
-            score = getLong("score")?.toInt() ?: 0,
+            bestCorrectCount = bestCorrectCount,
+            totalQuestions = getLong("totalQuestions")?.toInt() ?: 0,
             mistakeCount = getLong("mistakeCount")?.toInt() ?: 0,
+            completionXpAwarded = getBoolean("completionXpAwarded") ?: false,
+            perfectBonusAwarded = getBoolean("perfectBonusAwarded") ?: false,
             lastAttemptAt = getTimestamp("lastAttemptAt")?.toInstant()
         )
     }
+
+    data class SaveAttemptOutcome(
+        val progress: LessonProgressEntity,
+        val passed: Boolean,
+        val perfect: Boolean,
+        val xpAwarded: Int,
+        val awardedBaseXp: Boolean,
+        val awardedPerfectBonus: Boolean,
+        val perfectBonusXp: Int
+    )
 
     sealed interface SyncOutcome {
         data object NoOp : SyncOutcome
@@ -139,5 +168,9 @@ class LessonProgressRepository @Inject constructor(
 
     companion object {
         private const val LESSON_PROGRESS_COLLECTION = "lessonProgress"
+
+        fun calculatePerfectBonusXp(baseXp: Int): Int {
+            return LessonProgressRules.calculatePerfectBonusXp(baseXp)
+        }
     }
 }

@@ -91,7 +91,10 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-
+            if (userId.isNotBlank()) {
+                userRepository.ensureLocalUserProgress(userId)
+                userRepository.registerStreakActivity(userId)
+            }
             val isCorrect = state.selectedIndex!=null && state.selectedIndex == question.correctIndex
             val xpReward = if (isCorrect) calculateDailyChallengeXp(question) else 0
             if (userId.isNotBlank() && xpReward > 0) {

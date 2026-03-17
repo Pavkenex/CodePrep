@@ -12,7 +12,10 @@ data class LessonProgressEntity(
     val lessonId: String,
     val completed: Boolean,
     val perfectRun: Boolean,
-    val score: Int,
+    val bestCorrectCount: Int,
+    val totalQuestions: Int,
     val mistakeCount: Int,
+    val completionXpAwarded: Boolean,
+    val perfectBonusAwarded: Boolean,
     val lastAttemptAt: Instant?
 )

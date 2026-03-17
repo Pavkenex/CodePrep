@@ -27,31 +27,48 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
-
 import com.codeprep.app.ui.components.GamifiedButton
-import com.codeprep.app.ui.theme.*
+import com.codeprep.app.ui.theme.AppBackground
+import com.codeprep.app.ui.theme.CardinalRed
+import com.codeprep.app.ui.theme.Charcoal
+import com.codeprep.app.ui.theme.DeepCharcoal
+import com.codeprep.app.ui.theme.ElectricCyan
+import com.codeprep.app.ui.theme.IceWhite
+import com.codeprep.app.ui.theme.LeafGreen
+import com.codeprep.app.ui.theme.LockedGrey
+import com.codeprep.app.ui.theme.SunYellow
+import com.codeprep.app.ui.theme.TextLight
+import com.codeprep.app.ui.theme.TrueBlack
 
 @Composable
-fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
-               onQuizFinished:()-> Unit
+fun QuizScreen(
+    viewModel: QuizViewModel = hiltViewModel(),
+    onQuizFinished: () -> Unit
 ) {
-
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = AppBackground,
         topBar = {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "❤️ ${state.userHearts}", style = MaterialTheme.typography.titleLarge, color = CardinalRed)
-                Text(text = "Score: ${state.score}", style = MaterialTheme.typography.titleMedium, color = ElectricCyan)
+                Text(
+                    text = "❤️ ${state.userHearts}",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = CardinalRed
+                )
+                Text(
+                    text = "Score: ${state.score}/${state.questions.size}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = ElectricCyan
+                )
             }
         }
     ) { paddingValues ->
-
         if (state.finished) {
             AlertDialog(
                 onDismissRequest = { },
@@ -60,27 +77,72 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                 textContentColor = TextLight,
                 title = {
                     Text(
-                        text = "Kviz završen!",
+                        text = when {
+                            state.perfect -> "Perfect run!"
+                            state.passed -> "Lesson passed!"
+                            else -> "Quiz finished"
+                        },
                         style = MaterialTheme.typography.headlineSmall
                     )
                 },
                 text = {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         val totalQuestions = state.questions.size
-                        val correctAnswers = state.score
                         val percentage = if (totalQuestions > 0) {
-                            (correctAnswers.toFloat() / totalQuestions * 100).toInt()
-                        } else 0
+                            (state.score.toFloat() / totalQuestions * 100).toInt()
+                        } else {
+                            0
+                        }
 
-                        Text("Vaš uspeh: $percentage%", style = MaterialTheme.typography.bodyLarge, color = ElectricCyan)
-                        Text("Osvojeno XP: ${state.xpEarned} ✨", style = MaterialTheme.typography.bodyMedium, color = SunYellow)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Tačnih odgovora: $correctAnswers / $totalQuestions", color = TextLight)
+                        Text(
+                            text = "Your result: $percentage%",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = ElectricCyan
+                        )
+                        Text(
+                            text = "Correct answers: ${state.score} / $totalQuestions",
+                            color = TextLight
+                        )
+                        Text(
+                            text = when {
+                                state.perfect -> "Star earned for this lesson."
+                                state.passed -> "Next lesson unlocked."
+                                else -> "Score at least 50% to unlock the next lesson."
+                            },
+                            color = if (state.passed) ElectricCyan else CardinalRed
+                        )
+                        if (state.awardedBaseXp) {
+                            Text(
+                                text = "Base reward: +${state.lessonXpReward} XP",
+                                color = LeafGreen
+                            )
+                        }
+                        if (state.awardedPerfectBonus) {
+                            Text(
+                                text = "Perfect bonus: +${state.perfectBonusXp} XP",
+                                color = SunYellow
+                            )
+                        }
+                        if (state.xpEarned == 0) {
+                            Text(
+                                text = when {
+                                    state.perfect -> "No more XP is available for this quiz."
+                                    state.passed -> "You already claimed the completion reward. Retry only if you still need the star."
+                                    else -> "No XP awarded."
+                                },
+                                color = LockedGrey
+                            )
+                        } else {
+                            Text(
+                                text = "Total earned now: ${state.xpEarned} XP",
+                                color = SunYellow
+                            )
+                        }
                     }
                 },
                 confirmButton = {
                     GamifiedButton(
-                        text = "Završi",
+                        text = "Finish",
                         onClick = {
                             viewModel.onFinishClicked()
                             onQuizFinished()
@@ -105,14 +167,14 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                     Spacer(modifier = Modifier.weight(1f))
                     CircularProgressIndicator(color = ElectricCyan)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Učitavanje pitanja...", color = TextLight)
+                    Text("Loading questions...", color = TextLight)
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
                 state.currentQuestion == null -> {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = state.loadError ?: "Pitanja nisu dostupna.",
+                        text = state.loadError ?: "Questions are not available.",
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = LockedGrey
@@ -127,7 +189,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                             text = question.text,
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.padding(bottom = 16.dp),
-                            color = TextLight
+                            color = IceWhite
                         )
 
                         if (!question.codeSnippet.isNullOrBlank()) {
@@ -145,15 +207,19 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                                 isCorrectAnswer = index == question.correctIndex,
                                 isSelected = index == state.selectedIndex
                             )
-                            
-                            val textColor = if (state.isAnswered && (index == question.correctIndex || index == state.selectedIndex)) TrueBlack else TextLight
+
+                            val textColor = if (state.isAnswered && (index == question.correctIndex || index == state.selectedIndex)) {
+                                TrueBlack
+                            } else {
+                                TextLight
+                            }
 
                             GamifiedButton(
                                 text = optionText,
-                                onClick = {
-                                    viewModel.submitAnswer(index)
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                onClick = { viewModel.submitAnswer(index) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
                                 backgroundColor = buttonColor,
                                 textColor = textColor,
                                 enabled = !state.isAnswered
@@ -164,7 +230,7 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
 
                         if (state.isAnswered) {
                             GamifiedButton(
-                                text = "Sledeće pitanje",
+                                text = "Next question",
                                 onClick = { viewModel.nextQuestion() },
                                 backgroundColor = ElectricCyan,
                                 textColor = TrueBlack
@@ -173,9 +239,9 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel(),
                             Spacer(modifier = Modifier.height(8.dp))
 
                             if (state.selectedIndex != question.correctIndex) {
-                                Text("Pogrešno! Izgubili ste srce 💔", color = CardinalRed)
+                                Text("Wrong answer. You lost a heart.", color = CardinalRed)
                             } else {
-                                Text("Tačno! +10 XP ✨", color = LeafGreen)
+                                Text("Correct answer.", color = LeafGreen)
                             }
                         }
                     }
