@@ -1,18 +1,23 @@
 package com.codeprep.app.ui.lesson
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +82,8 @@ fun LessonDetailScreen(
         lesson?.let { activeLesson ->
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
                     LessonHeroCard(
@@ -88,62 +95,10 @@ fun LessonDetailScreen(
                 }
 
                 item {
-                    SectionCard(
-                        title = "Introduction",
-                        body = activeLesson.content.introduction.resolve(language)
+                    LessonContentCard(
+                        lesson = activeLesson,
+                        language = language
                     )
-                }
-                item {
-                    SectionCard(
-                        title = "Explanation",
-                        body = activeLesson.content.explanation.resolve(language)
-                    )
-                }
-                item {
-                    SectionCard(
-                        title = "Example",
-                        body = activeLesson.content.example.resolve(language)
-                    )
-                }
-                item {
-                    HighlightCard(
-                        title = "Key takeaway",
-                        body = activeLesson.content.keyTakeaway.resolve(language)
-                    )
-                }
-
-                activeLesson.analogy?.resolve(language)?.takeIf { it.isNotBlank() }?.let { analogy ->
-                    item {
-                        SectionCard(
-                            title = "Analogy",
-                            body = analogy
-                        )
-                    }
-                }
-
-                if (activeLesson.keyPoints.isNotEmpty()) {
-                    item {
-                        BulletSectionCard(
-                            title = "Key points",
-                            items = activeLesson.keyPoints.map { it.resolve(language) }
-                        )
-                    }
-                }
-
-                if (activeLesson.commonMistakes.isNotEmpty()) {
-                    item {
-                        BulletSectionCard(
-                            title = "Common mistakes",
-                            items = activeLesson.commonMistakes.map { it.resolve(language) },
-                            accent = CardinalRed
-                        )
-                    }
-                }
-
-                if (activeLesson.codeSnippets.isNotEmpty()) {
-                    items(activeLesson.codeSnippets, key = { snippet -> "${snippet.code.hashCode()}-${snippet.isAntiPattern}" }) { snippet ->
-                        SnippetCard(snippet = snippet, language = language)
-                    }
                 }
 
                 item {
@@ -285,7 +240,10 @@ private fun LessonHeroCard(
 }
 
 @Composable
-private fun HeroPill(text: String, accent: androidx.compose.ui.graphics.Color) {
+private fun HeroPill(
+    text: String,
+    accent: androidx.compose.ui.graphics.Color
+) {
     Box(
         modifier = Modifier
             .background(accent.copy(alpha = 0.16f), RoundedCornerShape(999.dp))
@@ -300,125 +258,305 @@ private fun HeroPill(text: String, accent: androidx.compose.ui.graphics.Color) {
 }
 
 @Composable
-private fun SectionCard(
-    title: String,
-    body: String
+private fun LessonContentCard(
+    lesson: CachedLessonEntity,
+    language: String
 ) {
-    if (body.isBlank()) return
+    val introduction = lesson.content.introduction.resolve(language)
+    val explanation = lesson.content.explanation.resolve(language)
+    val example = lesson.content.example.resolve(language)
+    val analogy = lesson.analogy?.resolve(language).orEmpty()
+    val commonMistakes = lesson.commonMistakes
+        .map { it.resolve(language) }
+        .filter { it.isNotBlank() }
+    val keyPoints = lesson.keyPoints
+        .map { it.resolve(language) }
+        .filter { it.isNotBlank() }
+    val keyTakeaway = lesson.content.keyTakeaway.resolve(language)
+    val exampleSnippets = lesson.codeSnippets.filterNot { it.isAntiPattern }
+    val antiPatternSnippets = lesson.codeSnippets.filter { it.isAntiPattern }
+
+    var isAnalogyExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
+    var isAntiPatternExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
+    var isMistakesExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
+    var isSummaryExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         color = Charcoal,
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(28.dp)
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = ElectricCyan
+            LessonBodySection(
+                title = "Introduction",
+                body = introduction
             )
-            Text(
-                text = body,
-                style = MaterialTheme.typography.bodyLarge,
-                color = IceWhite
-            )
-        }
-    }
-}
 
-@Composable
-private fun HighlightCard(
-    title: String,
-    body: String
-) {
-    if (body.isBlank()) return
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        color = DeepCharcoal,
-        shape = RoundedCornerShape(24.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = SunYellow
+            LessonBodySection(
+                title = "Explanation",
+                body = explanation
             )
-            Text(
-                text = body,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = IceWhite
-            )
-        }
-    }
-}
 
-@Composable
-private fun BulletSectionCard(
-    title: String,
-    items: List<String>,
-    accent: androidx.compose.ui.graphics.Color = ElectricCyan
-) {
-    val filteredItems = items.filter { it.isNotBlank() }
-    if (filteredItems.isEmpty()) return
+            if (analogy.isNotBlank()) {
+                ExpandableLessonSection(
+                    title = "Analogy",
+                    accent = SunYellow,
+                    expanded = isAnalogyExpanded,
+                    onToggle = { isAnalogyExpanded = !isAnalogyExpanded }
+                ) {
+                    Text(
+                        text = analogy,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = IceWhite
+                    )
+                }
+            }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        color = Charcoal,
-        shape = RoundedCornerShape(24.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = accent
+            ExampleSection(
+                body = example,
+                snippets = exampleSnippets,
+                language = language
             )
-            filteredItems.forEach { item ->
-                Text(
-                    text = "• $item",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = IceWhite
-                )
+
+            if (antiPatternSnippets.isNotEmpty()) {
+                ExpandableLessonSection(
+                    title = "Anti-pattern",
+                    accent = CardinalRed,
+                    expanded = isAntiPatternExpanded,
+                    onToggle = { isAntiPatternExpanded = !isAntiPatternExpanded }
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        antiPatternSnippets.forEachIndexed { index, snippet ->
+                            InlineSnippetBlock(
+                                label = if (antiPatternSnippets.size > 1) "Anti-pattern ${index + 1}" else "Anti-pattern",
+                                accent = CardinalRed,
+                                snippet = snippet,
+                                language = language,
+                                containerColor = CardinalRed.copy(alpha = 0.08f),
+                                borderColor = CardinalRed.copy(alpha = 0.22f),
+                                codeColor = CardinalRed.copy(alpha = 0.92f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (commonMistakes.isNotEmpty()) {
+                ExpandableLessonSection(
+                    title = "Common mistakes",
+                    accent = CardinalRed,
+                    expanded = isMistakesExpanded,
+                    onToggle = { isMistakesExpanded = !isMistakesExpanded }
+                ) {
+                    BulletList(
+                        items = commonMistakes,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            if (keyTakeaway.isNotBlank() || keyPoints.isNotEmpty()) {
+                ExpandableLessonSection(
+                    title = if (keyTakeaway.isNotBlank()) "Key takeaway" else "Key points",
+                    accent = ElectricCyan,
+                    expanded = isSummaryExpanded,
+                    onToggle = { isSummaryExpanded = !isSummaryExpanded }
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (keyTakeaway.isNotBlank()) {
+                            Text(
+                                text = keyTakeaway,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = IceWhite
+                            )
+                        }
+                        if (keyPoints.isNotEmpty()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = "Key points",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = ElectricCyan
+                                )
+                                BulletList(
+                                    items = keyPoints,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SnippetCard(
-    snippet: CodeSnippet,
+private fun LessonBodySection(
+    title: String,
+    body: String
+) {
+    if (body.isBlank()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = ElectricCyan
+        )
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodyLarge,
+            color = IceWhite
+        )
+    }
+}
+
+@Composable
+private fun ExampleSection(
+    body: String,
+    snippets: List<CodeSnippet>,
     language: String
+) {
+    if (body.isBlank() && snippets.isEmpty()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Example",
+            style = MaterialTheme.typography.labelLarge,
+            color = ElectricCyan
+        )
+
+        if (body.isNotBlank()) {
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyLarge,
+                color = IceWhite
+            )
+        }
+
+        snippets.forEachIndexed { index, snippet ->
+            InlineSnippetBlock(
+                label = if (snippets.size > 1) "Pseudocode ${index + 1}" else "Pseudocode",
+                accent = ElectricCyan,
+                snippet = snippet,
+                language = language
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpandableLessonSection(
+    title: String,
+    accent: androidx.compose.ui.graphics.Color,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        color = Charcoal,
-        shape = RoundedCornerShape(24.dp)
+            .animateContentSize(),
+        color = accent.copy(alpha = 0.10f),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 48.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = accent
+                )
+                ExpansionBadge(
+                    text = if (expanded) "-" else "+",
+                    accent = accent
+                )
+            }
+            if (expanded) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpansionBadge(
+    text: String,
+    accent: androidx.compose.ui.graphics.Color
+) {
+    Surface(
+        color = accent.copy(alpha = 0.16f),
+        shape = RoundedCornerShape(999.dp)
+    ) {
+        Text(
+            text = text,
+            color = accent,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+        )
+    }
+}
+
+@Composable
+private fun BulletList(
+    items: List<String>,
+    style: androidx.compose.ui.text.TextStyle
+) {
+    val filteredItems = items.filter { it.isNotBlank() }
+    if (filteredItems.isEmpty()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        filteredItems.forEach { item ->
+            Text(
+                text = "• $item",
+                style = style,
+                color = IceWhite
+            )
+        }
+    }
+}
+
+@Composable
+private fun InlineSnippetBlock(
+    label: String,
+    accent: androidx.compose.ui.graphics.Color,
+    snippet: CodeSnippet,
+    language: String,
+    containerColor: androidx.compose.ui.graphics.Color = DeepCharcoal,
+    borderColor: androidx.compose.ui.graphics.Color = ElectricCyan.copy(alpha = 0.12f),
+    codeColor: androidx.compose.ui.graphics.Color = ElectricCyan
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = containerColor,
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = if (snippet.isAntiPattern) "Anti-pattern" else "Pseudocode",
+                text = label,
                 style = MaterialTheme.typography.labelLarge,
-                color = if (snippet.isAntiPattern) CardinalRed else ElectricCyan
+                color = accent
             )
             val description = snippet.description.resolve(language)
             if (description.isNotBlank()) {
@@ -429,16 +567,20 @@ private fun SnippetCard(
                 )
             }
             Surface(
-                color = DeepCharcoal,
-                shape = RoundedCornerShape(18.dp)
+                color = TrueBlack.copy(alpha = 0.28f),
+                shape = RoundedCornerShape(14.dp)
             ) {
-                Text(
-                    text = snippet.code.trim(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontFamily = FontFamily.Monospace,
-                    color = ElectricCyan,
-                    modifier = Modifier.padding(14.dp)
-                )
+                SelectionContainer {
+                    Text(
+                        text = snippet.code.trim(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.Monospace,
+                        color = codeColor,
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(14.dp)
+                    )
+                }
             }
         }
     }
