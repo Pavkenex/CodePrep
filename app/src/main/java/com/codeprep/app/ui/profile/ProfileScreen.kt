@@ -60,11 +60,14 @@ fun ProfileScreen(
     onFriendClick: (String) -> Unit,
     onLogout: () -> Unit,
     sessionViewModel: SessionBootstrapViewModel = hiltViewModel(),
-    profileViewModel: ProfileViewModel = hiltViewModel()
+    profileViewModel: ProfileViewModel = hiltViewModel(),
+    settingsViewModel: ProfileSettingsViewModel = hiltViewModel()
 ) {
     val progress by sessionViewModel.currentUserProgress.collectAsStateWithLifecycle()
     val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val selectedLanguage by settingsViewModel.selectedLanguage.collectAsStateWithLifecycle()
     var isAvatarSelectorVisible by remember { mutableStateOf(false) }
+    var isSettingsVisible by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -83,7 +86,9 @@ fun ProfileScreen(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
                     tint = LockedGrey,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable { isSettingsVisible = true }
                 )
             }
         }
@@ -280,6 +285,40 @@ fun ProfileScreen(
             }
         }
     }
+
+    if (isSettingsVisible) {
+        ModalBottomSheet(
+            onDismissRequest = { isSettingsVisible = false },
+            containerColor = Charcoal
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Settings",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = IceWhite
+                )
+                Text(
+                    text = "Language",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = ElectricCyan
+                )
+                LanguageOption(
+                    label = "English",
+                    isSelected = selectedLanguage == "en",
+                    onClick = { settingsViewModel.setSelectedLanguage("en") }
+                )
+                LanguageOption(
+                    label = "Srpski",
+                    isSelected = selectedLanguage == "sr",
+                    onClick = { settingsViewModel.setSelectedLanguage("sr") }
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
 }
 
 @Composable
@@ -342,5 +381,36 @@ private fun NeonStatCard(
                 color = TextLight
             )
         )
+    }
+}
+
+@Composable
+private fun LanguageOption(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+            .background(if (isSelected) ElectricCyan.copy(alpha = 0.12f) else Charcoal)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = IceWhite
+        )
+        if (isSelected) {
+            Text(
+                text = "Selected",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = ElectricCyan
+            )
+        }
     }
 }
