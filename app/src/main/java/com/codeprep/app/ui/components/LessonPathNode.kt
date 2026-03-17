@@ -1,70 +1,94 @@
 package com.codeprep.app.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.codeprep.app.ui.theme.*
+import com.codeprep.app.ui.theme.Charcoal
+import com.codeprep.app.ui.theme.ElectricCyan
+import com.codeprep.app.ui.theme.LeafGreen
+import com.codeprep.app.ui.theme.LeafGreenDark
+import com.codeprep.app.ui.theme.LockedGrey
+import com.codeprep.app.ui.theme.LockedGreyDark
+import com.codeprep.app.ui.theme.SkyBlueDark
+import com.codeprep.app.ui.theme.SunYellow
+import com.codeprep.app.ui.theme.SunYellowDark
+import com.codeprep.app.ui.theme.White
 
 enum class NodeState {
     LOCKED,
     ACTIVE,
     COMPLETED,
-    PERFECT // Gold with crown/star
+    PERFECT
 }
+
+private data class NodePalette(
+    val faceTop: Color,
+    val faceBottom: Color,
+    val baseTop: Color,
+    val baseBottom: Color,
+    val rim: Color,
+    val highlight: Color,
+    val icon: Color,
+    val shadow: Color
+)
 
 @Composable
 fun LessonPathNode(
     state: NodeState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onCirclePositioned: (Rect) -> Unit = {},
+    keepPressed: Boolean = false,
     size: Dp = 72.dp
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val elevationHeight = 6.dp
-    
-    // Colors based on state
-    val mainColor = when (state) {
-        NodeState.LOCKED -> Charcoal
-        NodeState.ACTIVE -> ElectricCyan
-        NodeState.COMPLETED -> LeafGreen
-        NodeState.PERFECT -> SunYellow
-    }
-    
-    val shadowColor = when (state) {
-        NodeState.LOCKED -> LockedGreyDark
-        NodeState.ACTIVE -> SkyBlueDark // Deeper blue for Cyan shadow
-        NodeState.COMPLETED -> LeafGreenDark
-        NodeState.PERFECT -> SunYellowDark
-    }
+    val palette = remember(state) { paletteFor(state) }
 
-    val iconColor = if (state == NodeState.LOCKED) LockedGrey else Charcoal
-
-    val borderColor = if (state == NodeState.LOCKED) LockedGrey else Color.White.copy(alpha = 0.5f)
-
-    val topOffset = if (isPressed) elevationHeight else 0.dp
+    val puckDepth = 4.dp
+    val faceInset = 1.dp
+    val pressTravel = puckDepth
+    val showPressedState = isPressed || keepPressed
+    val faceSize = size - faceInset * 2
+    val faceOffset by animateDpAsState(
+        targetValue = if (showPressedState) pressTravel else 0.dp,
+        animationSpec = spring(dampingRatio = 0.82f, stiffness = 950f),
+        label = "lesson_node_face_offset"
+    )
 
     Box(
         modifier = modifier
-            .size(size)
-            .height(size + elevationHeight)
+            .width(size)
+            .height(size + puckDepth)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -72,56 +96,130 @@ fun LessonPathNode(
                 onClick = onClick
             )
     ) {
-        // Shadow
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .size(size)
-                .clip(CircleShape)
-                .background(shadowColor)
+                .align(Alignment.Center)
+                .size(faceSize)
+                .onGloballyPositioned { coordinates ->
+                    onCirclePositioned(coordinates.boundsInRoot())
+                }
         )
 
-        // Main Circle
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = topOffset)
+                .offset(y = puckDepth)
                 .size(size)
                 .clip(CircleShape)
-                .background(mainColor)
-                .border(
-                    width = if (state == NodeState.LOCKED) 2.dp else if (state == NodeState.ACTIVE) 4.dp else 0.dp,
-                    color = borderColor,
-                    shape = CircleShape
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(palette.baseTop, palette.baseBottom)
+                    )
+                )
+                .border(width = 1.dp, color = palette.rim.copy(alpha = 0.12f), shape = CircleShape)
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(y = faceOffset)
+                .size(faceSize)
+                .clip(CircleShape)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(palette.faceTop, palette.faceBottom)
+                    )
+                )
+                .border(width = 2.dp, color = palette.rim, shape = CircleShape)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            palette.shadow.copy(alpha = 0.08f)
+                        )
+                    )
                 ),
             contentAlignment = Alignment.Center
         ) {
-            when (state) {
-                NodeState.LOCKED -> Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Locked",
-                    tint = iconColor,
-                    modifier = Modifier.size(32.dp)
-                )
-                NodeState.ACTIVE -> Icon(
-                    imageVector = Icons.Default.Star, // Or play icon
-                    contentDescription = "Active",
-                    tint = iconColor,
-                    modifier = Modifier.size(32.dp)
-                )
-                NodeState.COMPLETED -> Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Completed",
-                    tint = iconColor,
-                    modifier = Modifier.size(32.dp)
-                )
-                NodeState.PERFECT -> Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "Perfect",
-                    tint = iconColor,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .offset(x = 10.dp, y = 8.dp)
+                    .width(30.dp)
+                    .height(13.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(palette.highlight)
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = (-10).dp, y = (-8).dp)
+                    .width(22.dp)
+                    .height(9.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(palette.highlight.copy(alpha = 0.26f))
+            )
+
+            Icon(
+                imageVector = when (state) {
+                    NodeState.LOCKED -> Icons.Default.Lock
+                    NodeState.ACTIVE -> Icons.Default.Star
+                    NodeState.COMPLETED -> Icons.Default.Check
+                    NodeState.PERFECT -> Icons.Default.Star
+                },
+                contentDescription = when (state) {
+                    NodeState.LOCKED -> "Locked"
+                    NodeState.ACTIVE -> "Active"
+                    NodeState.COMPLETED -> "Completed"
+                    NodeState.PERFECT -> "Perfect"
+                },
+                tint = palette.icon,
+                modifier = Modifier.size(if (state == NodeState.PERFECT) 30.dp else 28.dp)
+            )
         }
     }
+}
+
+private fun paletteFor(state: NodeState): NodePalette = when (state) {
+    NodeState.LOCKED -> NodePalette(
+        faceTop = Color(0xFF626262),
+        faceBottom = Color(0xFF4B4B4B),
+        baseTop = Color(0xFF4A4A4A),
+        baseBottom = LockedGreyDark,
+        rim = White.copy(alpha = 0.16f),
+        highlight = White.copy(alpha = 0.16f),
+        icon = LockedGrey,
+        shadow = Color.Black
+    )
+    NodeState.ACTIVE -> NodePalette(
+        faceTop = Color(0xFF41E7FF),
+        faceBottom = Color(0xFF12BDE8),
+        baseTop = Color(0xFF17A8E0),
+        baseBottom = SkyBlueDark,
+        rim = White.copy(alpha = 0.28f),
+        highlight = White.copy(alpha = 0.22f),
+        icon = Charcoal,
+        shadow = Color(0xFF0A4EA0)
+    )
+    NodeState.COMPLETED -> NodePalette(
+        faceTop = Color(0xFF79E325),
+        faceBottom = LeafGreen,
+        baseTop = Color(0xFF5FBC14),
+        baseBottom = LeafGreenDark,
+        rim = White.copy(alpha = 0.22f),
+        highlight = White.copy(alpha = 0.2f),
+        icon = Charcoal,
+        shadow = Color(0xFF25470F)
+    )
+    NodeState.PERFECT -> NodePalette(
+        faceTop = Color(0xFFFFDF57),
+        faceBottom = SunYellow,
+        baseTop = Color(0xFFFFD234),
+        baseBottom = SunYellowDark,
+        rim = White.copy(alpha = 0.24f),
+        highlight = White.copy(alpha = 0.22f),
+        icon = Charcoal,
+        shadow = Color(0xFF6E4A00)
+    )
 }

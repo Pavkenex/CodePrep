@@ -90,11 +90,10 @@ private data class TooltipLayout(
 
 private val TooltipWidth = 228.dp
 private val TooltipFallbackHeight = 184.dp
-private val TooltipPointerHeight = 12.dp
-private val TooltipGap = 12.dp
+private val TooltipPointerHeight = 6.dp
+private val TooltipGap = (-8).dp
 private val TooltipHorizontalPadding = 16.dp
 private val TooltipVerticalPadding = 16.dp
-private val LessonNodeShadowHeight = 6.dp
 
 @Composable
 fun LessonListScreen(
@@ -341,6 +340,8 @@ fun LessonListScreen(
                                 lessonItem.isUnlocked && !lessonItem.isBlockedByHearts -> NodeState.ACTIVE
                                 else -> NodeState.LOCKED
                             },
+                            keepPressed = (selectedLessonId == lessonItem.lesson.lessonId) ||
+                                (tooltipVisible && displayedLessonId == lessonItem.lesson.lessonId),
                             onClick = {
                                 if (lessonItem.canOpen) {
                                     selectedLessonId = if (selectedLessonId == lessonItem.lesson.lessonId) {
@@ -350,12 +351,12 @@ fun LessonListScreen(
                                     }
                                 }
                             },
+                            onCirclePositioned = { bounds ->
+                                nodeBounds[lessonItem.lesson.lessonId] = bounds
+                            },
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .offset(x = offsetX)
-                                .onGloballyPositioned { coordinates ->
-                                    nodeBounds[lessonItem.lesson.lessonId] = coordinates.boundsInRoot()
-                                }
                         )
                     }
                 }
@@ -504,9 +505,9 @@ private fun TooltipPointer(
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(12.dp)
+            .height(TooltipPointerHeight)
     ) {
-        val triangleHalfWidth = 12.dp.toPx()
+        val triangleHalfWidth = (TooltipPointerHeight * 1.1f).toPx()
         val clampedCenter = pointerCenterX.coerceIn(
             minimumValue = triangleHalfWidth + 8.dp.toPx(),
             maximumValue = size.width - triangleHalfWidth - 8.dp.toPx()
@@ -548,7 +549,6 @@ private fun computeTooltipLayout(
     val verticalPadding = with(density) { TooltipVerticalPadding.toPx() }
     val gap = with(density) { TooltipGap.toPx() }
     val pointerHeight = with(density) { TooltipPointerHeight.toPx() }
-    val nodeShadowHeight = with(density) { LessonNodeShadowHeight.toPx() }
     val fallbackWidth = with(density) { TooltipWidth.toPx() }.roundToInt()
     val fallbackHeight = with(density) { TooltipFallbackHeight.toPx() }.roundToInt()
 
@@ -560,27 +560,26 @@ private fun computeTooltipLayout(
     } else {
         TooltipPlacement.BELOW
     }
-    val visualNodeBounds = nodeBounds.trimBottom(nodeShadowHeight)
 
-    val desiredX = (visualNodeBounds.center.x - bodyWidth / 2f).roundToInt()
+    val desiredX = (nodeBounds.center.x - bodyWidth / 2f).roundToInt()
     val maxX = (rootSize.width - bodyWidth - horizontalPadding).roundToInt().coerceAtLeast(horizontalPadding.roundToInt())
     val clampedX = desiredX.coerceIn(horizontalPadding.roundToInt(), maxX)
 
     val scrollAdjustmentPx = if (placement == TooltipPlacement.BELOW) {
         (
-            visualNodeBounds.bottom + gap + totalTooltipHeight + verticalPadding - rootSize.height
+            nodeBounds.bottom + gap + totalTooltipHeight + verticalPadding - rootSize.height
         ).coerceAtLeast(0f).roundToInt()
     } else {
         0
     }
     val desiredY = when (placement) {
-        TooltipPlacement.BELOW -> (visualNodeBounds.bottom + gap).roundToInt()
-        TooltipPlacement.ABOVE -> (visualNodeBounds.top - totalTooltipHeight - gap).roundToInt()
+        TooltipPlacement.BELOW -> (nodeBounds.bottom + gap).roundToInt()
+        TooltipPlacement.ABOVE -> (nodeBounds.top - totalTooltipHeight - gap).roundToInt()
     }
     val maxY = (rootSize.height - totalTooltipHeight - verticalPadding).roundToInt().coerceAtLeast(verticalPadding.roundToInt())
     val clampedY = desiredY.coerceIn(verticalPadding.roundToInt(), maxY)
 
-    val pointerCenterX = (visualNodeBounds.center.x - clampedX)
+    val pointerCenterX = (nodeBounds.center.x - clampedX)
         .coerceIn(24f, bodyWidth - 24f)
 
     return TooltipLayout(
@@ -593,11 +592,6 @@ private fun computeTooltipLayout(
         placement = placement,
         scrollAdjustmentPx = scrollAdjustmentPx
     )
-}
-
-private fun Rect.trimBottom(bottomInset: Float): Rect {
-    val adjustedBottom = (bottom - bottomInset).coerceAtLeast(top)
-    return Rect(left, top, right, adjustedBottom)
 }
 
 @Composable
