@@ -90,8 +90,8 @@ private data class TooltipLayout(
 
 private val TooltipWidth = 228.dp
 private val TooltipFallbackHeight = 184.dp
-private val TooltipPointerHeight = 6.dp
-private val TooltipGap = (-8).dp
+private val TooltipPointerHeight = 5.dp
+private val TooltipGap = (-53).dp
 private val TooltipHorizontalPadding = 16.dp
 private val TooltipVerticalPadding = 16.dp
 
