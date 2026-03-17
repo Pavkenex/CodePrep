@@ -32,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -80,10 +81,28 @@ fun LessonDetailScreen(
             .background(AppBackground)
     ) {
         lesson?.let { activeLesson ->
+            val contentModel = remember(activeLesson, language) {
+                LessonContentUiModel.from(activeLesson, language)
+            }
+            var isAnalogyExpanded by rememberSaveable(activeLesson.lessonId) { mutableStateOf(false) }
+            var isAntiPatternExpanded by rememberSaveable(activeLesson.lessonId) { mutableStateOf(false) }
+            var isMistakesExpanded by rememberSaveable(activeLesson.lessonId) { mutableStateOf(false) }
+            var isSummaryExpanded by rememberSaveable(activeLesson.lessonId) { mutableStateOf(false) }
+            val visibleSegments = remember(contentModel) {
+                buildList {
+                    if (contentModel.hasCoreSection) add(LessonContentSegment.Core)
+                    if (contentModel.hasAnalogy) add(LessonContentSegment.Analogy)
+                    if (contentModel.hasExampleSection) add(LessonContentSegment.Example)
+                    if (contentModel.hasAntiPatterns) add(LessonContentSegment.AntiPattern)
+                    if (contentModel.hasCommonMistakes) add(LessonContentSegment.CommonMistakes)
+                    if (contentModel.hasSummary) add(LessonContentSegment.Summary)
+                }
+            }
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 item {
                     LessonHeroCard(
@@ -94,16 +113,152 @@ fun LessonDetailScreen(
                     )
                 }
 
-                item {
-                    LessonContentCard(
-                        lesson = activeLesson,
-                        language = language
-                    )
+                if (contentModel.hasCoreSection) {
+                    item {
+                        LessonCardSegment(
+                            position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.Core)
+                        ) {
+                            if (contentModel.introduction.isNotBlank()) {
+                                LessonBodySection(
+                                    title = "Introduction",
+                                    body = contentModel.introduction
+                                )
+                            }
+                            if (contentModel.explanation.isNotBlank()) {
+                                LessonBodySection(
+                                    title = "Explanation",
+                                    body = contentModel.explanation
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (contentModel.hasAnalogy) {
+                    item {
+                        LessonCardSegment(
+                            position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.Analogy)
+                        ) {
+                            ExpandableLessonSection(
+                                title = "Analogy",
+                                accent = SunYellow,
+                                expanded = isAnalogyExpanded,
+                                onToggle = { isAnalogyExpanded = !isAnalogyExpanded }
+                            ) {
+                                Text(
+                                    text = contentModel.analogy,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = IceWhite
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (contentModel.hasExampleSection) {
+                    item {
+                        LessonCardSegment(
+                            position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.Example)
+                        ) {
+                            ExampleSection(
+                                body = contentModel.example,
+                                snippets = contentModel.exampleSnippets,
+                                language = language
+                            )
+                        }
+                    }
+                }
+
+                if (contentModel.hasAntiPatterns) {
+                    item {
+                        LessonCardSegment(
+                            position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.AntiPattern)
+                        ) {
+                            ExpandableLessonSection(
+                                title = "Anti-pattern",
+                                accent = CardinalRed,
+                                expanded = isAntiPatternExpanded,
+                                onToggle = { isAntiPatternExpanded = !isAntiPatternExpanded }
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    contentModel.antiPatternSnippets.forEachIndexed { index, snippet ->
+                                        InlineSnippetBlock(
+                                            label = if (contentModel.antiPatternSnippets.size > 1) "Anti-pattern ${index + 1}" else "Anti-pattern",
+                                            accent = CardinalRed,
+                                            snippet = snippet,
+                                            language = language,
+                                            containerColor = CardinalRed.copy(alpha = 0.08f),
+                                            borderColor = CardinalRed.copy(alpha = 0.22f),
+                                            codeColor = CardinalRed.copy(alpha = 0.92f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (contentModel.hasCommonMistakes) {
+                    item {
+                        LessonCardSegment(
+                            position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.CommonMistakes)
+                        ) {
+                            ExpandableLessonSection(
+                                title = "Common mistakes",
+                                accent = CardinalRed,
+                                expanded = isMistakesExpanded,
+                                onToggle = { isMistakesExpanded = !isMistakesExpanded }
+                            ) {
+                                BulletList(
+                                    items = contentModel.commonMistakes,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (contentModel.hasSummary) {
+                    item {
+                        LessonCardSegment(
+                            position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.Summary)
+                        ) {
+                            ExpandableLessonSection(
+                                title = if (contentModel.keyTakeaway.isNotBlank()) "Key takeaway" else "Key points",
+                                accent = ElectricCyan,
+                                expanded = isSummaryExpanded,
+                                onToggle = { isSummaryExpanded = !isSummaryExpanded }
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (contentModel.keyTakeaway.isNotBlank()) {
+                                        Text(
+                                            text = contentModel.keyTakeaway,
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                            color = IceWhite
+                                        )
+                                    }
+                                    if (contentModel.keyPoints.isNotEmpty()) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Text(
+                                                text = "Key points",
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = ElectricCyan
+                                            )
+                                            BulletList(
+                                                items = contentModel.keyPoints,
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 item {
                     Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Row(
@@ -183,6 +338,89 @@ fun LessonDetailScreen(
     }
 }
 
+private enum class LessonContentSegment {
+    Core,
+    Analogy,
+    Example,
+    AntiPattern,
+    CommonMistakes,
+    Summary
+}
+
+private enum class LessonCardSegmentPosition {
+    Single,
+    Top,
+    Middle,
+    Bottom
+}
+
+private data class LessonContentUiModel(
+    val introduction: String,
+    val explanation: String,
+    val analogy: String,
+    val example: String,
+    val commonMistakes: List<String>,
+    val keyPoints: List<String>,
+    val keyTakeaway: String,
+    val exampleSnippets: List<CodeSnippet>,
+    val antiPatternSnippets: List<CodeSnippet>
+) {
+    val hasCoreSection: Boolean
+        get() = introduction.isNotBlank() || explanation.isNotBlank()
+
+    val hasAnalogy: Boolean
+        get() = analogy.isNotBlank()
+
+    val hasExampleSection: Boolean
+        get() = example.isNotBlank() || exampleSnippets.isNotEmpty()
+
+    val hasAntiPatterns: Boolean
+        get() = antiPatternSnippets.isNotEmpty()
+
+    val hasCommonMistakes: Boolean
+        get() = commonMistakes.isNotEmpty()
+
+    val hasSummary: Boolean
+        get() = keyTakeaway.isNotBlank() || keyPoints.isNotEmpty()
+
+    companion object {
+        fun from(
+            lesson: CachedLessonEntity,
+            language: String
+        ): LessonContentUiModel {
+            return LessonContentUiModel(
+                introduction = lesson.content.introduction.resolve(language),
+                explanation = lesson.content.explanation.resolve(language),
+                analogy = lesson.analogy?.resolve(language).orEmpty(),
+                example = lesson.content.example.resolve(language),
+                commonMistakes = lesson.commonMistakes
+                    .map { it.resolve(language) }
+                    .filter { it.isNotBlank() },
+                keyPoints = lesson.keyPoints
+                    .map { it.resolve(language) }
+                    .filter { it.isNotBlank() },
+                keyTakeaway = lesson.content.keyTakeaway.resolve(language),
+                exampleSnippets = lesson.codeSnippets.filterNot { it.isAntiPattern },
+                antiPatternSnippets = lesson.codeSnippets.filter { it.isAntiPattern }
+            )
+        }
+    }
+}
+
+private fun lessonCardSegmentPosition(
+    visibleSegments: List<LessonContentSegment>,
+    currentSegment: LessonContentSegment
+): LessonCardSegmentPosition {
+    val index = visibleSegments.indexOf(currentSegment)
+    if (index == -1) return LessonCardSegmentPosition.Single
+    return when {
+        visibleSegments.size == 1 -> LessonCardSegmentPosition.Single
+        index == 0 -> LessonCardSegmentPosition.Top
+        index == visibleSegments.lastIndex -> LessonCardSegmentPosition.Bottom
+        else -> LessonCardSegmentPosition.Middle
+    }
+}
+
 @Composable
 private fun LessonHeroCard(
     lesson: CachedLessonEntity,
@@ -258,139 +496,31 @@ private fun HeroPill(
 }
 
 @Composable
-private fun LessonContentCard(
-    lesson: CachedLessonEntity,
-    language: String
+private fun LessonCardSegment(
+    position: LessonCardSegmentPosition,
+    content: @Composable () -> Unit
 ) {
-    val introduction = lesson.content.introduction.resolve(language)
-    val explanation = lesson.content.explanation.resolve(language)
-    val example = lesson.content.example.resolve(language)
-    val analogy = lesson.analogy?.resolve(language).orEmpty()
-    val commonMistakes = lesson.commonMistakes
-        .map { it.resolve(language) }
-        .filter { it.isNotBlank() }
-    val keyPoints = lesson.keyPoints
-        .map { it.resolve(language) }
-        .filter { it.isNotBlank() }
-    val keyTakeaway = lesson.content.keyTakeaway.resolve(language)
-    val exampleSnippets = lesson.codeSnippets.filterNot { it.isAntiPattern }
-    val antiPatternSnippets = lesson.codeSnippets.filter { it.isAntiPattern }
-
-    var isAnalogyExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
-    var isAntiPatternExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
-    var isMistakesExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
-    var isSummaryExpanded by rememberSaveable(lesson.lessonId) { mutableStateOf(false) }
+    val shape = when (position) {
+        LessonCardSegmentPosition.Single -> RoundedCornerShape(28.dp)
+        LessonCardSegmentPosition.Top -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        LessonCardSegmentPosition.Middle -> RoundedCornerShape(0.dp)
+        LessonCardSegmentPosition.Bottom -> RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
+    }
+    val topPadding: Dp = if (position == LessonCardSegmentPosition.Top || position == LessonCardSegmentPosition.Single) 20.dp else 18.dp
+    val bottomPadding: Dp = if (position == LessonCardSegmentPosition.Bottom || position == LessonCardSegmentPosition.Single) 20.dp else 0.dp
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         color = Charcoal,
-        shape = RoundedCornerShape(28.dp)
+        shape = shape
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = topPadding, bottom = bottomPadding),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            LessonBodySection(
-                title = "Introduction",
-                body = introduction
-            )
-
-            LessonBodySection(
-                title = "Explanation",
-                body = explanation
-            )
-
-            if (analogy.isNotBlank()) {
-                ExpandableLessonSection(
-                    title = "Analogy",
-                    accent = SunYellow,
-                    expanded = isAnalogyExpanded,
-                    onToggle = { isAnalogyExpanded = !isAnalogyExpanded }
-                ) {
-                    Text(
-                        text = analogy,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = IceWhite
-                    )
-                }
-            }
-
-            ExampleSection(
-                body = example,
-                snippets = exampleSnippets,
-                language = language
-            )
-
-            if (antiPatternSnippets.isNotEmpty()) {
-                ExpandableLessonSection(
-                    title = "Anti-pattern",
-                    accent = CardinalRed,
-                    expanded = isAntiPatternExpanded,
-                    onToggle = { isAntiPatternExpanded = !isAntiPatternExpanded }
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        antiPatternSnippets.forEachIndexed { index, snippet ->
-                            InlineSnippetBlock(
-                                label = if (antiPatternSnippets.size > 1) "Anti-pattern ${index + 1}" else "Anti-pattern",
-                                accent = CardinalRed,
-                                snippet = snippet,
-                                language = language,
-                                containerColor = CardinalRed.copy(alpha = 0.08f),
-                                borderColor = CardinalRed.copy(alpha = 0.22f),
-                                codeColor = CardinalRed.copy(alpha = 0.92f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (commonMistakes.isNotEmpty()) {
-                ExpandableLessonSection(
-                    title = "Common mistakes",
-                    accent = CardinalRed,
-                    expanded = isMistakesExpanded,
-                    onToggle = { isMistakesExpanded = !isMistakesExpanded }
-                ) {
-                    BulletList(
-                        items = commonMistakes,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            if (keyTakeaway.isNotBlank() || keyPoints.isNotEmpty()) {
-                ExpandableLessonSection(
-                    title = if (keyTakeaway.isNotBlank()) "Key takeaway" else "Key points",
-                    accent = ElectricCyan,
-                    expanded = isSummaryExpanded,
-                    onToggle = { isSummaryExpanded = !isSummaryExpanded }
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        if (keyTakeaway.isNotBlank()) {
-                            Text(
-                                text = keyTakeaway,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                                color = IceWhite
-                            )
-                        }
-                        if (keyPoints.isNotEmpty()) {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(
-                                    text = "Key points",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = ElectricCyan
-                                )
-                                BulletList(
-                                    items = keyPoints,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            content()
         }
     }
 }
