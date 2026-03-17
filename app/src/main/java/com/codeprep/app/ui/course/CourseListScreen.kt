@@ -1,29 +1,53 @@
 package com.codeprep.app.ui.course
 
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.clickable
-import androidx.compose.runtime.remember
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import com.codeprep.app.ui.theme.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.codeprep.app.ui.theme.AppBackground
+import com.codeprep.app.ui.theme.CardinalRed
+import com.codeprep.app.ui.theme.Charcoal
+import com.codeprep.app.ui.theme.DeepCharcoal
+import com.codeprep.app.ui.theme.ElectricCyan
+import com.codeprep.app.ui.theme.IceWhite
+import com.codeprep.app.ui.theme.LockedGrey
+import com.codeprep.app.ui.theme.SunYellow
+import com.codeprep.app.ui.theme.TextLight
+import com.codeprep.app.ui.theme.TrueBlack
 
 @Composable
 fun CourseListScreen(
@@ -36,23 +60,27 @@ fun CourseListScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBackground)
+            .padding(horizontal = 16.dp)
     ) {
         Text(
             text = "Modules",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
-                color = ElectricCyan
+                color = IceWhite
             ),
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+        )
+        Text(
+            text = "Pick up where you left off and chase the star on every lesson.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextLight,
+            modifier = Modifier.padding(bottom = 20.dp)
         )
 
         if (courses.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "No modules available.",
@@ -62,106 +90,169 @@ fun CourseListScreen(
             }
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(courses, key = { it.courseId }) { course ->
-                    GamifiedCourseCard(
-                        title = course.title,
-                        description = course.description,
-                        onClick = { onCourseClick(course.courseId) }
+                    ModuleJourneyCard(
+                        module = course,
+                        onClick = { if (!course.isLocked) onCourseClick(course.courseId) }
                     )
                 }
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
 }
 
 @Composable
-fun GamifiedCourseCard(
-    title: String,
-    description: String,
+private fun ModuleJourneyCard(
+    module: ModuleCardUi,
     onClick: () -> Unit
 ) {
-    // Reusing GamifiedButton style but as a card
-    val height = 100.dp
-    val elevationHeight = 4.dp
-    val backgroundColor = Charcoal
-    val shadowColor = DeepCharcoal
     val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
-    val topOffset by animateDpAsState(if (isPressed) elevationHeight else 0.dp)
+    val completionRatio = if (module.lessonCount == 0) 0f
+    else module.completedLessons.toFloat() / module.lessonCount.toFloat()
 
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(height + elevationHeight)
+            .clip(RoundedCornerShape(24.dp))
             .clickable(
+                enabled = !module.isLocked,
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
-            )
+            ),
+        color = Charcoal,
+        shape = RoundedCornerShape(24.dp),
+        tonalElevation = 0.dp
     ) {
-        // Shadow
-        Box(
+        Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(height)
-                .clip(RoundedCornerShape(16.dp))
-                .background(shadowColor)
-        )
-
-        // Content
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = topOffset)
-                .fillMaxWidth()
-                .height(height)
-                .clip(RoundedCornerShape(16.dp))
-                .background(backgroundColor)
-                .border(2.dp, ElectricCyan, RoundedCornerShape(16.dp))
-                .padding(16.dp)
+                .border(
+                    width = 1.dp,
+                    color = if (module.isLocked) LockedGrey.copy(alpha = 0.25f) else ElectricCyan.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Icon placeholder
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .background(ElectricCyan, RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = title.take(1).uppercase(),
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            color = Charcoal,
-                            fontWeight = FontWeight.Bold
-                        )
+                ModuleIconBubble(icon = module.icon, isLocked = module.isLocked)
+                Spacer(modifier = Modifier.weight(1f))
+                if (module.isLocked) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Locked module",
+                        tint = LockedGrey
                     )
-                }
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = IceWhite
-                        )
+                } else if (module.perfectLessons == module.lessonCount && module.lessonCount > 0) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Perfect module",
+                        tint = SunYellow
                     )
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium.copy(color = TextLight),
-                        maxLines = 2
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "Continue module",
+                        tint = ElectricCyan
                     )
                 }
             }
+
+            Text(
+                text = module.title,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = IceWhite
+                )
+            )
+            Text(
+                text = module.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextLight,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Pill(text = "${module.lessonCount} lessons", accent = ElectricCyan)
+                Pill(text = "${module.perfectLessons} stars", accent = SunYellow)
+                Pill(
+                    text = if (module.isLocked) "Locked" else "${module.completedLessons} cleared",
+                    accent = if (module.isLocked) CardinalRed else ElectricCyan
+                )
+            }
+
+            LinearProgressIndicator(
+                progress = { completionRatio },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(CircleShape),
+                color = ElectricCyan,
+                trackColor = DeepCharcoal
+            )
+
+            Text(
+                text = when {
+                    module.isLocked -> "This module is locked."
+                    module.continueLessonTitle != null -> "Continue with ${module.continueLessonTitle}"
+                    else -> "Module ready."
+                },
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (module.isLocked) LockedGrey else ElectricCyan
+                )
+            )
         }
+    }
+}
+
+@Composable
+private fun ModuleIconBubble(
+    icon: String,
+    isLocked: Boolean
+) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .clip(CircleShape)
+            .background(if (isLocked) DeepCharcoal else ElectricCyan),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = icon.takeIf { it.isNotBlank() }?.take(2) ?: "M",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+            color = if (isLocked) LockedGrey else TrueBlack
+        )
+    }
+}
+
+@Composable
+private fun Pill(
+    text: String,
+    accent: androidx.compose.ui.graphics.Color
+) {
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(accent.copy(alpha = 0.16f))
+            .border(1.dp, accent.copy(alpha = 0.3f), CircleShape)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = accent
+        )
     }
 }

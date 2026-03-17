@@ -29,7 +29,7 @@ import com.codeprep.app.data.local.entity.UserProgressEntity
         FriendRequestEntity::class
 
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
