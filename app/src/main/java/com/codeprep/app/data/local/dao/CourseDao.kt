@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CourseDao {
     // Kursevi
-    @Query("SELECT * FROM cached_courses ORDER BY `order` ASC")
+    @Query("SELECT * FROM cached_courses ORDER BY orderIndex ASC")
     fun getAllCourses(): Flow<List<CachedCourseEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -23,6 +23,9 @@ interface CourseDao {
     // Lekcije
     @Query("SELECT * FROM cached_lessons WHERE courseId = :courseId ORDER BY orderIndex ASC")
     fun getLessonsForCourse(courseId: String): Flow<List<CachedLessonEntity>>
+
+    @Query("SELECT * FROM cached_lessons ORDER BY courseId ASC, orderIndex ASC")
+    fun getAllLessons(): Flow<List<CachedLessonEntity>>
 
     @Query("SELECT * FROM cached_lessons WHERE courseId = :courseId ORDER BY orderIndex ASC LIMIT 1")
     suspend fun getFirstLessonForCourse(courseId: String): CachedLessonEntity?
