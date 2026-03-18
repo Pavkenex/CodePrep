@@ -8,41 +8,49 @@ class SecretFactCoordinator {
     ): SecretFactState {
         return when (event) {
             is SecretFactEvent.ShakeDetected -> handleShake(event)
-            is SecretFactEvent.OrientationChanged -> handleOrientation(state, event)
+            is SecretFactEvent.FactResolved -> handleFactResolved(state, event)
+            is SecretFactEvent.OrientationChanged -> state
+            is SecretFactEvent.RouteChanged -> handleRouteChange(state, event)
             SecretFactEvent.TimeoutExpired,
             SecretFactEvent.Dismissed -> SecretFactState()
         }
     }
 
     private fun handleShake(event: SecretFactEvent.ShakeDetected): SecretFactState {
-        if (event.isLandscape || !SecretFactRoutes.isSupported(event.route)) {
+        if (!SecretFactRoutes.isSupported(event.route)) {
             return SecretFactState()
         }
 
         return SecretFactState(
-            phase = SecretFactPhase.Armed,
-            isHintVisible = true,
-            currentRoute = event.route,
-            requiresFreshLandscapeRotation = true
+            phase = SecretFactPhase.Signaling,
+            currentRoute = event.route
         )
     }
 
-    private fun handleOrientation(
+    private fun handleFactResolved(
         state: SecretFactState,
-        event: SecretFactEvent.OrientationChanged
+        event: SecretFactEvent.FactResolved
     ): SecretFactState {
-        if (
-            state.phase != SecretFactPhase.Armed ||
-            !state.requiresFreshLandscapeRotation ||
-            !event.isLandscape
-        ) {
+        if (state.phase != SecretFactPhase.Signaling) {
             return state
         }
 
-        return state.copy(
-            phase = SecretFactPhase.Revealed,
-            isHintVisible = false,
-            requiresFreshLandscapeRotation = false
-        )
+        return if (event.hasFact) {
+            state.copy(phase = SecretFactPhase.Revealed)
+        } else {
+            SecretFactState()
+        }
+    }
+
+    private fun handleRouteChange(
+        state: SecretFactState,
+        event: SecretFactEvent.RouteChanged
+    ): SecretFactState {
+        val route = event.route ?: return SecretFactState()
+        if (!SecretFactRoutes.isSupported(route)) {
+            return SecretFactState()
+        }
+
+        return state.copy(currentRoute = route)
     }
 }

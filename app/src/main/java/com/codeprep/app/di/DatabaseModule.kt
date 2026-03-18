@@ -27,7 +27,10 @@ object DatabaseModule {
     fun provideUserProgressDao(db: CodePrepDatabase) = db.userProgressDao()
 
     @Provides
-    fun provideAiExplanationDao(db: CodePrepDatabase) = db.aiExplanationDao()
+    fun provideAiConversationDao(db: CodePrepDatabase) = db.aiConversationDao()
+
+    @Provides
+    fun provideAiResponseCacheDao(db: CodePrepDatabase) = db.aiResponseCacheDao()
 
     @Provides
     fun provideCourseDao(db: CodePrepDatabase) = db.courseDao()

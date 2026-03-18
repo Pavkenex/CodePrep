@@ -1,14 +1,12 @@
 package com.codeprep.app.ui.secretfact
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SecretFactCoordinatorTest {
 
     @Test
-    fun `arms only on supported route in portrait`() {
+    fun `shake enters signaling on supported route`() {
         val state = SecretFactCoordinator().reduce(
             state = SecretFactState(),
             event = SecretFactEvent.ShakeDetected(
@@ -17,8 +15,7 @@ class SecretFactCoordinatorTest {
             )
         )
 
-        assertEquals(SecretFactPhase.Armed, state.phase)
-        assertTrue(state.isHintVisible)
+        assertEquals(SecretFactPhase.Signaling, state.phase)
     }
 
     @Test
@@ -32,22 +29,57 @@ class SecretFactCoordinatorTest {
         )
 
         assertEquals(SecretFactPhase.Idle, state.phase)
-        assertFalse(state.isHintVisible)
     }
 
     @Test
-    fun `reveals only after arm then fresh landscape rotation`() {
+    fun `fact resolution reveals only after signal phase`() {
         val coordinator = SecretFactCoordinator()
-        val armed = coordinator.reduce(
+        val signaling = coordinator.reduce(
+            state = SecretFactState(),
+            event = SecretFactEvent.ShakeDetected(
+                route = "profile",
+                isLandscape = true
+            )
+        )
+
+        val revealed = coordinator.reduce(
+            state = signaling,
+            event = SecretFactEvent.FactResolved(hasFact = true)
+        )
+
+        assertEquals(SecretFactPhase.Revealed, revealed.phase)
+    }
+
+    @Test
+    fun `empty fact resolution returns to idle instead of showing fallback card`() {
+        val coordinator = SecretFactCoordinator()
+        val signaling = coordinator.reduce(
             SecretFactState(),
             SecretFactEvent.ShakeDetected(route = "home", isLandscape = false)
         )
 
-        val revealed = coordinator.reduce(
-            armed,
-            SecretFactEvent.OrientationChanged(isLandscape = true)
+        val reset = coordinator.reduce(
+            signaling,
+            SecretFactEvent.FactResolved(hasFact = false)
         )
 
-        assertEquals(SecretFactPhase.Revealed, revealed.phase)
+        assertEquals(SecretFactPhase.Idle, reset.phase)
+    }
+
+    @Test
+    fun `route change to blocked screen resets revealed state`() {
+        val coordinator = SecretFactCoordinator()
+        val signaling = coordinator.reduce(
+            SecretFactState(),
+            SecretFactEvent.ShakeDetected(route = "home", isLandscape = false)
+        )
+        val revealed = coordinator.reduce(signaling, SecretFactEvent.FactResolved(hasFact = true))
+
+        val reset = coordinator.reduce(
+            revealed,
+            SecretFactEvent.RouteChanged(route = "quiz/lesson-1")
+        )
+
+        assertEquals(SecretFactPhase.Idle, reset.phase)
     }
 }

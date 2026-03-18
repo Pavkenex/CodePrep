@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,8 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.codeprep.app.data.friends.FriendRelationState
 import com.codeprep.app.data.friends.DEFAULT_AVATAR_PRESET_ID
@@ -169,34 +172,48 @@ fun FriendsCarousel(
         contentPadding = PaddingValues(end = 4.dp)
     ) {
         items(friends, key = { it.userId }) { friend ->
-            Card(
-                modifier = Modifier
-                    .width(156.dp)
-                    .clickable { onFriendClick(friend.userId) },
-                colors = CardDefaults.cardColors(containerColor = Charcoal),
-                border = BorderStroke(1.dp, ElectricCyan.copy(alpha = 0.25f))
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AvatarBadge(
-                        nickname = friend.nickname,
-                        avatarPresetId = friend.avatarPresetId,
-                        size = 60
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = friend.nickname,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = IceWhite,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    LevelChip(level = friend.level)
-                }
-            }
+            FriendCarouselCard(
+                friend = friend,
+                onFriendClick = onFriendClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun FriendCarouselCard(
+    friend: FriendListItemUiModel,
+    onFriendClick: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(156.dp)
+            .testTag("friend-card-${friend.userId}")
+            .clickable { onFriendClick(friend.userId) },
+        colors = CardDefaults.cardColors(containerColor = Charcoal),
+        border = BorderStroke(1.dp, ElectricCyan.copy(alpha = 0.25f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AvatarBadge(
+                nickname = friend.nickname,
+                avatarPresetId = friend.avatarPresetId,
+                size = 60
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = friend.nickname,
+                style = MaterialTheme.typography.titleSmall,
+                color = IceWhite,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            LevelChip(level = friend.level)
         }
     }
 }
@@ -227,35 +244,44 @@ fun RequestCard(
                 size = 52
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = request.nickname,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = IceWhite
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                LevelChip(level = request.level)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = onDecline,
-                    enabled = !isBusy
-                ) {
-                    Text("Decline")
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = request.nickname,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = IceWhite,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    LevelChip(level = request.level)
                 }
-                Button(
-                    onClick = onAccept,
-                    enabled = !isBusy
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (isBusy) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                            color = AppBackground
-                        )
-                    } else {
-                        Text("Accept")
+                    OutlinedButton(
+                        onClick = onDecline,
+                        enabled = !isBusy
+                    ) {
+                        Text("Decline")
+                    }
+                    Button(
+                        onClick = onAccept,
+                        enabled = !isBusy
+                    ) {
+                        if (isBusy) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = AppBackground
+                            )
+                        } else {
+                            Text("Accept")
+                        }
                     }
                 }
             }

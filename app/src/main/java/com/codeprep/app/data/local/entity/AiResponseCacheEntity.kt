@@ -5,14 +5,14 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "ai_explanations",
+    tableName = "ai_response_cache",
     indices = [
         Index(value = ["userId"]),
         Index(value = ["userId", "question", "contextLessonId"]),
         Index(value = ["userId", "cachedAt"])
     ]
 )
-data class AiExplanationEntity(
+data class AiResponseCacheEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: String,
     val question: String,

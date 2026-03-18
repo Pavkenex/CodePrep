@@ -1,5 +1,6 @@
 package com.codeprep.app.ui.lesson
 
+import com.codeprep.app.R
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -41,7 +42,8 @@ import com.codeprep.app.data.local.CodeSnippet
 import com.codeprep.app.data.local.entity.CachedLessonEntity
 import com.codeprep.app.data.local.entity.LessonProgressEntity
 import com.codeprep.app.domain.model.LessonContext
-import com.codeprep.app.ui.ai.AskAiBottomSheet
+import com.codeprep.app.ui.ai.AskAiLessonOverlay
+import com.codeprep.app.ui.ai.localizedAiString
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
@@ -120,13 +122,13 @@ fun LessonDetailScreen(
                         ) {
                             if (contentModel.introduction.isNotBlank()) {
                                 LessonBodySection(
-                                    title = "Introduction",
+                                    title = localizedAiString(language, R.string.lesson_section_introduction),
                                     body = contentModel.introduction
                                 )
                             }
                             if (contentModel.explanation.isNotBlank()) {
                                 LessonBodySection(
-                                    title = "Explanation",
+                                    title = localizedAiString(language, R.string.lesson_section_explanation),
                                     body = contentModel.explanation
                                 )
                             }
@@ -140,7 +142,7 @@ fun LessonDetailScreen(
                             position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.Analogy)
                         ) {
                             ExpandableLessonSection(
-                                title = "Analogy",
+                                title = localizedAiString(language, R.string.lesson_section_analogy),
                                 accent = SunYellow,
                                 expanded = isAnalogyExpanded,
                                 onToggle = { isAnalogyExpanded = !isAnalogyExpanded }
@@ -175,7 +177,7 @@ fun LessonDetailScreen(
                             position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.AntiPattern)
                         ) {
                             ExpandableLessonSection(
-                                title = "Anti-pattern",
+                                title = localizedAiString(language, R.string.lesson_section_anti_pattern),
                                 accent = CardinalRed,
                                 expanded = isAntiPatternExpanded,
                                 onToggle = { isAntiPatternExpanded = !isAntiPatternExpanded }
@@ -183,7 +185,11 @@ fun LessonDetailScreen(
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                     contentModel.antiPatternSnippets.forEachIndexed { index, snippet ->
                                         InlineSnippetBlock(
-                                            label = if (contentModel.antiPatternSnippets.size > 1) "Anti-pattern ${index + 1}" else "Anti-pattern",
+                                            label = if (contentModel.antiPatternSnippets.size > 1) {
+                                                "${localizedAiString(language, R.string.lesson_section_anti_pattern)} ${index + 1}"
+                                            } else {
+                                                localizedAiString(language, R.string.lesson_section_anti_pattern)
+                                            },
                                             accent = CardinalRed,
                                             snippet = snippet,
                                             language = language,
@@ -204,7 +210,7 @@ fun LessonDetailScreen(
                             position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.CommonMistakes)
                         ) {
                             ExpandableLessonSection(
-                                title = "Common mistakes",
+                                title = localizedAiString(language, R.string.lesson_section_common_mistakes),
                                 accent = CardinalRed,
                                 expanded = isMistakesExpanded,
                                 onToggle = { isMistakesExpanded = !isMistakesExpanded }
@@ -224,7 +230,11 @@ fun LessonDetailScreen(
                             position = lessonCardSegmentPosition(visibleSegments, LessonContentSegment.Summary)
                         ) {
                             ExpandableLessonSection(
-                                title = if (contentModel.keyTakeaway.isNotBlank()) "Key takeaway" else "Key points",
+                                title = if (contentModel.keyTakeaway.isNotBlank()) {
+                                    localizedAiString(language, R.string.lesson_section_key_takeaway)
+                                } else {
+                                    localizedAiString(language, R.string.lesson_section_key_points)
+                                },
                                 accent = ElectricCyan,
                                 expanded = isSummaryExpanded,
                                 onToggle = { isSummaryExpanded = !isSummaryExpanded }
@@ -240,7 +250,7 @@ fun LessonDetailScreen(
                                     if (contentModel.keyPoints.isNotEmpty()) {
                                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                             Text(
-                                                text = "Key points",
+                                                text = localizedAiString(language, R.string.lesson_section_key_points),
                                                 style = MaterialTheme.typography.labelLarge,
                                                 color = ElectricCyan
                                             )
@@ -267,9 +277,9 @@ fun LessonDetailScreen(
                         ) {
                             GamifiedButton(
                                 text = if (lessonProgress?.completed == true && lessonProgress?.perfectRun != true) {
-                                    "Retry for star"
+                                    localizedAiString(language, R.string.lesson_button_retry_for_star)
                                 } else {
-                                    "Start quiz"
+                                    localizedAiString(language, R.string.lesson_button_start_quiz)
                                 },
                                 onClick = { viewModel.onStartQuizClicked() },
                                 backgroundColor = ElectricCyan,
@@ -278,7 +288,7 @@ fun LessonDetailScreen(
                             )
 
                             GamifiedButton(
-                                text = "Ask AI",
+                                text = localizedAiString(language, R.string.lesson_button_ask_ai),
                                 onClick = { showAiSheet = true },
                                 backgroundColor = Charcoal,
                                 textColor = ElectricCyan,
@@ -315,25 +325,25 @@ fun LessonDetailScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Lesson content is not available right now.",
+                    text = localizedAiString(language, R.string.lesson_message_unavailable),
                     style = MaterialTheme.typography.bodyLarge,
                     color = LockedGrey
                 )
             }
         }
 
-        if (showAiSheet) {
-            lesson?.let { activeLesson ->
-                AskAiBottomSheet(
-                    lessonContext = LessonContext(
-                        lessonId = activeLesson.lessonId,
-                        courseTitle = courseTitle?.takeIf { it.isNotBlank() } ?: activeLesson.courseId,
-                        lessonTitle = activeLesson.title.resolve(language),
-                        theorySummary = viewModel.buildAiSummary(activeLesson, language)
-                    ),
-                    onDismiss = { showAiSheet = false }
-                )
-            }
+        lesson?.let { activeLesson ->
+            AskAiLessonOverlay(
+                lessonContext = LessonContext(
+                    lessonId = activeLesson.lessonId,
+                    courseTitle = courseTitle?.takeIf { it.isNotBlank() } ?: activeLesson.courseId,
+                    lessonTitle = activeLesson.title.resolve(language),
+                    theorySummary = viewModel.buildAiSummary(activeLesson, language)
+                ),
+                languageCode = language,
+                visible = showAiSheet,
+                onDismiss = { showAiSheet = false }
+            )
         }
     }
 }
@@ -453,22 +463,31 @@ private fun LessonHeroCard(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 HeroPill(text = "${lesson.xpReward} XP", accent = ElectricCyan)
-                HeroPill(text = "${lesson.questionCount} questions", accent = LockedGrey)
+                HeroPill(
+                    text = localizedAiString(language, R.string.lesson_label_questions, lesson.questionCount),
+                    accent = LockedGrey
+                )
                 if (progress?.perfectRun == true) {
-                    HeroPill(text = "Star earned", accent = SunYellow)
+                    HeroPill(
+                        text = localizedAiString(language, R.string.lesson_label_star_earned),
+                        accent = SunYellow
+                    )
                 } else if (progress?.completed == true) {
-                    HeroPill(text = "Passed", accent = ElectricCyan)
+                    HeroPill(
+                        text = localizedAiString(language, R.string.lesson_label_passed),
+                        accent = ElectricCyan
+                    )
                 }
             }
             if (progress?.completed == true && progress.perfectRun != true) {
                 Text(
-                    text = "You passed this lesson. Retry the quiz with a perfect score to earn the star and bonus XP.",
+                    text = localizedAiString(language, R.string.lesson_message_retry_for_star),
                     style = MaterialTheme.typography.bodyMedium,
                     color = SunYellow
                 )
             } else if (progress?.perfectRun == true) {
                 Text(
-                    text = "Perfect run earned. No more XP is available for this quiz.",
+                    text = localizedAiString(language, R.string.lesson_message_perfect_run),
                     style = MaterialTheme.typography.bodyMedium,
                     color = ElectricCyan
                 )
@@ -556,7 +575,7 @@ private fun ExampleSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = "Example",
+            text = localizedAiString(language, R.string.lesson_section_example),
             style = MaterialTheme.typography.labelLarge,
             color = ElectricCyan
         )
@@ -571,7 +590,11 @@ private fun ExampleSection(
 
         snippets.forEachIndexed { index, snippet ->
             InlineSnippetBlock(
-                label = if (snippets.size > 1) "Pseudocode ${index + 1}" else "Pseudocode",
+                label = if (snippets.size > 1) {
+                    "${localizedAiString(language, R.string.lesson_label_pseudocode)} ${index + 1}"
+                } else {
+                    localizedAiString(language, R.string.lesson_label_pseudocode)
+                },
                 accent = ElectricCyan,
                 snippet = snippet,
                 language = language
