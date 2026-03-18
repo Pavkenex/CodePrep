@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".CodePrepApp"
@@ -26,6 +27,12 @@
         </provider>
 
         <activity
+            android:name=".ui.funfact.FunFactActivity"
+            android:exported="false"
+            android:label="@string/fun_fact_activity_label"
+            android:theme="@style/Theme.CodePrep" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
@@ -36,6 +43,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".widget.FunFactWidgetProvider"
+            android:exported="false"
+            android:label="@string/fun_fact_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fun_fact_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

@@ -16,6 +16,21 @@ import javax.inject.Singleton
 class WorkScheduler @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) {
+    fun enqueueFunFactWidgetRefresh() {
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            WorkConstants.FUN_FACT_WIDGET_WORK_NAME,
+            ExistingPeriodicWorkPolicy.UPDATE,
+            PeriodicWorkRequestBuilder<FunFactWidgetRefreshWorker>(
+                WorkConstants.FUN_FACT_WIDGET_REPEAT_INTERVAL.toHours(),
+                TimeUnit.HOURS
+            ).build()
+        )
+    }
+
+    fun cancelFunFactWidgetRefresh() {
+        WorkManager.getInstance(context)
+            .cancelUniqueWork(WorkConstants.FUN_FACT_WIDGET_WORK_NAME)
+    }
 
     suspend fun enqueueSessionWorkers(userId: String) {
         val workManager = WorkManager.getInstance(context)
