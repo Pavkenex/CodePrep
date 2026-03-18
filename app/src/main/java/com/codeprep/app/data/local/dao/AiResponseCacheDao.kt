@@ -4,14 +4,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.codeprep.app.data.local.entity.AiExplanationEntity
-import kotlinx.coroutines.flow.Flow
+import com.codeprep.app.data.local.entity.AiResponseCacheEntity
 
 @Dao
-interface AiExplanationDao {
+interface AiResponseCacheDao {
     @Query(
         """
-        SELECT * FROM ai_explanations
+        SELECT * FROM ai_response_cache
         WHERE userId = :userId
         AND question = :question
         AND ((:lessonId IS NULL AND contextLessonId IS NULL) OR contextLessonId = :lessonId)
@@ -25,14 +24,11 @@ interface AiExplanationDao {
         question: String,
         lessonId: String?,
         minTimestamp: Long
-    ): AiExplanationEntity?
+    ): AiResponseCacheEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun cacheAnswer(entity: AiExplanationEntity)
+    suspend fun cacheAnswer(entity: AiResponseCacheEntity)
 
-    @Query("SELECT * FROM ai_explanations WHERE userId = :userId ORDER BY cachedAt DESC")
-    fun getHistory(userId: String): Flow<List<AiExplanationEntity>>
-
-    @Query("SELECT COUNT(*) FROM ai_explanations WHERE userId = :userId AND cachedAt > :since")
+    @Query("SELECT COUNT(*) FROM ai_response_cache WHERE userId = :userId AND cachedAt > :since")
     suspend fun getQuestionCountSince(userId: String, since: Long): Int
 }

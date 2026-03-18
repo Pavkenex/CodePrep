@@ -2,15 +2,23 @@ package com.codeprep.app.ui.secretfact
 
 enum class SecretFactPhase {
     Idle,
-    Armed,
+    Signaling,
     Revealed
 }
 
 data class SecretFactState(
     val phase: SecretFactPhase = SecretFactPhase.Idle,
-    val isHintVisible: Boolean = false,
+    val currentRoute: String? = null
+)
+
+data class SecretFactUiState(
+    val phase: SecretFactPhase = SecretFactPhase.Idle,
     val currentRoute: String? = null,
-    val requiresFreshLandscapeRotation: Boolean = false
+    val title: String = "",
+    val factText: String = "",
+    val categoryLabel: String = "",
+    val languageCode: String = "en",
+    val revealNonce: Long = 0L
 )
 
 sealed interface SecretFactEvent {
@@ -21,6 +29,14 @@ sealed interface SecretFactEvent {
 
     data class OrientationChanged(
         val isLandscape: Boolean
+    ) : SecretFactEvent
+
+    data class FactResolved(
+        val hasFact: Boolean
+    ) : SecretFactEvent
+
+    data class RouteChanged(
+        val route: String?
     ) : SecretFactEvent
 
     data object TimeoutExpired : SecretFactEvent

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.codeprep.app.data.local.entity.UserProgressEntity
 import com.codeprep.app.data.repository.LessonProgressRepository
 import com.codeprep.app.data.repository.UserRepository
+import com.codeprep.app.widget.FunFactWidgetUpdater
 import com.codeprep.app.work.WorkScheduler
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +29,8 @@ class SessionBootstrapViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val lessonProgressRepository: LessonProgressRepository,
     private val auth: FirebaseAuth,
-    private val workScheduler: WorkScheduler
+    private val workScheduler: WorkScheduler,
+    private val funFactWidgetUpdater: FunFactWidgetUpdater
 ) : ViewModel() {
 
     private var refreshedUserId: String? = null
@@ -80,6 +82,7 @@ class SessionBootstrapViewModel @Inject constructor(
         }
         syncSessionWorkers(userId)
         refreshSessionData(userId)
+        funFactWidgetUpdater.refreshInBackground()
         _currentUserId.value = userId
     }
 
@@ -87,6 +90,7 @@ class SessionBootstrapViewModel @Inject constructor(
         auth.addAuthStateListener(authStateListener)
         syncSessionWorkers(auth.currentUser?.uid)
         refreshSessionData(auth.currentUser?.uid)
+        funFactWidgetUpdater.refreshInBackground()
     }
 
     fun refreshHeartsOnSessionStart() {
