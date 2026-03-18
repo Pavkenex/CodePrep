@@ -81,8 +81,24 @@ Reuse the existing `funFacts` pipeline.
 - Preserve the existing language resolution behavior.
 - Preserve existing cache fallback behavior where possible.
 - Do not introduce a second fun-fact collection or a separate easter-egg-only repository.
+- Support both app languages explicitly:
+  - Serbian (`sr`)
+  - English (`en`)
 
 The reveal should prefer a random fun fact rather than today's fact. That keeps the easter egg surprising and makes repeated discoveries more fun. If the current repository only supports the daily fact path, extend it with a small random-selection method rather than duplicating logic elsewhere.
+
+All visible text in the feature should respect the currently selected app language, not just the fact body itself. This includes:
+
+- armed hint copy
+- reveal title
+- dismiss action
+- any fallback or empty-state text used by the card
+
+Language behavior should follow the same pattern as the existing fun-fact flow:
+
+1. use the selected app language
+2. fall back to English when needed
+3. fall back to Serbian when needed
 
 ## Architecture
 
@@ -123,6 +139,8 @@ A dedicated composable or overlay that presents:
 - optional small badge or category if the data model supports it
 - dismiss action
 - optional secondary action for `another fact` in a later iteration
+
+All user-facing strings in this UI must ship in both Serbian and English.
 
 ## Visual Direction
 
@@ -185,6 +203,7 @@ Final UI copy can be tuned during implementation.
 - no reveal occurs on blocked screens
 - dismiss returns the app to the prior screen cleanly
 - localized fact text matches the selected language
+- armed hint and card UI strings match the selected language
 - fallback behavior remains safe when Firestore data is unavailable
 
 ## Implementation Notes
