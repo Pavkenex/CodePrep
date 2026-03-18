@@ -2,9 +2,13 @@ package com.codeprep.app.ui.ai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.codeprep.app.data.local.entity.AiExplanationEntity
+import com.codeprep.app.R
 import com.codeprep.app.data.remote.api.AiConfig
 import com.codeprep.app.data.repository.AiRepository
+import com.codeprep.app.data.settings.AppSettingsStore
+import com.codeprep.app.data.settings.AppStringProvider
+import com.codeprep.app.domain.model.AiConversationMessage
+import com.codeprep.app.domain.model.AiConversationRole
 import com.codeprep.app.domain.model.AiResponse
 import com.codeprep.app.domain.model.LessonContext
 import com.google.firebase.auth.FirebaseAuth
@@ -20,25 +24,57 @@ import javax.inject.Inject
 @HiltViewModel
 class AskAiViewModel @Inject constructor(
     private val aiRepository: AiRepository,
+    appSettingsStore: AppSettingsStore,
+    private val strings: AppStringProvider,
     auth: FirebaseAuth
 ) : ViewModel() {
     private val userId: String = auth.currentUser?.uid ?: ""
 
-    private val _answer = MutableStateFlow<AiResponse?>(null)
-    val answer: StateFlow<AiResponse?> = _answer.asStateFlow()
+    private val _uiState = MutableStateFlow(AskAiUiState())
+    val uiState: StateFlow<AskAiUiState> = _uiState.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    val history: StateFlow<List<AiExplanationEntity>> = aiRepository.getHistory(userId)
+    val savedConversations = aiRepository.getSavedConversations(userId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val selectedLanguage = appSettingsStore.selectedLanguage()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettingsStore.DEFAULT_LANGUAGE)
+
+    private var currentLessonContext: LessonContext? = null
+    private var currentLessonId: String? = null
+    private var savedConversationId: String? = null
+    private var lastSavedMessageCount = 0
 
     private var lastQuestionTime: Long = 0L
 
-    fun ask(question: String, context: LessonContext?) {
+    fun bindLesson(context: LessonContext) {
+        if (currentLessonId == context.lessonId && _uiState.value.hasLoadedLesson) {
+            return
+        }
+
+        currentLessonContext = context
+        currentLessonId = context.lessonId
+        viewModelScope.launch {
+            val savedConversation = aiRepository.getSavedConversation(userId, context.lessonId)
+            val loadedMessages = savedConversation?.messages.orEmpty()
+            savedConversationId = savedConversation?.id
+            lastSavedMessageCount = loadedMessages.size
+            _uiState.value = AskAiUiState(
+                courseTitle = context.courseTitle,
+                lessonTitle = context.lessonTitle,
+                messages = loadedMessages,
+                isLoading = false,
+                hasLoadedLesson = true,
+                isSaved = savedConversation != null,
+                hasDraft = loadedMessages.isNotEmpty(),
+                canSave = loadedMessages.isNotEmpty() && userId.isNotBlank()
+            )
+        }
+    }
+
+    fun ask(question: String) {
         val normalizedQuestion = question.trim()
         if (normalizedQuestion.isBlank()) {
-            _answer.value = AiResponse.Error("Unesi pitanje pre slanja.")
+            appendSystemMessage(strings.get(R.string.ask_ai_error_empty_input))
             return
         }
 
@@ -47,19 +83,114 @@ class AskAiViewModel @Inject constructor(
         if (elapsed < AiConfig.COOLDOWN_BETWEEN_QUESTIONS_MS) {
             val remaining = AiConfig.COOLDOWN_BETWEEN_QUESTIONS_MS - elapsed
             val waitSeconds = (remaining + 999L) / 1000L
-            _answer.value = AiResponse.Error("Sačekaj još ${waitSeconds}s pre sledećeg pitanja.")
+            appendSystemMessage(strings.get(R.string.ask_ai_error_wait_seconds, waitSeconds))
+            return
+        }
+
+        val context = currentLessonContext
+        if (context == null) {
+            appendSystemMessage(strings.get(R.string.ask_ai_error_not_ready))
             return
         }
 
         lastQuestionTime = now
+        val userMessage = conversationMessage(AiConversationRole.User, normalizedQuestion, now)
+        val historyBeforeRequest = _uiState.value.messages.filterConversationHistory()
+        _uiState.value = _uiState.value.copy(
+            messages = _uiState.value.messages + userMessage,
+            isLoading = true,
+            hasDraft = true,
+            isSaved = false,
+            canSave = userId.isNotBlank()
+        )
+
         viewModelScope.launch {
-            _isLoading.value = true
-            _answer.value = aiRepository.askQuestion(userId, normalizedQuestion, context)
-            _isLoading.value = false
+            val response = aiRepository.askQuestion(
+                userId = userId,
+                question = normalizedQuestion,
+                context = context,
+                conversationHistory = historyBeforeRequest
+            )
+            applyResponse(response)
         }
     }
 
-    fun clearAnswer() {
-        _answer.value = null
+    fun saveConversation() {
+        val context = currentLessonContext ?: return
+        val messagesToSave = _uiState.value.messages.filterConversationHistory()
+        if (messagesToSave.isEmpty() || userId.isBlank()) {
+            return
+        }
+
+        viewModelScope.launch {
+            val savedConversation = aiRepository.saveConversation(
+                userId = userId,
+                context = context,
+                messages = messagesToSave
+            )
+            savedConversationId = savedConversation.id
+            lastSavedMessageCount = savedConversation.messages.size
+            _uiState.value = _uiState.value.copy(
+                courseTitle = savedConversation.courseTitle,
+                lessonTitle = savedConversation.lessonTitle,
+                isSaved = true,
+                hasDraft = savedConversation.messages.isNotEmpty(),
+                canSave = savedConversation.messages.isNotEmpty() && userId.isNotBlank()
+            )
+        }
     }
+
+    private fun applyResponse(response: AiResponse) {
+        val message = when (response) {
+            is AiResponse.Success -> conversationMessage(
+                role = AiConversationRole.Assistant,
+                content = response.answer
+            )
+
+            is AiResponse.Fallback -> conversationMessage(
+                role = AiConversationRole.Assistant,
+                content = response.summary
+            )
+
+            is AiResponse.Error -> conversationMessage(
+                role = AiConversationRole.System,
+                content = response.message
+            )
+
+            AiResponse.RateLimited -> conversationMessage(
+                role = AiConversationRole.System,
+                content = strings.get(R.string.ai_rate_limited, AiConfig.MAX_QUESTIONS_PER_DAY)
+            )
+        }
+
+        val updatedMessages = _uiState.value.messages + message
+        _uiState.value = _uiState.value.copy(
+            messages = updatedMessages,
+            isLoading = false,
+            hasDraft = updatedMessages.isNotEmpty(),
+            isSaved = savedConversationId != null && updatedMessages.countPersistableMessages() == lastSavedMessageCount,
+            canSave = updatedMessages.countPersistableMessages() > 0 && userId.isNotBlank()
+        )
+    }
+
+    private fun appendSystemMessage(content: String) {
+        val updatedMessages = _uiState.value.messages + conversationMessage(
+            role = AiConversationRole.System,
+            content = content
+        )
+        _uiState.value = _uiState.value.copy(
+            messages = updatedMessages,
+            hasDraft = updatedMessages.isNotEmpty(),
+            isSaved = false,
+            canSave = updatedMessages.countPersistableMessages() > 0 && userId.isNotBlank()
+        )
+    }
+}
+
+private fun List<AiConversationMessage>.filterConversationHistory(): List<AiConversationMessage> {
+    return filter { it.role != AiConversationRole.System }
+}
+
+private fun List<AiConversationMessage>.countPersistableMessages(): Int {
+    return count { it.role != AiConversationRole.System }
 }
