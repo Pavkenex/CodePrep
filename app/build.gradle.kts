@@ -93,4 +93,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.multiplatform.markdown.renderer.android)
+    implementation(libs.multiplatform.markdown.renderer.code)
+    implementation(libs.multiplatform.markdown.renderer.m3)
 }
