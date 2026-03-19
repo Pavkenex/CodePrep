@@ -35,7 +35,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.codeprep.app.R
 import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.localization.localizedPluralStringResource
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.IceWhite
@@ -164,11 +167,18 @@ internal fun LessonNodeTooltip(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusPill(
-                        text = "${lessonItem.lesson.xpReward} XP",
+                        text = localizedStringResource(
+                            R.string.common_xp_amount,
+                            lessonItem.lesson.xpReward
+                        ),
                         accent = ElectricCyan
                     )
                     StatusPill(
-                        text = "${lessonItem.lesson.questionCount} questions",
+                        text = localizedPluralStringResource(
+                            R.plurals.lesson_label_questions_count,
+                            lessonItem.lesson.questionCount,
+                            lessonItem.lesson.questionCount
+                        ),
                         accent = if (lessonItem.isPerfect) SunYellow else LockedGrey
                     )
                 }
@@ -181,7 +191,7 @@ internal fun LessonNodeTooltip(
                 )
                 if (lessonItem.isCompleted && !lessonItem.isPerfect) {
                     Text(
-                        text = "Retry for the star and bonus XP.",
+                        text = localizedStringResource(R.string.lesson_tooltip_retry),
                         style = MaterialTheme.typography.bodySmall,
                         color = SunYellow,
                         maxLines = 2,
@@ -189,7 +199,7 @@ internal fun LessonNodeTooltip(
                     )
                 }
                 GamifiedButton(
-                    text = "Start",
+                    text = localizedStringResource(R.string.common_start),
                     onClick = onStartClick,
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = ElectricCyan,
@@ -320,4 +330,3 @@ private fun StatusPill(
         )
     }
 }
-

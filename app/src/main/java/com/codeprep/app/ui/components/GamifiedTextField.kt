@@ -40,11 +40,11 @@ fun GamifiedTextField(
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .defaultMinSize(minHeight = 56.dp)
             .border(2.dp, currentBorderColor, RoundedCornerShape(16.dp))
             .background(backgroundColor, RoundedCornerShape(16.dp))
             .padding(horizontal = 16.dp)
-            .padding(vertical = 12.dp), // Added vertical padding for better text centering
+            .padding(vertical = 12.dp),
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = textColor),

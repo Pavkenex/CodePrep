@@ -22,10 +22,10 @@
     <string name="ask_ai_prompt_simpler">Explain simpler</string>
     <string name="ask_ai_prompt_example">Give another example</string>
     <string name="ask_ai_prompt_quiz">Quiz me on this</string>
-    <string name="ask_ai_input_label">Ask about this lesson…</string>
+    <string name="ask_ai_input_label">Ask about this lesson...</string>
     <string name="ask_ai_send">Send</string>
-    <string name="ask_ai_thinking">Thinking…</string>
-    <string name="ask_ai_loading_placeholder">AI is thinking…</string>
+    <string name="ask_ai_thinking">Thinking...</string>
+    <string name="ask_ai_loading_placeholder">AI is thinking...</string>
     <string name="ask_ai_saved_conversations_title">Saved AI Conversations</string>
     <string name="ask_ai_saved_conversations_subtitle">Saved lesson conversations appear here. Reopen a lesson to continue or update one.</string>
     <string name="ask_ai_saved_conversations_empty">No saved conversations yet.</string>
@@ -48,7 +48,6 @@
     <string name="lesson_section_key_takeaway">Key takeaway</string>
     <string name="lesson_section_key_points">Key points</string>
     <string name="lesson_label_pseudocode">Pseudocode</string>
-    <string name="lesson_label_questions">%1$d questions</string>
     <string name="lesson_label_star_earned">Star earned</string>
     <string name="lesson_label_passed">Passed</string>
     <string name="lesson_button_retry_for_star">Retry for star</string>
@@ -57,4 +56,170 @@
     <string name="lesson_message_retry_for_star">You passed this lesson. Retry the quiz with a perfect score to earn the star and bonus XP.</string>
     <string name="lesson_message_perfect_run">Perfect run earned. No more XP is available for this quiz.</string>
     <string name="lesson_message_unavailable">Lesson content is not available right now.</string>
+
+    <string name="auth_brand_title">codePrep</string>
+    <string name="auth_login_title">Login</string>
+    <string name="auth_login_placeholder_email_or_username">Email or username</string>
+    <string name="auth_login_placeholder_password">Password</string>
+    <string name="auth_login_google">Login with Google</string>
+    <string name="auth_login_no_account">Don\'t have an account?</string>
+    <string name="auth_login_sign_up">Sign up</string>
+    <string name="auth_register_title">Create Profile</string>
+    <string name="auth_register_placeholder_full_name">Full Name</string>
+    <string name="auth_register_placeholder_email">Email</string>
+    <string name="auth_register_placeholder_password">Password</string>
+    <string name="auth_register_placeholder_confirm_password">Confirm Password</string>
+    <string name="auth_register_create_account">Create Account</string>
+    <string name="auth_register_google">Sign up with Google</string>
+    <string name="auth_register_have_account">Already have an account?</string>
+    <string name="auth_error_login">Login failed.</string>
+    <string name="auth_error_register">Registration failed.</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_modules">Modules</string>
+    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_language">Language</string>
+    <string name="common_selected">Selected</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_start">Start</string>
+    <string name="common_finish">Finish</string>
+    <string name="common_add">Add</string>
+    <string name="common_accept">Accept</string>
+    <string name="common_decline">Decline</string>
+    <string name="common_badges">Badges</string>
+    <string name="common_level_value">Level %1$d</string>
+    <string name="common_xp_amount">%1$d XP</string>
+    <string name="common_user_fallback">User</string>
+
+    <string name="code_block_title_default">Code</string>
+    <string name="course_list_title">Modules</string>
+    <string name="course_list_subtitle">Pick up where you left off and chase the star on every lesson.</string>
+    <string name="course_list_empty">No modules available.</string>
+    <string name="course_content_locked">Locked module</string>
+    <string name="course_content_perfect">Perfect module</string>
+    <string name="course_content_continue">Continue module</string>
+    <string name="course_progress_locked">Locked</string>
+    <string name="course_progress_cleared">Cleared: %1$d</string>
+    <string name="course_status_locked">This module is locked.</string>
+    <string name="course_status_continue">Continue with %1$s</string>
+    <string name="course_status_ready">Module ready.</string>
+
+    <string name="friends_add_title">Add Friends</string>
+    <string name="friends_search_placeholder">Search by username</string>
+    <string name="friends_search_hint_title">Search by username</string>
+    <string name="friends_search_hint_body">Type at least %1$d characters to look for new friends.</string>
+    <string name="friends_search_unavailable_title">Search unavailable</string>
+    <string name="friends_search_empty_title">No users found</string>
+    <string name="friends_search_empty_body">Try a different username fragment.</string>
+    <string name="friend_profile_title">Friend Profile</string>
+    <string name="friend_profile_unavailable_title">Profile unavailable</string>
+    <string name="friend_profile_unavailable_body">This friend profile could not be loaded.</string>
+    <string name="friend_profile_missing">Friend profile is missing.</string>
+    <string name="friends_error_refresh">Could not refresh friends.</string>
+    <string name="friends_error_update_avatar">Could not update avatar.</string>
+    <string name="friends_error_request_action">Friend request action failed.</string>
+    <string name="friends_error_search_users">Could not search users.</string>
+    <string name="friends_error_update_status">Could not update friend status.</string>
+    <string name="friends_error_load_profile">Could not load friend profile.</string>
+    <string name="social_locked_badge">Locked badge</string>
+    <string name="social_badge">Badge</string>
+    <string name="social_requested">Requested</string>
+    <string name="social_friends">Friends</string>
+    <string name="avatar_preset_pulse">Pulse</string>
+    <string name="avatar_preset_core">Core</string>
+    <string name="avatar_preset_volt">Volt</string>
+    <string name="avatar_preset_trace">Trace</string>
+    <string name="avatar_preset_flux">Flux</string>
+    <string name="avatar_preset_kernel">Kernel</string>
+
+    <string name="profile_stat_xp">XP</string>
+    <string name="profile_stat_level">Level</string>
+    <string name="profile_stat_friends">Friends</string>
+    <string name="profile_pending_requests">Pending Requests</string>
+    <string name="profile_pending_empty_title">No pending requests</string>
+    <string name="profile_pending_empty_body">Incoming friend requests will show up here.</string>
+    <string name="profile_friends_title">Friends</string>
+    <string name="profile_add_friends">Add Friends</string>
+    <string name="profile_friends_empty_title">Build your circle</string>
+    <string name="profile_friends_empty_body">Search by username and send your first friend request.</string>
+    <string name="profile_logout">System shutdown</string>
+    <string name="profile_avatar_sheet_title">Choose avatar preset</string>
+    <string name="profile_avatar_sheet_body">Preset art is still TODO. For now each preset maps to a distinct in-app style.</string>
+    <string name="profile_edit_avatar">Edit avatar</string>
+    <string name="profile_language_english">English</string>
+    <string name="profile_language_serbian">Srpski</string>
+
+    <string name="fun_fact_opening_home">&gt;&gt; OPENING_HOME()</string>
+
+    <string name="home_default_nickname">Dev</string>
+    <string name="home_user_avatar">User avatar</string>
+    <string name="home_welcome_back">Welcome back,</string>
+    <string name="home_uptime_title">SYSTEM UPTIME</string>
+    <string name="home_uptime_status">STREAK ACTIVE</string>
+    <string name="home_streak_icon">Streak icon</string>
+    <string name="home_daily_challenge_icon">Challenge icon</string>
+    <string name="home_daily_challenge_title">DAILY CHALLENGE</string>
+    <string name="home_daily_challenge_loading">Loading today\'s prompt...</string>
+    <string name="home_daily_challenge_syncing">&gt;&gt; SYNCING_DAILY_CHALLENGE()</string>
+    <string name="home_daily_challenge_completed_title">DAILY CHALLENGE COMPLETED</string>
+    <string name="home_daily_challenge_completed_body">Today\'s challenge is done. Come back tomorrow for a fresh question.</string>
+    <string name="home_daily_challenge_unavailable">Daily challenge is unavailable.</string>
+    <string name="home_daily_challenge_expand_hint">Tap to expand today\'s challenge and submit your answer.</string>
+    <string name="home_daily_challenge_opening">&gt;&gt; OPEN_DAILY_CHALLENGE()</string>
+    <string name="home_daily_challenge_open_button">Open Challenge</string>
+    <string name="home_daily_challenge_complete_button">Complete Daily Challenge</string>
+    <string name="home_answer_correct">Correct answer.</string>
+    <string name="home_answer_incorrect">Incorrect answer.</string>
+    <string name="home_status_title">SYSTEM STATUS</string>
+    <string name="home_status_level">Level %1$d</string>
+    <string name="home_status_xp">%1$d / %2$d XP</string>
+    <string name="home_launch_modules">Launch Modules</string>
+    <string name="home_launch_modules_icon">Modules icon</string>
+
+    <string name="lesson_list_empty">No lessons available</string>
+    <string name="lesson_list_progress_cleared">Cleared: %1$d/%2$d</string>
+    <string name="lesson_list_stars">Stars: %1$d</string>
+    <string name="lesson_tooltip_retry">Retry for the star and bonus XP.</string>
+
+    <string name="quiz_hearts">❤️ %1$d</string>
+    <string name="quiz_score">Score: %1$d/%2$d</string>
+    <string name="quiz_result_perfect_title">Perfect run!</string>
+    <string name="quiz_result_passed_title">Lesson passed!</string>
+    <string name="quiz_result_finished_title">Quiz finished</string>
+    <string name="quiz_result_percentage">Your result: %1$d%%</string>
+    <string name="quiz_result_correct_answers">Correct answers: %1$d / %2$d</string>
+    <string name="quiz_result_star_earned">Star earned for this lesson.</string>
+    <string name="quiz_result_next_lesson_unlocked">Next lesson unlocked.</string>
+    <string name="quiz_result_unlock_requirement">Score at least 50%% to unlock the next lesson.</string>
+    <string name="quiz_result_base_reward">Base reward: +%1$d XP</string>
+    <string name="quiz_result_perfect_bonus">Perfect bonus: +%1$d XP</string>
+    <string name="quiz_result_no_more_xp">No more XP is available for this quiz.</string>
+    <string name="quiz_result_completion_claimed">You already claimed the completion reward. Retry only if you still need the star.</string>
+    <string name="quiz_result_no_xp">No XP awarded.</string>
+    <string name="quiz_result_total_earned">Total earned now: %1$d XP</string>
+    <string name="quiz_loading">Loading questions...</string>
+    <string name="quiz_next_question">Next question</string>
+    <string name="quiz_wrong_answer_lost_heart">Wrong answer. You lost a heart.</string>
+    <string name="quiz_correct_answer">Correct answer.</string>
+
+    <plurals name="course_pill_lessons">
+        <item quantity="one">%1$d lesson</item>
+        <item quantity="other">%1$d lessons</item>
+    </plurals>
+    <plurals name="course_pill_stars">
+        <item quantity="one">%1$d star</item>
+        <item quantity="other">%1$d stars</item>
+    </plurals>
+    <plurals name="home_uptime_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="lesson_label_questions_count">
+        <item quantity="one">%1$d question</item>
+        <item quantity="other">%1$d questions</item>
+    </plurals>
 </resources>

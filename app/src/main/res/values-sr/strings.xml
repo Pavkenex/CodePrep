@@ -9,10 +9,10 @@
     <string name="ask_ai_prompt_simpler">Objasni jednostavnije</string>
     <string name="ask_ai_prompt_example">Daj još jedan primer</string>
     <string name="ask_ai_prompt_quiz">Ispitaj me iz ovoga</string>
-    <string name="ask_ai_input_label">Pitaj o ovoj lekciji…</string>
+    <string name="ask_ai_input_label">Pitaj o ovoj lekciji...</string>
     <string name="ask_ai_send">Pošalji</string>
-    <string name="ask_ai_thinking">Razmišlja…</string>
-    <string name="ask_ai_loading_placeholder">AI razmišlja…</string>
+    <string name="ask_ai_thinking">Razmišlja...</string>
+    <string name="ask_ai_loading_placeholder">AI razmišlja...</string>
     <string name="ask_ai_saved_conversations_title">Sačuvani AI razgovori</string>
     <string name="ask_ai_saved_conversations_subtitle">Ovde se prikazuju sačuvani razgovori iz lekcija. Ponovo otvori lekciju da nastaviš ili izmeniš razgovor.</string>
     <string name="ask_ai_saved_conversations_empty">Još nema sačuvanih razgovora.</string>
@@ -35,7 +35,6 @@
     <string name="lesson_section_key_takeaway">Ključna poruka</string>
     <string name="lesson_section_key_points">Ključne tačke</string>
     <string name="lesson_label_pseudocode">Pseudokod</string>
-    <string name="lesson_label_questions">%1$d pitanja</string>
     <string name="lesson_label_star_earned">Zvezdica osvojena</string>
     <string name="lesson_label_passed">Položeno</string>
     <string name="lesson_button_retry_for_star">Ponovi za zvezdicu</string>
@@ -44,4 +43,174 @@
     <string name="lesson_message_retry_for_star">Položio si ovu lekciju. Ponovi kviz sa savršenim rezultatom da osvojiš zvezdicu i bonus XP.</string>
     <string name="lesson_message_perfect_run">Savršen prolaz osvojen. Više nema dodatnog XP-a za ovaj kviz.</string>
     <string name="lesson_message_unavailable">Sadržaj lekcije trenutno nije dostupan.</string>
+
+    <string name="auth_brand_title">codePrep</string>
+    <string name="auth_login_title">Prijava</string>
+    <string name="auth_login_placeholder_email_or_username">Email ili korisničko ime</string>
+    <string name="auth_login_placeholder_password">Lozinka</string>
+    <string name="auth_login_google">Prijava putem Google-a</string>
+    <string name="auth_login_no_account">Nemaš nalog?</string>
+    <string name="auth_login_sign_up">Registruj se</string>
+    <string name="auth_register_title">Kreiraj profil</string>
+    <string name="auth_register_placeholder_full_name">Ime i prezime</string>
+    <string name="auth_register_placeholder_email">Email</string>
+    <string name="auth_register_placeholder_password">Lozinka</string>
+    <string name="auth_register_placeholder_confirm_password">Potvrdi lozinku</string>
+    <string name="auth_register_create_account">Kreiraj nalog</string>
+    <string name="auth_register_google">Registracija putem Google-a</string>
+    <string name="auth_register_have_account">Već imaš nalog?</string>
+    <string name="auth_error_login">Prijava nije uspela.</string>
+    <string name="auth_error_register">Registracija nije uspela.</string>
+
+    <string name="nav_home">Početna</string>
+    <string name="nav_modules">Moduli</string>
+    <string name="nav_ai_coach">AI trener</string>
+    <string name="nav_profile">Profil</string>
+
+    <string name="common_back">Nazad</string>
+    <string name="common_settings">Podešavanja</string>
+    <string name="common_language">Jezik</string>
+    <string name="common_selected">Izabrano</string>
+    <string name="common_copy">Kopiraj</string>
+    <string name="common_start">Počni</string>
+    <string name="common_finish">Završi</string>
+    <string name="common_add">Dodaj</string>
+    <string name="common_accept">Prihvati</string>
+    <string name="common_decline">Odbij</string>
+    <string name="common_badges">Značke</string>
+    <string name="common_level_value">Nivo %1$d</string>
+    <string name="common_xp_amount">%1$d XP</string>
+    <string name="common_user_fallback">Korisnik</string>
+
+    <string name="code_block_title_default">Kod</string>
+    <string name="course_list_title">Moduli</string>
+    <string name="course_list_subtitle">Nastavi gde si stao i osvoji zvezdicu u svakoj lekciji.</string>
+    <string name="course_list_empty">Trenutno nema dostupnih modula.</string>
+    <string name="course_content_locked">Zaključan modul</string>
+    <string name="course_content_perfect">Savršen modul</string>
+    <string name="course_content_continue">Nastavi modul</string>
+    <string name="course_progress_locked">Zaključan</string>
+    <string name="course_progress_cleared">Završeno: %1$d</string>
+    <string name="course_status_locked">Ovaj modul je zaključan.</string>
+    <string name="course_status_continue">Nastavi sa %1$s</string>
+    <string name="course_status_ready">Modul je spreman.</string>
+
+    <string name="friends_add_title">Dodaj prijatelje</string>
+    <string name="friends_search_placeholder">Pretraži po korisničkom imenu</string>
+    <string name="friends_search_hint_title">Pretraži po korisničkom imenu</string>
+    <string name="friends_search_hint_body">Unesi bar %1$d karaktera da potražiš nove prijatelje.</string>
+    <string name="friends_search_unavailable_title">Pretraga nije dostupna</string>
+    <string name="friends_search_empty_title">Nema pronađenih korisnika</string>
+    <string name="friends_search_empty_body">Pokušaj sa drugim delom korisničkog imena.</string>
+    <string name="friend_profile_title">Profil prijatelja</string>
+    <string name="friend_profile_unavailable_title">Profil nije dostupan</string>
+    <string name="friend_profile_unavailable_body">Ovaj profil prijatelja nije moguće učitati.</string>
+    <string name="friend_profile_missing">Profil prijatelja nedostaje.</string>
+    <string name="friends_error_refresh">Nije moguće osvežiti prijatelje.</string>
+    <string name="friends_error_update_avatar">Nije moguće ažurirati avatar.</string>
+    <string name="friends_error_request_action">Akcija zahteva za prijateljstvo nije uspela.</string>
+    <string name="friends_error_search_users">Nije moguća pretraga korisnika.</string>
+    <string name="friends_error_update_status">Nije moguće ažurirati status prijatelja.</string>
+    <string name="friends_error_load_profile">Nije moguće učitati profil prijatelja.</string>
+    <string name="social_locked_badge">Zaključana značka</string>
+    <string name="social_badge">Značka</string>
+    <string name="social_requested">Poslato</string>
+    <string name="social_friends">Prijatelji</string>
+    <string name="avatar_preset_pulse">Pulse</string>
+    <string name="avatar_preset_core">Core</string>
+    <string name="avatar_preset_volt">Volt</string>
+    <string name="avatar_preset_trace">Trace</string>
+    <string name="avatar_preset_flux">Flux</string>
+    <string name="avatar_preset_kernel">Kernel</string>
+
+    <string name="profile_stat_xp">XP</string>
+    <string name="profile_stat_level">Nivo</string>
+    <string name="profile_stat_friends">Prijatelji</string>
+    <string name="profile_pending_requests">Zahtevi na čekanju</string>
+    <string name="profile_pending_empty_title">Nema zahteva na čekanju</string>
+    <string name="profile_pending_empty_body">Ovde će se prikazivati dolazni zahtevi za prijateljstvo.</string>
+    <string name="profile_friends_title">Prijatelji</string>
+    <string name="profile_add_friends">Dodaj prijatelje</string>
+    <string name="profile_friends_empty_title">Izgradi svoj krug</string>
+    <string name="profile_friends_empty_body">Pretraži po korisničkom imenu i pošalji prvi zahtev za prijateljstvo.</string>
+    <string name="profile_logout">Gašenje sistema</string>
+    <string name="profile_avatar_sheet_title">Izaberi avatar preset</string>
+    <string name="profile_avatar_sheet_body">Ilustracije preseta su još TODO. Za sada svaki preset mapira na poseban stil u aplikaciji.</string>
+    <string name="profile_edit_avatar">Izmeni avatar</string>
+    <string name="profile_language_english">English</string>
+    <string name="profile_language_serbian">Srpski</string>
+
+    <string name="fun_fact_opening_home">&gt;&gt; OTVARAM_POCETNU()</string>
+
+    <string name="home_default_nickname">Dev</string>
+    <string name="home_user_avatar">Korisnički avatar</string>
+    <string name="home_welcome_back">Dobrodošao nazad,</string>
+    <string name="home_uptime_title">VREME RADA SISTEMA</string>
+    <string name="home_uptime_status">STREAK AKTIVAN</string>
+    <string name="home_streak_icon">Ikona streak-a</string>
+    <string name="home_daily_challenge_icon">Ikona izazova</string>
+    <string name="home_daily_challenge_title">DNEVNI IZAZOV</string>
+    <string name="home_daily_challenge_loading">Učitava se današnji zadatak...</string>
+    <string name="home_daily_challenge_syncing">&gt;&gt; SINHRONIZUJEM_DNEVNI_IZAZOV()</string>
+    <string name="home_daily_challenge_completed_title">DNEVNI IZAZOV ZAVRŠEN</string>
+    <string name="home_daily_challenge_completed_body">Današnji izazov je završen. Vrati se sutra po novo pitanje.</string>
+    <string name="home_daily_challenge_unavailable">Dnevni izazov trenutno nije dostupan.</string>
+    <string name="home_daily_challenge_expand_hint">Dodirni da proširiš današnji izazov i pošalješ odgovor.</string>
+    <string name="home_daily_challenge_opening">&gt;&gt; OTVARAM_DNEVNI_IZAZOV()</string>
+    <string name="home_daily_challenge_open_button">Otvori izazov</string>
+    <string name="home_daily_challenge_complete_button">Završi dnevni izazov</string>
+    <string name="home_answer_correct">Tačan odgovor.</string>
+    <string name="home_answer_incorrect">Netačan odgovor.</string>
+    <string name="home_status_title">STATUS SISTEMA</string>
+    <string name="home_status_level">Nivo %1$d</string>
+    <string name="home_status_xp">%1$d / %2$d XP</string>
+    <string name="home_launch_modules">Pokreni module</string>
+    <string name="home_launch_modules_icon">Ikona modula</string>
+
+    <string name="lesson_list_empty">Nema dostupnih lekcija</string>
+    <string name="lesson_list_progress_cleared">Završeno: %1$d/%2$d</string>
+    <string name="lesson_list_stars">Zvezde: %1$d</string>
+    <string name="lesson_tooltip_retry">Ponovi za zvezdicu i bonus XP.</string>
+
+    <string name="quiz_hearts">❤️ %1$d</string>
+    <string name="quiz_score">Rezultat: %1$d/%2$d</string>
+    <string name="quiz_result_perfect_title">Savršen prolaz!</string>
+    <string name="quiz_result_passed_title">Lekcija položena!</string>
+    <string name="quiz_result_finished_title">Kviz završen</string>
+    <string name="quiz_result_percentage">Tvoj rezultat: %1$d%%</string>
+    <string name="quiz_result_correct_answers">Tačni odgovori: %1$d / %2$d</string>
+    <string name="quiz_result_star_earned">Zvezdica je osvojena za ovu lekciju.</string>
+    <string name="quiz_result_next_lesson_unlocked">Sledeća lekcija je otključana.</string>
+    <string name="quiz_result_unlock_requirement">Osvoji najmanje 50%% da otključaš sledeću lekciju.</string>
+    <string name="quiz_result_base_reward">Osnovna nagrada: +%1$d XP</string>
+    <string name="quiz_result_perfect_bonus">Bonus za savršen rezultat: +%1$d XP</string>
+    <string name="quiz_result_no_more_xp">Više nema dostupnog XP-a za ovaj kviz.</string>
+    <string name="quiz_result_completion_claimed">Već si preuzeo nagradu za završetak. Ponovi samo ako ti još treba zvezdica.</string>
+    <string name="quiz_result_no_xp">XP nije dodeljen.</string>
+    <string name="quiz_result_total_earned">Ukupno osvojeno sada: %1$d XP</string>
+    <string name="quiz_loading">Učitavaju se pitanja...</string>
+    <string name="quiz_next_question">Sledeće pitanje</string>
+    <string name="quiz_wrong_answer_lost_heart">Pogrešan odgovor. Izgubio si jedno srce.</string>
+    <string name="quiz_correct_answer">Tačan odgovor.</string>
+
+    <plurals name="course_pill_lessons">
+        <item quantity="one">%1$d lekcija</item>
+        <item quantity="few">%1$d lekcije</item>
+        <item quantity="other">%1$d lekcija</item>
+    </plurals>
+    <plurals name="course_pill_stars">
+        <item quantity="one">%1$d zvezda</item>
+        <item quantity="few">%1$d zvezde</item>
+        <item quantity="other">%1$d zvezda</item>
+    </plurals>
+    <plurals name="home_uptime_days">
+        <item quantity="one">%1$d dan</item>
+        <item quantity="few">%1$d dana</item>
+        <item quantity="other">%1$d dana</item>
+    </plurals>
+    <plurals name="lesson_label_questions_count">
+        <item quantity="one">%1$d pitanje</item>
+        <item quantity="few">%1$d pitanja</item>
+        <item quantity="other">%1$d pitanja</item>
+    </plurals>
 </resources>

@@ -42,14 +42,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codeprep.app.R
 import com.codeprep.app.data.local.entity.Question
 import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.localization.localizedPluralStringResource
+import com.codeprep.app.ui.localization.localizedStringResource
+import com.codeprep.app.ui.theme.AppCodeTypography
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
 import com.codeprep.app.ui.theme.Charcoal
@@ -111,7 +114,7 @@ fun HeaderSection(nickname: String) {
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
-                contentDescription = "User Avatar",
+                contentDescription = localizedStringResource(R.string.home_user_avatar),
                 tint = ElectricCyan,
                 modifier = Modifier.size(32.dp)
             )
@@ -121,16 +124,14 @@ fun HeaderSection(nickname: String) {
 
         Column {
             Text(
-                text = "Welcome back,",
+                text = localizedStringResource(R.string.home_welcome_back),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
                 text = nickname,
                 color = ElectricCyan,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace
+                style = MaterialTheme.typography.headlineMedium
             )
         }
     }
@@ -140,10 +141,9 @@ fun HeaderSection(nickname: String) {
 fun SystemUptimeSection(days: Int) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "SYSTEM UPTIME",
+            text = localizedStringResource(R.string.home_uptime_title),
             color = ElectricCyan,
-            style = MaterialTheme.typography.labelMedium,
-            fontFamily = FontFamily.Monospace,
+            style = AppCodeTypography.labelMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Card(
@@ -160,22 +160,19 @@ fun SystemUptimeSection(days: Int) {
             ) {
                 Column {
                     Text(
-                        text = "$days DAYS",
+                        text = localizedPluralStringResource(R.plurals.home_uptime_days, days, days),
                         color = White,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = AppCodeTypography.headlineLarge
                     )
                     Text(
-                        text = "STREAK ACTIVE",
+                        text = localizedStringResource(R.string.home_uptime_status),
                         color = Color.Green,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace
+                        style = AppCodeTypography.labelSmall
                     )
                 }
                 Icon(
                     imageVector = Icons.Default.Terminal,
-                    contentDescription = "Streak Icon",
+                    contentDescription = localizedStringResource(R.string.home_streak_icon),
                     tint = ElectricCyan,
                     modifier = Modifier.size(48.dp)
                 )
@@ -212,17 +209,15 @@ fun DailyChallengeWidget(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.BugReport,
-                    contentDescription = "Bug Icon",
+                    contentDescription = localizedStringResource(R.string.home_daily_challenge_icon),
                     tint = CardinalRed,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "DAILY CHALLENGE",
+                    text = localizedStringResource(R.string.home_daily_challenge_title),
                     color = CardinalRed,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
 
@@ -231,42 +226,36 @@ fun DailyChallengeWidget(
             when {
                 dailyState.isLoading -> {
                     Text(
-                        text = "Loading today's prompt...",
+                        text = localizedStringResource(R.string.home_daily_challenge_loading),
                         color = White,
-                        fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = ">> SYNCING_DAILY_CHALLENGE()",
+                        text = localizedStringResource(R.string.home_daily_challenge_syncing),
                         color = ElectricCyan,
-                        fontFamily = FontFamily.Monospace,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = AppCodeTypography.bodyMedium,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
 
                 dailyState.isCompleted -> {
                     Text(
-                        text = "DAILY CHALLENGE COMPLETED",
+                        text = localizedStringResource(R.string.home_daily_challenge_completed_title),
                         color = LeafGreen,
-                        fontFamily = FontFamily.Monospace,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Today's challenge is done. Come back tomorrow for a fresh question.",
+                        text = localizedStringResource(R.string.home_daily_challenge_completed_body),
                         color = White,
-                        fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
 
                 question == null -> {
                     Text(
-                        text = dailyState.error ?: "Daily challenge is unavailable.",
+                        text = dailyState.error ?: localizedStringResource(R.string.home_daily_challenge_unavailable),
                         color = White,
-                        fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -319,23 +308,21 @@ private fun DailyChallengePreview(
     Spacer(modifier = Modifier.height(12.dp))
 
     Text(
-        text = "Tap to expand today's challenge and submit your answer.",
+        text = localizedStringResource(R.string.home_daily_challenge_expand_hint),
         color = TextLight,
-        fontFamily = FontFamily.Monospace,
         style = MaterialTheme.typography.bodyMedium
     )
     Text(
-        text = ">> OPEN_DAILY_CHALLENGE()",
+        text = localizedStringResource(R.string.home_daily_challenge_opening),
         color = ElectricCyan,
-        fontFamily = FontFamily.Monospace,
-        style = MaterialTheme.typography.bodyMedium,
+        style = AppCodeTypography.bodyMedium,
         modifier = Modifier.padding(top = 8.dp)
     )
 
     Spacer(modifier = Modifier.height(12.dp))
 
     GamifiedButton(
-        text = "Open Challenge",
+        text = localizedStringResource(R.string.home_daily_challenge_open_button),
         onClick = onExpand,
         backgroundColor = ElectricCyan,
         textColor = TrueBlack,
@@ -403,7 +390,11 @@ private fun DailyChallengeQuestionContent(
 
         val isCorrect = selectedIndex == question.correctIndex
         Text(
-            text = if (isCorrect) "Correct answer." else "Incorrect answer.",
+            text = if (isCorrect) {
+                localizedStringResource(R.string.home_answer_correct)
+            } else {
+                localizedStringResource(R.string.home_answer_incorrect)
+            },
             color = if (isCorrect) LeafGreen else CardinalRed,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold
@@ -421,7 +412,7 @@ private fun DailyChallengeQuestionContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         GamifiedButton(
-            text = "Complete Daily Challenge",
+            text = localizedStringResource(R.string.home_daily_challenge_complete_button),
             onClick = onComplete,
             backgroundColor = ElectricCyan,
             textColor = TrueBlack,
@@ -464,8 +455,7 @@ private fun ChallengeBadge(
         Text(
             text = label,
             color = color,
-            fontFamily = FontFamily.Monospace,
-            style = MaterialTheme.typography.labelMedium,
+            style = AppCodeTypography.labelMedium,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         )
     }
@@ -482,8 +472,7 @@ private fun DailyChallengeCodeSnippet(snippet: String) {
         SelectionContainer {
             Text(
                 text = snippet.trim(),
-                style = MaterialTheme.typography.bodySmall,
-                fontFamily = FontFamily.Monospace,
+                style = AppCodeTypography.bodySmall,
                 color = ElectricCyan,
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState())
@@ -507,10 +496,9 @@ fun SystemStatusWidget(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "SYSTEM STATUS",
+                text = localizedStringResource(R.string.home_status_title),
                 color = Color.Gray,
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Monospace
+                style = AppCodeTypography.labelSmall
             )
             Spacer(modifier = Modifier.height(12.dp))
             Row(
@@ -519,15 +507,14 @@ fun SystemStatusWidget(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Level $level",
+                    text = localizedStringResource(R.string.home_status_level, level),
                     color = White,
-                    fontFamily = FontFamily.Monospace
+                    style = AppCodeTypography.titleMedium
                 )
                 Text(
-                    text = "$currentXp / $xpRequired XP",
+                    text = localizedStringResource(R.string.home_status_xp, currentXp, xpRequired),
                     color = ElectricCyan,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    style = AppCodeTypography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -556,16 +543,17 @@ fun LaunchModulesButton(onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.Code,
-            contentDescription = "Code Icon",
+            contentDescription = localizedStringResource(R.string.home_launch_modules_icon),
             tint = TrueBlack
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "LAUNCH MODULES",
+            text = localizedStringResource(R.string.home_launch_modules),
             color = TrueBlack,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Monospace
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 18.sp,
+                color = TrueBlack
+            )
         )
     }
 }

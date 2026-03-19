@@ -48,7 +48,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codeprep.app.R
 import com.codeprep.app.MainActivity
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.CodePrepTheme
@@ -216,7 +218,7 @@ private fun FunFactScreen(
                 if (isAutoForwarding) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = ">> OPENING_HOME()",
+                        text = localizedStringResource(R.string.fun_fact_opening_home),
                         style = MaterialTheme.typography.bodyMedium,
                         color = ElectricCyan,
                         fontFamily = FontFamily.Monospace
