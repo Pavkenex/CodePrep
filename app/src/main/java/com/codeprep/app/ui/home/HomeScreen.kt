@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +52,7 @@ import com.codeprep.app.data.local.entity.Question
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.localization.localizedPluralStringResource
 import com.codeprep.app.ui.localization.localizedStringResource
+import com.codeprep.app.ui.theme.AppCodeTypography
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
 import com.codeprep.app.ui.theme.Charcoal
@@ -131,9 +131,7 @@ fun HeaderSection(nickname: String) {
             Text(
                 text = nickname,
                 color = ElectricCyan,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace
+                style = MaterialTheme.typography.headlineMedium
             )
         }
     }
@@ -145,8 +143,7 @@ fun SystemUptimeSection(days: Int) {
         Text(
             text = localizedStringResource(R.string.home_uptime_title),
             color = ElectricCyan,
-            style = MaterialTheme.typography.labelMedium,
-            fontFamily = FontFamily.Monospace,
+            style = AppCodeTypography.labelMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Card(
@@ -165,15 +162,12 @@ fun SystemUptimeSection(days: Int) {
                     Text(
                         text = localizedPluralStringResource(R.plurals.home_uptime_days, days, days),
                         color = White,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        style = AppCodeTypography.headlineLarge
                     )
                     Text(
                         text = localizedStringResource(R.string.home_uptime_status),
                         color = Color.Green,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace
+                        style = AppCodeTypography.labelSmall
                     )
                 }
                 Icon(
@@ -223,9 +217,7 @@ fun DailyChallengeWidget(
                 Text(
                     text = localizedStringResource(R.string.home_daily_challenge_title),
                     color = CardinalRed,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
 
@@ -236,14 +228,12 @@ fun DailyChallengeWidget(
                     Text(
                         text = localizedStringResource(R.string.home_daily_challenge_loading),
                         color = White,
-                        fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
                         text = localizedStringResource(R.string.home_daily_challenge_syncing),
                         color = ElectricCyan,
-                        fontFamily = FontFamily.Monospace,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = AppCodeTypography.bodyMedium,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -252,15 +242,12 @@ fun DailyChallengeWidget(
                     Text(
                         text = localizedStringResource(R.string.home_daily_challenge_completed_title),
                         color = LeafGreen,
-                        fontFamily = FontFamily.Monospace,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = localizedStringResource(R.string.home_daily_challenge_completed_body),
                         color = White,
-                        fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -269,7 +256,6 @@ fun DailyChallengeWidget(
                     Text(
                         text = dailyState.error ?: localizedStringResource(R.string.home_daily_challenge_unavailable),
                         color = White,
-                        fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -324,14 +310,12 @@ private fun DailyChallengePreview(
     Text(
         text = localizedStringResource(R.string.home_daily_challenge_expand_hint),
         color = TextLight,
-        fontFamily = FontFamily.Monospace,
         style = MaterialTheme.typography.bodyMedium
     )
     Text(
         text = localizedStringResource(R.string.home_daily_challenge_opening),
         color = ElectricCyan,
-        fontFamily = FontFamily.Monospace,
-        style = MaterialTheme.typography.bodyMedium,
+        style = AppCodeTypography.bodyMedium,
         modifier = Modifier.padding(top = 8.dp)
     )
 
@@ -471,8 +455,7 @@ private fun ChallengeBadge(
         Text(
             text = label,
             color = color,
-            fontFamily = FontFamily.Monospace,
-            style = MaterialTheme.typography.labelMedium,
+            style = AppCodeTypography.labelMedium,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         )
     }
@@ -489,8 +472,7 @@ private fun DailyChallengeCodeSnippet(snippet: String) {
         SelectionContainer {
             Text(
                 text = snippet.trim(),
-                style = MaterialTheme.typography.bodySmall,
-                fontFamily = FontFamily.Monospace,
+                style = AppCodeTypography.bodySmall,
                 color = ElectricCyan,
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState())
@@ -516,8 +498,7 @@ fun SystemStatusWidget(
             Text(
                 text = localizedStringResource(R.string.home_status_title),
                 color = Color.Gray,
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Monospace
+                style = AppCodeTypography.labelSmall
             )
             Spacer(modifier = Modifier.height(12.dp))
             Row(
@@ -528,13 +509,12 @@ fun SystemStatusWidget(
                 Text(
                     text = localizedStringResource(R.string.home_status_level, level),
                     color = White,
-                    fontFamily = FontFamily.Monospace
+                    style = AppCodeTypography.titleMedium
                 )
                 Text(
                     text = localizedStringResource(R.string.home_status_xp, currentXp, xpRequired),
                     color = ElectricCyan,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    style = AppCodeTypography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -570,9 +550,10 @@ fun LaunchModulesButton(onClick: () -> Unit) {
         Text(
             text = localizedStringResource(R.string.home_launch_modules),
             color = TrueBlack,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Monospace
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 18.sp,
+                color = TrueBlack
+            )
         )
     }
 }

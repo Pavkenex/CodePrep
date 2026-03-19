@@ -33,12 +33,13 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codeprep.app.R
 import com.codeprep.app.ui.localization.localizedStringResource
+import com.codeprep.app.ui.theme.AppCodeTypography
+import com.codeprep.app.ui.theme.AppMonoFontFamily
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.IceWhite
 import com.mikepenz.markdown.compose.elements.material.MarkdownBasicText
@@ -83,8 +84,7 @@ internal fun CodePrepCodeBlock(
     code: String,
     language: String?,
     modifier: Modifier = Modifier,
-    textStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
-        fontFamily = FontFamily.Monospace,
+    textStyle: TextStyle = AppCodeTypography.bodyMedium.copy(
         color = IceWhite
     ),
     contentPadding: PaddingValues = PaddingValues(14.dp),
@@ -140,10 +140,10 @@ private fun CodePrepCodeBlockHeader(
     ) {
         Text(
             text = title,
-            color = CodeBlockHeaderText,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = FontFamily.Monospace
+            style = AppCodeTypography.labelMedium.copy(
+                color = CodeBlockHeaderText,
+                fontWeight = FontWeight.SemiBold
+            )
         )
 
         Row(
@@ -174,9 +174,10 @@ private fun CodePrepCodeBlockHeader(
             }
             Text(
                 text = localizedStringResource(R.string.common_copy),
-                color = CodeBlockCopyText,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
+                style = AppCodeTypography.labelSmall.copy(
+                    color = CodeBlockCopyText,
+                    fontWeight = FontWeight.Medium
+                )
             )
         }
     }

@@ -241,7 +241,7 @@ fun LessonDetailScreen(
                                     if (contentModel.keyTakeaway.isNotBlank()) {
                                         Text(
                                             text = contentModel.keyTakeaway,
-                                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                            style = MaterialTheme.typography.titleSmall,
                                             color = IceWhite
                                         )
                                     }
@@ -456,7 +456,7 @@ private fun LessonHeroCard(
             }
             Text(
                 text = lesson.title.resolve(language),
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.headlineSmall,
                 color = IceWhite
             )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -666,7 +666,7 @@ private fun ExpansionBadge(
         Text(
             text = text,
             color = accent,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         )
     }
