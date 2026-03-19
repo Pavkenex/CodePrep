@@ -14,11 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,8 +30,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -44,6 +41,7 @@ import com.codeprep.app.data.local.entity.LessonProgressEntity
 import com.codeprep.app.domain.model.LessonContext
 import com.codeprep.app.ui.ai.AskAiLessonOverlay
 import com.codeprep.app.ui.ai.localizedAiString
+import com.codeprep.app.ui.components.CodePrepCodeBlock
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
@@ -184,7 +182,7 @@ fun LessonDetailScreen(
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                     contentModel.antiPatternSnippets.forEachIndexed { index, snippet ->
-                                        InlineSnippetBlock(
+                                        LessonSnippetBlock(
                                             label = if (contentModel.antiPatternSnippets.size > 1) {
                                                 "${localizedAiString(language, R.string.lesson_section_anti_pattern)} ${index + 1}"
                                             } else {
@@ -194,8 +192,7 @@ fun LessonDetailScreen(
                                             snippet = snippet,
                                             language = language,
                                             containerColor = CardinalRed.copy(alpha = 0.08f),
-                                            borderColor = CardinalRed.copy(alpha = 0.22f),
-                                            codeColor = CardinalRed.copy(alpha = 0.92f)
+                                            borderColor = CardinalRed.copy(alpha = 0.22f)
                                         )
                                     }
                                 }
@@ -499,7 +496,7 @@ private fun LessonHeroCard(
 @Composable
 private fun HeroPill(
     text: String,
-    accent: androidx.compose.ui.graphics.Color
+    accent: Color
 ) {
     Box(
         modifier = Modifier
@@ -589,7 +586,7 @@ private fun ExampleSection(
         }
 
         snippets.forEachIndexed { index, snippet ->
-            InlineSnippetBlock(
+            LessonSnippetBlock(
                 label = if (snippets.size > 1) {
                     "${localizedAiString(language, R.string.lesson_label_pseudocode)} ${index + 1}"
                 } else {
@@ -606,7 +603,7 @@ private fun ExampleSection(
 @Composable
 private fun ExpandableLessonSection(
     title: String,
-    accent: androidx.compose.ui.graphics.Color,
+    accent: Color,
     expanded: Boolean,
     onToggle: () -> Unit,
     content: @Composable () -> Unit
@@ -652,7 +649,7 @@ private fun ExpandableLessonSection(
 @Composable
 private fun ExpansionBadge(
     text: String,
-    accent: androidx.compose.ui.graphics.Color
+    accent: Color
 ) {
     Surface(
         color = accent.copy(alpha = 0.16f),
@@ -687,14 +684,13 @@ private fun BulletList(
 }
 
 @Composable
-private fun InlineSnippetBlock(
+internal fun LessonSnippetBlock(
     label: String,
-    accent: androidx.compose.ui.graphics.Color,
+    accent: Color,
     snippet: CodeSnippet,
     language: String,
-    containerColor: androidx.compose.ui.graphics.Color = DeepCharcoal,
-    borderColor: androidx.compose.ui.graphics.Color = ElectricCyan.copy(alpha = 0.12f),
-    codeColor: androidx.compose.ui.graphics.Color = ElectricCyan
+    containerColor: Color = DeepCharcoal,
+    borderColor: Color = ElectricCyan.copy(alpha = 0.12f)
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -719,22 +715,11 @@ private fun InlineSnippetBlock(
                     color = IceWhite
                 )
             }
-            Surface(
-                color = TrueBlack.copy(alpha = 0.28f),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                SelectionContainer {
-                    Text(
-                        text = snippet.code.trim(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = FontFamily.Monospace,
-                        color = codeColor,
-                        modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(14.dp)
-                    )
-                }
-            }
+            CodePrepCodeBlock(
+                code = snippet.code.trim(),
+                language = snippet.language,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
