@@ -29,7 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codeprep.app.R
 import com.codeprep.app.data.repository.FriendsRepository
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.IceWhite
 import com.codeprep.app.ui.theme.TextLight
@@ -47,12 +49,12 @@ fun AddFriendsScreen(
         containerColor = AppBackground,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Add Friends") },
+                title = { Text(localizedStringResource(R.string.friends_add_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = localizedStringResource(R.string.common_back)
                         )
                     }
                 }
@@ -79,15 +81,18 @@ fun AddFriendsScreen(
                     )
                 },
                 placeholder = {
-                    Text("Search by username")
+                    Text(localizedStringResource(R.string.friends_search_placeholder))
                 }
             )
 
             when {
                 uiState.query.trim().length < FriendsRepository.MIN_SEARCH_LENGTH -> {
                     EmptyStateCard(
-                        title = "Search by username",
-                        subtitle = "Type at least ${FriendsRepository.MIN_SEARCH_LENGTH} characters to look for new friends."
+                        title = localizedStringResource(R.string.friends_search_hint_title),
+                        subtitle = localizedStringResource(
+                            R.string.friends_search_hint_body,
+                            FriendsRepository.MIN_SEARCH_LENGTH
+                        )
                     )
                 }
 
@@ -102,15 +107,15 @@ fun AddFriendsScreen(
 
                 uiState.errorMessage != null && uiState.results.isEmpty() -> {
                     EmptyStateCard(
-                        title = "Search unavailable",
+                        title = localizedStringResource(R.string.friends_search_unavailable_title),
                         subtitle = uiState.errorMessage.orEmpty()
                     )
                 }
 
                 uiState.results.isEmpty() -> {
                     EmptyStateCard(
-                        title = "No users found",
-                        subtitle = "Try a different username fragment."
+                        title = localizedStringResource(R.string.friends_search_empty_title),
+                        subtitle = localizedStringResource(R.string.friends_search_empty_body)
                     )
                 }
 

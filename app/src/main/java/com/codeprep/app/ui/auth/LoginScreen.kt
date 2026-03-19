@@ -27,8 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.codeprep.app.R
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.components.GamifiedTextField
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.*
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -61,7 +63,7 @@ fun LoginScreen(
     ) {
         // App Logo / Title
         Text(
-            "codePrep",
+            text = localizedStringResource(R.string.auth_brand_title),
             style = MaterialTheme.typography.displayMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
                 color = ElectricCyan
@@ -70,7 +72,7 @@ fun LoginScreen(
         )
 
         Text(
-            text = "Login",
+            text = localizedStringResource(R.string.auth_login_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = IceWhite
@@ -83,7 +85,7 @@ fun LoginScreen(
         GamifiedTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = "Email or username",
+            placeholder = localizedStringResource(R.string.auth_login_placeholder_email_or_username),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.padding(bottom = 16.dp),
             backgroundColor = Charcoal,
@@ -96,7 +98,7 @@ fun LoginScreen(
         GamifiedTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = "Password",
+            placeholder = localizedStringResource(R.string.auth_login_placeholder_password),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.padding(bottom = 24.dp),
@@ -118,7 +120,7 @@ fun LoginScreen(
         }
 
         GamifiedButton(
-            text = "LOGIN",
+            text = localizedStringResource(R.string.auth_login_title),
             onClick = { viewModel.login(email, password) },
             backgroundColor = ElectricCyan,
             shadowColor = SkyBlueDark,
@@ -128,7 +130,7 @@ fun LoginScreen(
         )
 
         GamifiedButton(
-            text = "LOGIN WITH GOOGLE",
+            text = localizedStringResource(R.string.auth_login_google),
             onClick = { /* TODO: Google Auth */ },
             backgroundColor = Charcoal,
             shadowColor = DeepCharcoal,
@@ -142,7 +144,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "DON'T HAVE AN ACCOUNT?",
+                text = localizedStringResource(R.string.auth_login_no_account),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = TextLight
@@ -150,7 +152,7 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "SIGN UP",
+                text = localizedStringResource(R.string.auth_login_sign_up),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan

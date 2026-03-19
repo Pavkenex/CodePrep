@@ -7,6 +7,7 @@ import com.codeprep.app.data.local.entity.Question
 import com.codeprep.app.data.repository.CourseRepository
 import com.codeprep.app.data.repository.LessonProgressRepository
 import com.codeprep.app.data.repository.UserRepository
+import com.codeprep.app.work.WorkScheduler
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -45,6 +46,7 @@ class QuizViewModel @Inject constructor(
     private val courseRepository: CourseRepository,
     private val userRepository: UserRepository,
     private val lessonProgressRepository: LessonProgressRepository,
+    private val workScheduler: WorkScheduler,
     auth: FirebaseAuth,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -64,6 +66,7 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             if (userId.isNotBlank()) {
                 userRepository.refillHearts(userId)
+                workScheduler.syncHeartReminder(userId)
                 userRepository.registerStreakActivity(userId)
             }
             loadQuestions()
@@ -115,6 +118,7 @@ class QuizViewModel @Inject constructor(
             if (userId.isNotBlank()) {
                 viewModelScope.launch {
                     userRepository.loseHeart(userId)
+                    workScheduler.syncHeartReminder(userId)
                 }
             }
         }

@@ -37,6 +37,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codeprep.app.R
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.IceWhite
 import com.mikepenz.markdown.compose.elements.material.MarkdownBasicText
@@ -126,7 +128,7 @@ private fun CodePrepCodeBlockHeader(
     val clipboardManager = LocalClipboardManager.current
     val title = language
         ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-        ?: "Code"
+        ?: localizedStringResource(R.string.code_block_title_default)
 
     Row(
         modifier = Modifier
@@ -171,7 +173,7 @@ private fun CodePrepCodeBlockHeader(
                 )
             }
             Text(
-                text = "Copy",
+                text = localizedStringResource(R.string.common_copy),
                 color = CodeBlockCopyText,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium

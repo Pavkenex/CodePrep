@@ -63,6 +63,7 @@ class SessionBootstrapViewModel @Inject constructor(
                                 emit(remaining)
                                 if (remaining.isZero) {
                                     userRepository.refillHearts(progress.userId)
+                                    workScheduler.syncHeartReminder(progress.userId)
                                     return@flow
                                 }
 
@@ -105,6 +106,7 @@ class SessionBootstrapViewModel @Inject constructor(
             )
             if (hydrated) {
                 userRepository.refillHearts(userId)
+                workScheduler.syncHeartReminder(userId)
             }
         }
     }
@@ -121,6 +123,7 @@ class SessionBootstrapViewModel @Inject constructor(
                 workScheduler.cancelSessionWorkers()
             } else {
                 workScheduler.enqueueSessionWorkers(userId)
+                workScheduler.syncHeartReminder(userId)
             }
         }
     }
@@ -132,6 +135,7 @@ class SessionBootstrapViewModel @Inject constructor(
             try {
                 userRepository.syncProgress(userId)
                 lessonProgressRepository.syncProgress(userId)
+                workScheduler.syncHeartReminder(userId)
             } catch (_: Exception) {
                 // Background worker will retry when connectivity improves.
             }
