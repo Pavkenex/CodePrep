@@ -22,6 +22,17 @@ interface AiConversationDao {
 
     @Query(
         """
+        DELETE FROM ai_conversations
+        WHERE userId = :userId AND lessonId = :lessonId
+        """
+    )
+    suspend fun deleteConversationForLesson(
+        userId: String,
+        lessonId: String
+    )
+
+    @Query(
+        """
         SELECT * FROM ai_conversations
         WHERE userId = :userId AND lessonId = :lessonId
         LIMIT 1
@@ -40,6 +51,24 @@ interface AiConversationDao {
         """
     )
     suspend fun getMessagesForConversation(conversationId: String): List<AiConversationMessageEntity>
+
+    @Query(
+        """
+        SELECT * FROM ai_conversations
+        WHERE userId = :userId
+        ORDER BY updatedAt DESC
+        """
+    )
+    suspend fun getAllConversations(userId: String): List<AiConversationEntity>
+
+    @Query(
+        """
+        SELECT * FROM ai_conversation_messages
+        WHERE conversationId IN (:conversationIds)
+        ORDER BY createdAt ASC
+        """
+    )
+    suspend fun getMessagesForConversations(conversationIds: List<String>): List<AiConversationMessageEntity>
 
     @Query(
         """
@@ -76,6 +105,24 @@ interface AiConversationDao {
             conversation = conversation,
             messages = getMessagesForConversation(conversation.id)
         )
+    }
+
+    @Transaction
+    suspend fun getAllConversationsWithMessages(userId: String): List<AiConversationWithMessages> {
+        val conversations = getAllConversations(userId)
+        if (conversations.isEmpty()) {
+            return emptyList()
+        }
+
+        val messagesByConversationId = getMessagesForConversations(conversations.map { it.id })
+            .groupBy { it.conversationId }
+
+        return conversations.map { conversation ->
+            AiConversationWithMessages(
+                conversation = conversation,
+                messages = messagesByConversationId[conversation.id].orEmpty()
+            )
+        }
     }
 }
 

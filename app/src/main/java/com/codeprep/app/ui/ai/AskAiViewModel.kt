@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.codeprep.app.R
 import com.codeprep.app.data.remote.api.AiConfig
 import com.codeprep.app.data.repository.AiRepository
+import com.codeprep.app.data.repository.CourseRepository
 import com.codeprep.app.data.settings.AppSettingsStore
 import com.codeprep.app.data.settings.AppStringProvider
 import com.codeprep.app.domain.model.AiConversationMessage
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AskAiViewModel @Inject constructor(
     private val aiRepository: AiRepository,
+    courseRepository: CourseRepository,
     appSettingsStore: AppSettingsStore,
     private val strings: AppStringProvider,
     auth: FirebaseAuth
@@ -38,6 +41,26 @@ class AskAiViewModel @Inject constructor(
 
     val selectedLanguage = appSettingsStore.selectedLanguage()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettingsStore.DEFAULT_LANGUAGE)
+
+    val explanationsUiState = combine(
+        courseRepository.getCourses(),
+        courseRepository.getAllLessons(),
+        savedConversations,
+        selectedLanguage
+    ) { courses, lessons, savedConversations, languageCode ->
+        val modules = buildExplanationsModules(
+            courses = courses,
+            lessons = lessons,
+            savedConversations = savedConversations,
+            languageCode = languageCode
+        )
+
+        ExplanationsUiState(
+            modules = modules,
+            isLoading = savedConversations.isNotEmpty() && modules.isEmpty(),
+            isEmpty = savedConversations.isEmpty()
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ExplanationsUiState())
 
     private var currentLessonContext: LessonContext? = null
     private var currentLessonId: String? = null
@@ -137,6 +160,16 @@ class AskAiViewModel @Inject constructor(
                 hasDraft = savedConversation.messages.isNotEmpty(),
                 canSave = savedConversation.messages.isNotEmpty() && userId.isNotBlank()
             )
+        }
+    }
+
+    fun deleteSavedConversation(lessonId: String) {
+        if (lessonId.isBlank() || userId.isBlank()) {
+            return
+        }
+
+        viewModelScope.launch {
+            aiRepository.deleteSavedConversation(userId, lessonId)
         }
     }
 

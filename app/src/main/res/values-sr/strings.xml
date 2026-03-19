@@ -17,6 +17,12 @@
     <string name="ask_ai_saved_conversations_subtitle">Ovde se prikazuju sačuvani razgovori iz lekcija. Ponovo otvori lekciju da nastaviš ili izmeniš razgovor.</string>
     <string name="ask_ai_saved_conversations_empty">Još nema sačuvanih razgovora.</string>
     <string name="ask_ai_saved_conversations_meta">%1$d poruka • %2$s</string>
+    <string name="explanations_title">Objašnjenja</string>
+    <string name="explanations_subtitle">Otvori lekciju da ponovo vidiš sačuvano objašnjenje.</string>
+    <string name="explanations_empty_title">Još nema sačuvanih objašnjenja</string>
+    <string name="explanations_empty_body">Kada sačuvaš razgovor iz lekcije, pojaviće se ovde u svom modulu.</string>
+    <string name="explanations_delete_title">Obriši objašnjenje?</string>
+    <string name="explanations_delete_body">Ovaj sačuvani razgovor iz lekcije biće uklonjen iz Objašnjenja.</string>
     <string name="ask_ai_error_empty_input">Unesi pitanje pre slanja.</string>
     <string name="ask_ai_error_wait_seconds">Sačekaj još %1$d s pre sledećeg pitanja.</string>
     <string name="ask_ai_error_not_ready">AI tutor još nije spreman za ovu lekciju.</string>
@@ -64,7 +70,7 @@
 
     <string name="nav_home">Početna</string>
     <string name="nav_modules">Moduli</string>
-    <string name="nav_ai_coach">AI trener</string>
+    <string name="nav_ai_coach">Objašnjenja</string>
     <string name="nav_profile">Profil</string>
 
     <string name="common_back">Nazad</string>
@@ -78,6 +84,9 @@
     <string name="common_accept">Prihvati</string>
     <string name="common_decline">Odbij</string>
     <string name="common_badges">Značke</string>
+    <string name="common_cancel">Otkaži</string>
+    <string name="common_delete">Obriši</string>
+    <string name="common_import">Uvezi</string>
     <string name="common_level_value">Nivo %1$d</string>
     <string name="common_xp_amount">%1$d XP</string>
     <string name="common_user_fallback">Korisnik</string>
@@ -139,6 +148,16 @@
     <string name="profile_edit_avatar">Izmeni avatar</string>
     <string name="profile_language_english">English</string>
     <string name="profile_language_serbian">Srpski</string>
+    <string name="profile_conversations_section">Razgovori</string>
+    <string name="profile_conversations_export">Izvezi razgovore</string>
+    <string name="profile_conversations_import">Uvezi razgovore</string>
+    <string name="profile_conversations_export_success">Razgovori su izvezeni.</string>
+    <string name="profile_conversations_export_error">Nije moguće izvesti razgovore.</string>
+    <string name="profile_conversations_import_warning_title">Uvezi razgovore?</string>
+    <string name="profile_conversations_import_warning_body">Uvezeni razgovori će zameniti sačuvana objašnjenja za iste lekcije.</string>
+    <string name="profile_conversations_import_success">Razgovori su uvezeni.</string>
+    <string name="profile_conversations_import_invalid_file">Ova datoteka nije ispravan CodePrep backup razgovora.</string>
+    <string name="profile_conversations_import_error">Nije moguće uvesti razgovore.</string>
 
     <string name="fun_fact_opening_home">&gt;&gt; OTVARAM_POCETNU()</string>
 
