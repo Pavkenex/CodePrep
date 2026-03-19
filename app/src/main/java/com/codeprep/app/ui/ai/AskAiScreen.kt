@@ -1,81 +1,255 @@
 package com.codeprep.app.ui.ai
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.codeprep.app.R
-import com.codeprep.app.domain.model.SavedAiConversationSummary
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.Charcoal
+import com.codeprep.app.ui.theme.DeepCharcoal
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.IceWhite
 import com.codeprep.app.ui.theme.LockedGrey
-import java.text.DateFormat
-import java.util.Date
+import com.codeprep.app.ui.theme.TextLight
 
 @Composable
 fun AskAiScreen(
+    onLessonClick: (String) -> Unit,
     viewModel: AskAiViewModel = hiltViewModel()
 ) {
-    val savedConversations by viewModel.savedConversations.collectAsState()
+    val explanationsUiState by viewModel.explanationsUiState.collectAsState()
     val languageCode by viewModel.selectedLanguage.collectAsState()
+    var expandedCourseId by rememberSaveable { mutableStateOf<String?>(null) }
+    var lessonPendingDeletion by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(explanationsUiState.modules) {
+        if (explanationsUiState.modules.none { it.courseId == expandedCourseId }) {
+            expandedCourseId = null
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBackground)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
         Text(
-            text = localizedAiString(languageCode, R.string.ask_ai_saved_conversations_title),
-            style = MaterialTheme.typography.headlineSmall,
-            color = ElectricCyan
+            text = localizedAiString(languageCode, R.string.explanations_title),
+            style = MaterialTheme.typography.headlineMedium,
+            color = IceWhite
         )
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = localizedAiString(languageCode, R.string.ask_ai_saved_conversations_subtitle),
+            text = localizedAiString(languageCode, R.string.explanations_subtitle),
             style = MaterialTheme.typography.bodyMedium,
-            color = LockedGrey
+            color = LockedGrey,
+            modifier = Modifier.padding(top = 6.dp)
         )
-        Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(top = 18.dp)
         ) {
-            if (savedConversations.isEmpty()) {
-                item {
+            when {
+                explanationsUiState.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = ElectricCyan
+                    )
+                }
+
+                explanationsUiState.isEmpty -> {
+                    ExplanationsEmptyState(languageCode = languageCode)
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(explanationsUiState.modules, key = { it.courseId }) { module ->
+                            ExplanationsModuleCard(
+                                module = module,
+                                expanded = expandedCourseId == module.courseId,
+                                onToggle = {
+                                    expandedCourseId = if (expandedCourseId == module.courseId) {
+                                        null
+                                    } else {
+                                        module.courseId
+                                    }
+                                },
+                                onLessonClick = onLessonClick,
+                                onDeleteClick = { lessonPendingDeletion = it }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    lessonPendingDeletion?.let { lessonId ->
+        AlertDialog(
+            onDismissRequest = { lessonPendingDeletion = null },
+            title = {
+                Text(
+                    text = localizedAiString(languageCode, R.string.explanations_delete_title),
+                    color = IceWhite
+                )
+            },
+            text = {
+                Text(
+                    text = localizedAiString(languageCode, R.string.explanations_delete_body),
+                    color = TextLight
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteSavedConversation(lessonId)
+                        lessonPendingDeletion = null
+                    }
+                ) {
                     Text(
-                        text = localizedAiString(languageCode, R.string.ask_ai_saved_conversations_empty),
-                        style = MaterialTheme.typography.bodyLarge,
+                        text = localizedAiString(languageCode, R.string.common_delete),
+                        color = ElectricCyan
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { lessonPendingDeletion = null }) {
+                    Text(
+                        text = localizedAiString(languageCode, R.string.common_cancel),
                         color = LockedGrey
                     )
                 }
-            } else {
-                items(savedConversations, key = { it.id }) { summary ->
-                    SavedConversationCard(
-                        languageCode = languageCode,
-                        summary = summary
-                    )
+            },
+            containerColor = Charcoal
+        )
+    }
+}
+
+@Composable
+private fun ExplanationsEmptyState(
+    languageCode: String
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Charcoal,
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = localizedAiString(languageCode, R.string.explanations_empty_title),
+                style = MaterialTheme.typography.headlineSmall,
+                color = IceWhite
+            )
+            Text(
+                text = localizedAiString(languageCode, R.string.explanations_empty_body),
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextLight,
+                modifier = Modifier.padding(top = 10.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExplanationsModuleCard(
+    module: ExplanationsModuleUi,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    onLessonClick: (String) -> Unit,
+    onDeleteClick: (String) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
+        color = Charcoal,
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = module.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = IceWhite,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = ElectricCyan
+                )
+            }
+
+            if (expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    module.lessons.forEach { lesson ->
+                        ExplanationsLessonRow(
+                            lesson = lesson,
+                            onClick = { onLessonClick(lesson.lessonId) },
+                            onDeleteClick = { onDeleteClick(lesson.lessonId) }
+                        )
+                    }
                 }
             }
         }
@@ -83,56 +257,70 @@ fun AskAiScreen(
 }
 
 @Composable
-private fun SavedConversationCard(
-    languageCode: String,
-    summary: SavedAiConversationSummary
+private fun ExplanationsLessonRow(
+    lesson: ExplanationLessonUi,
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
-    val formatter = rememberDateFormatter()
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Charcoal)
+        color = DeepCharcoal,
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(1.dp, IceWhite.copy(alpha = 0.05f))
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Text(
-                text = summary.lessonTitle,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = IceWhite
-            )
-            Text(
-                text = summary.courseTitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = ElectricCyan
-            )
-            if (summary.preview.isNotBlank()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(MaterialTheme.shapes.large)
+                    .clickable(onClick = onClick),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
                 Text(
-                    text = summary.preview,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = IceWhite.copy(alpha = 0.85f),
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+                    text = lesson.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = IceWhite
+                )
+                if (lesson.preview.isNotBlank()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.small)
+                            .background(ElectricCyan.copy(alpha = 0.06f))
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(ElectricCyan.copy(alpha = 0.55f))
+                                .padding(horizontal = 1.5.dp, vertical = 16.dp)
+                        )
+                        Text(
+                            text = "\"${lesson.preview}\"",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextLight,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    imageVector = Icons.Default.DeleteOutline,
+                    contentDescription = null,
+                    tint = LockedGrey
                 )
             }
-            Text(
-                text = localizedAiString(
-                    languageCode,
-                    R.string.ask_ai_saved_conversations_meta,
-                    summary.messageCount,
-                    formatter.format(Date(summary.updatedAt))
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = LockedGrey
-            )
         }
-    }
-}
-
-@Composable
-private fun rememberDateFormatter(): DateFormat {
-    return androidx.compose.runtime.remember {
-        DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
     }
 }

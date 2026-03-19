@@ -1,10 +1,20 @@
 package com.codeprep.app.ui.profile
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,22 +25,29 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -54,6 +71,7 @@ import com.codeprep.app.ui.theme.IceWhite
 import com.codeprep.app.ui.theme.LockedGrey
 import com.codeprep.app.ui.theme.TextLight
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +83,67 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel(),
     settingsViewModel: ProfileSettingsViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val progress by sessionViewModel.currentUserProgress.collectAsStateWithLifecycle()
     val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
     val selectedLanguage by settingsViewModel.selectedLanguage.collectAsStateWithLifecycle()
     var isAvatarSelectorVisible by remember { mutableStateOf(false) }
     var isSettingsVisible by remember { mutableStateOf(false) }
+    var isSettingsActionRunning by remember { mutableStateOf(false) }
+    var pendingImportContent by remember { mutableStateOf<String?>(null) }
+    var pendingExport by remember { mutableStateOf<ConversationExportPayload?>(null) }
+    var settingsNotice by remember { mutableStateOf<SettingsNotice?>(null) }
+    var expandedSettingsSection by rememberSaveable { mutableStateOf<ProfileSettingsSection?>(null) }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        val payload = pendingExport
+        pendingExport = null
+
+        if (uri == null || payload == null) {
+            isSettingsActionRunning = false
+            return@rememberLauncherForActivityResult
+        }
+
+        val writeSucceeded = runCatching {
+            context.contentResolver.openOutputStream(uri)?.bufferedWriter().use { writer ->
+                requireNotNull(writer)
+                writer.write(payload.content)
+            }
+        }.isSuccess
+
+        settingsNotice = if (writeSucceeded) {
+            SettingsNotice(R.string.profile_conversations_export_success, isError = false)
+        } else {
+            SettingsNotice(R.string.profile_conversations_export_error, isError = true)
+        }
+        isSettingsActionRunning = false
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri == null) {
+            isSettingsActionRunning = false
+            return@rememberLauncherForActivityResult
+        }
+
+        val importContent = runCatching {
+            context.contentResolver.openInputStream(uri)?.bufferedReader().use { reader ->
+                requireNotNull(reader)
+                reader.readText()
+            }
+        }.getOrNull()
+
+        if (importContent.isNullOrBlank()) {
+            settingsNotice = SettingsNotice(R.string.profile_conversations_import_error, isError = true)
+        } else {
+            pendingImportContent = importContent
+        }
+        isSettingsActionRunning = false
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -302,7 +376,11 @@ fun ProfileScreen(
 
     if (isSettingsVisible) {
         ModalBottomSheet(
-            onDismissRequest = { isSettingsVisible = false },
+            onDismissRequest = {
+                isSettingsVisible = false
+                pendingImportContent = null
+                expandedSettingsSection = null
+            },
             containerColor = Charcoal
         ) {
             Column(
@@ -314,24 +392,130 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.titleLarge,
                     color = IceWhite
                 )
-                Text(
-                    text = localizedStringResource(R.string.common_language),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = ElectricCyan
-                )
-                LanguageOption(
-                    label = localizedStringResource(R.string.profile_language_english),
-                    isSelected = selectedLanguage == "en",
-                    onClick = { settingsViewModel.setSelectedLanguage("en") }
-                )
-                LanguageOption(
-                    label = localizedStringResource(R.string.profile_language_serbian),
-                    isSelected = selectedLanguage == "sr",
-                    onClick = { settingsViewModel.setSelectedLanguage("sr") }
-                )
+                SettingsSectionCard(
+                    title = localizedStringResource(R.string.common_language),
+                    expanded = expandedSettingsSection == ProfileSettingsSection.Language,
+                    onToggle = {
+                        expandedSettingsSection = toggleSettingsSection(
+                            current = expandedSettingsSection,
+                            requested = ProfileSettingsSection.Language
+                        )
+                    }
+                ) {
+                    LanguageOption(
+                        label = localizedStringResource(R.string.profile_language_english),
+                        isSelected = selectedLanguage == "en",
+                        onClick = { settingsViewModel.setSelectedLanguage("en") }
+                    )
+                    LanguageOption(
+                        label = localizedStringResource(R.string.profile_language_serbian),
+                        isSelected = selectedLanguage == "sr",
+                        onClick = { settingsViewModel.setSelectedLanguage("sr") }
+                    )
+                }
+                SettingsSectionCard(
+                    title = localizedStringResource(R.string.profile_conversations_section),
+                    expanded = expandedSettingsSection == ProfileSettingsSection.Conversations,
+                    onToggle = {
+                        expandedSettingsSection = toggleSettingsSection(
+                            current = expandedSettingsSection,
+                            requested = ProfileSettingsSection.Conversations
+                        )
+                    }
+                ) {
+                    SettingsActionOption(
+                        label = localizedStringResource(R.string.profile_conversations_export),
+                        enabled = !isSettingsActionRunning,
+                        onClick = {
+                            settingsNotice = null
+                            coroutineScope.launch {
+                                isSettingsActionRunning = true
+                                val exportPayload = settingsViewModel.createConversationExport()
+                                pendingExport = exportPayload
+                                exportLauncher.launch(exportPayload.fileName)
+                            }
+                        }
+                    )
+                    SettingsActionOption(
+                        label = localizedStringResource(R.string.profile_conversations_import),
+                        enabled = !isSettingsActionRunning,
+                        onClick = {
+                            settingsNotice = null
+                            isSettingsActionRunning = true
+                            importLauncher.launch(arrayOf("application/json"))
+                        }
+                    )
+                }
+                settingsNotice?.let { notice ->
+                    Text(
+                        text = localizedStringResource(notice.messageResId),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (notice.isError) CardinalRed else ElectricCyan
+                    )
+                }
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+
+    pendingImportContent?.let { importContent ->
+        AlertDialog(
+            onDismissRequest = { pendingImportContent = null },
+            title = {
+                Text(
+                    text = localizedStringResource(R.string.profile_conversations_import_warning_title),
+                    color = IceWhite
+                )
+            },
+            text = {
+                Text(
+                    text = localizedStringResource(R.string.profile_conversations_import_warning_body),
+                    color = TextLight
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            isSettingsActionRunning = true
+                            settingsNotice = null
+                            settingsNotice = when (settingsViewModel.importConversationBackup(importContent)) {
+                                is ConversationImportResult.Success -> SettingsNotice(
+                                    R.string.profile_conversations_import_success,
+                                    isError = false
+                                )
+
+                                ConversationImportResult.InvalidFile -> SettingsNotice(
+                                    R.string.profile_conversations_import_invalid_file,
+                                    isError = true
+                                )
+
+                                ConversationImportResult.Error -> SettingsNotice(
+                                    R.string.profile_conversations_import_error,
+                                    isError = true
+                                )
+                            }
+                            pendingImportContent = null
+                            isSettingsActionRunning = false
+                        }
+                    }
+                ) {
+                    Text(
+                        text = localizedStringResource(R.string.common_import),
+                        color = ElectricCyan
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingImportContent = null }) {
+                    Text(
+                        text = localizedStringResource(R.string.common_cancel),
+                        color = LockedGrey
+                    )
+                }
+            },
+            containerColor = Charcoal
+        )
     }
 }
 
@@ -428,3 +612,86 @@ private fun LanguageOption(
         }
     }
 }
+
+@Composable
+private fun SettingsActionOption(
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+            .background(if (enabled) Charcoal else Charcoal.copy(alpha = 0.55f))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = IceWhite
+        )
+    }
+}
+
+@Composable
+private fun SettingsSectionCard(
+    title: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
+            .background(Charcoal.copy(alpha = 0.92f))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                .clickable(onClick = onToggle),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = ElectricCyan
+            )
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                tint = LockedGrey
+            )
+        }
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(
+                animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
+                expandFrom = Alignment.Top
+            ) + fadeIn(animationSpec = tween(durationMillis = 180)),
+            exit = shrinkVertically(
+                animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+                shrinkTowards = Alignment.Top
+            ) + fadeOut(animationSpec = tween(durationMillis = 120))
+        ) {
+            Column(
+                modifier = Modifier.padding(top = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                content = content
+            )
+        }
+    }
+}
+
+private data class SettingsNotice(
+    val messageResId: Int,
+    val isError: Boolean
+)
