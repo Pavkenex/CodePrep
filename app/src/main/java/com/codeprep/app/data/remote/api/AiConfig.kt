@@ -3,7 +3,7 @@ package com.codeprep.app.data.remote.api
 import com.codeprep.app.BuildConfig
 
 object AiConfig {
-    const val MODEL = "openrouter/hunter-alpha"
+    const val MODEL = "stepfun/step-3.5-flash:freegi"
     const val BASE_URL = "https://openrouter.ai/api/v1/"
     const val MAX_TOKENS_GLOBAL = 1200
     const val MAX_TOKENS_CONTEXTUAL = 9000
