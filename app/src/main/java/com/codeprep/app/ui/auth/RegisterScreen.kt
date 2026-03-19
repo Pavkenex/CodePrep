@@ -58,7 +58,6 @@ fun RegisterScreen(
         Text(
             text = localizedStringResource(R.string.auth_register_title),
             style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.Bold,
                 color = ElectricCyan
             ),
             modifier = Modifier.padding(bottom = 32.dp)
@@ -158,7 +157,6 @@ fun RegisterScreen(
             Text(
                 text = localizedStringResource(R.string.auth_register_have_account),
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
                     color = TextLight
                 )
             )
@@ -166,7 +164,6 @@ fun RegisterScreen(
             Text(
                 text = localizedStringResource(R.string.auth_login_title),
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
                     color = ElectricCyan
                 ),
                 modifier = Modifier.clickable { navController.navigate(Screen.Login.route) }
