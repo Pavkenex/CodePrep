@@ -9,9 +9,9 @@ import androidx.compose.ui.unit.sp
 import com.codeprep.app.R
 
 val AppSansFontFamily = FontFamily(
-    Font(R.font.space_grotesk_variable, FontWeight.Normal),
-    Font(R.font.space_grotesk_variable, FontWeight.SemiBold),
-    Font(R.font.space_grotesk_variable, FontWeight.Bold)
+    Font(R.font.public_sans_regular, FontWeight.Normal),
+    Font(R.font.public_sans_semibold, FontWeight.SemiBold),
+    Font(R.font.public_sans_bold, FontWeight.Bold)
 )
 
 val AppMonoFontFamily = FontFamily(
