@@ -65,7 +65,6 @@ fun LoginScreen(
         Text(
             text = localizedStringResource(R.string.auth_brand_title),
             style = MaterialTheme.typography.displayMedium.copy(
-                fontWeight = FontWeight.ExtraBold,
                 color = ElectricCyan
             ),
             modifier = Modifier.padding(bottom = 48.dp)
@@ -74,7 +73,6 @@ fun LoginScreen(
         Text(
             text = localizedStringResource(R.string.auth_login_title),
             style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.Bold,
                 color = IceWhite
             ),
             modifier = Modifier
@@ -146,7 +144,6 @@ fun LoginScreen(
             Text(
                 text = localizedStringResource(R.string.auth_login_no_account),
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
                     color = TextLight
                 )
             )
@@ -154,7 +151,6 @@ fun LoginScreen(
             Text(
                 text = localizedStringResource(R.string.auth_login_sign_up),
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
                     color = ElectricCyan
                 ),
                 modifier = Modifier.clickable { navController.navigate(Screen.Register.route) }

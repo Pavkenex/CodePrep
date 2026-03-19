@@ -65,7 +65,7 @@ fun StatBadge(
         Column {
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium.copy(
+                style = AppCodeTypography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = color
                 )
@@ -73,7 +73,7 @@ fun StatBadge(
             if (detail != null) {
                 Text(
                     text = detail,
-                    style = MaterialTheme.typography.labelSmall.copy(
+                    style = AppCodeTypography.labelSmall.copy(
                         color = color
                     )
                 )
