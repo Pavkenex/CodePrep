@@ -60,6 +60,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun LessonDetailScreen(
     viewModel: LessonViewModel = hiltViewModel(),
+    startWithAiOpen: Boolean = false,
     onStartQuiz: (String) -> Unit
 ) {
     val lesson by viewModel.lesson.collectAsState()
@@ -68,7 +69,7 @@ fun LessonDetailScreen(
     val language by viewModel.selectedLanguage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val quizBlockMessage by viewModel.quizBlockMessage.collectAsState()
-    var showAiSheet by remember { mutableStateOf(false) }
+    var showAiSheet by rememberSaveable { mutableStateOf(startWithAiOpen) }
 
     LaunchedEffect(Unit) {
         viewModel.startQuizEvent.collectLatest { lessonId ->

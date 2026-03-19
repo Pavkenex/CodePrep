@@ -1,6 +1,9 @@
 package com.codeprep.app.data.repository
 
 import com.codeprep.app.R
+import com.codeprep.app.data.backup.ImportedAiConversationBackup
+import com.codeprep.app.data.backup.deserializeAiConversationBackup
+import com.codeprep.app.data.backup.serializeAiConversationBackup
 import com.codeprep.app.data.local.dao.AiConversationDao
 import com.codeprep.app.data.local.dao.AiConversationWithMessages
 import com.codeprep.app.data.local.dao.AiResponseCacheDao
@@ -162,6 +165,35 @@ class AiRepository @Inject constructor(
         return conversationDao.getConversationWithMessages(userId, lessonId)?.toDomain()
     }
 
+    suspend fun deleteSavedConversation(
+        userId: String,
+        lessonId: String
+    ) {
+        if (userId.isBlank() || lessonId.isBlank()) return
+        conversationDao.deleteConversationForLesson(userId, lessonId)
+    }
+
+    suspend fun exportSavedConversations(userId: String): String {
+        if (userId.isBlank()) {
+            return serializeAiConversationBackup(emptyList())
+        }
+
+        return serializeAiConversationBackup(
+            conversationDao.getAllConversationsWithMessages(userId).map { it.toDomain() }
+        )
+    }
+
+    suspend fun importSavedConversations(
+        userId: String,
+        payload: String
+    ): Int {
+        if (userId.isBlank() || payload.isBlank()) return 0
+
+        val conversations = deserializeAiConversationBackup(payload)
+        conversations.forEach { persistImportedConversation(userId, it) }
+        return conversations.size
+    }
+
     suspend fun saveConversation(
         userId: String,
         context: LessonContext,
@@ -191,11 +223,7 @@ class AiRepository @Inject constructor(
                 )
             }
 
-        conversationDao.upsertConversation(conversation)
-        conversationDao.deleteMessagesForConversation(conversationId)
-        if (persistedMessages.isNotEmpty()) {
-            conversationDao.insertMessages(persistedMessages)
-        }
+        persistConversation(conversation, persistedMessages)
 
         return SavedAiConversation(
             id = conversation.id,
@@ -206,6 +234,48 @@ class AiRepository @Inject constructor(
             updatedAt = conversation.updatedAt,
             messages = persistedMessages.map { it.toDomain() }
         )
+    }
+
+    private suspend fun persistImportedConversation(
+        userId: String,
+        conversation: ImportedAiConversationBackup
+    ) {
+        val now = System.currentTimeMillis()
+        val existing = conversationDao.getConversationForLesson(userId, conversation.lessonId)
+        val conversationId = existing?.id ?: UUID.randomUUID().toString()
+        val entity = AiConversationEntity(
+            id = conversationId,
+            userId = userId,
+            lessonId = conversation.lessonId,
+            courseTitle = conversation.courseTitle,
+            lessonTitle = conversation.lessonTitle,
+            createdAt = conversation.createdAt.takeIf { it > 0L } ?: existing?.createdAt ?: now,
+            updatedAt = conversation.updatedAt.takeIf { it > 0L } ?: now
+        )
+        val messages = conversation.messages
+            .filter { it.content.isNotBlank() }
+            .mapIndexed { index, message ->
+                AiConversationMessageEntity(
+                    id = message.id.ifBlank { "imported-${conversation.lessonId}-${message.createdAt}-$index" },
+                    conversationId = conversationId,
+                    role = message.role.toStorageRole(),
+                    content = message.content,
+                    createdAt = message.createdAt
+                )
+            }
+
+        persistConversation(entity, messages)
+    }
+
+    private suspend fun persistConversation(
+        conversation: AiConversationEntity,
+        messages: List<AiConversationMessageEntity>
+    ) {
+        conversationDao.upsertConversation(conversation)
+        conversationDao.deleteMessagesForConversation(conversation.id)
+        if (messages.isNotEmpty()) {
+            conversationDao.insertMessages(messages)
+        }
     }
 
     private suspend fun resolveFallback(

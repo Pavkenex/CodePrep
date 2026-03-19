@@ -16,6 +16,13 @@ data class AskAiUiState(
     val canSave: Boolean = false
 )
 
+@Immutable
+data class ExplanationsUiState(
+    val modules: List<ExplanationsModuleUi> = emptyList(),
+    val isLoading: Boolean = true,
+    val isEmpty: Boolean = false
+)
+
 internal fun conversationMessage(
     role: AiConversationRole,
     content: String,

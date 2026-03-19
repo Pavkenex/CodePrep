@@ -41,8 +41,18 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(Screen.LessonDetail.route) {
+        composable(
+            route = Screen.LessonDetail.route,
+            arguments = listOf(
+                navArgument("lessonId") { nullable = false },
+                navArgument("openAi") {
+                    type = androidx.navigation.NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
             LessonDetailScreen(
+                startWithAiOpen = backStackEntry.arguments?.getBoolean("openAi") == true,
                 onStartQuiz = { lessonId ->
                     navController.navigate(Screen.Quiz.createRoute(lessonId))
                 }
@@ -55,7 +65,13 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Screen.AskAI.route) { AskAiScreen() }
+        composable(Screen.AskAI.route) {
+            AskAiScreen(
+                onLessonClick = { lessonId ->
+                    navController.navigate(Screen.LessonDetail.createRoute(lessonId, openAi = true))
+                }
+            )
+        }
         composable(Screen.Profile.route) {
             ProfileScreen(
                 onAddFriends = { navController.navigate(Screen.AddFriends.route) },
