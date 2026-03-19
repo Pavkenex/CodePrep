@@ -30,6 +30,12 @@
     <string name="ask_ai_saved_conversations_subtitle">Saved lesson conversations appear here. Reopen a lesson to continue or update one.</string>
     <string name="ask_ai_saved_conversations_empty">No saved conversations yet.</string>
     <string name="ask_ai_saved_conversations_meta">%1$d messages • %2$s</string>
+    <string name="explanations_title">Explanations</string>
+    <string name="explanations_subtitle">Open a lesson to revisit the explanation you kept.</string>
+    <string name="explanations_empty_title">No saved explanations yet</string>
+    <string name="explanations_empty_body">When you save a conversation from a lesson, it will appear here under its module.</string>
+    <string name="explanations_delete_title">Delete explanation?</string>
+    <string name="explanations_delete_body">This saved lesson conversation will be removed from Explanations.</string>
     <string name="ask_ai_error_empty_input">Enter a question before sending.</string>
     <string name="ask_ai_error_wait_seconds">Wait %1$d s before the next question.</string>
     <string name="ask_ai_error_not_ready">The AI tutor is not ready for this lesson yet.</string>
@@ -77,7 +83,7 @@
 
     <string name="nav_home">Home</string>
     <string name="nav_modules">Modules</string>
-    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_ai_coach">Explanations</string>
     <string name="nav_profile">Profile</string>
 
     <string name="common_back">Back</string>
@@ -91,6 +97,9 @@
     <string name="common_accept">Accept</string>
     <string name="common_decline">Decline</string>
     <string name="common_badges">Badges</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_import">Import</string>
     <string name="common_level_value">Level %1$d</string>
     <string name="common_xp_amount">%1$d XP</string>
     <string name="common_user_fallback">User</string>
@@ -152,6 +161,16 @@
     <string name="profile_edit_avatar">Edit avatar</string>
     <string name="profile_language_english">English</string>
     <string name="profile_language_serbian">Srpski</string>
+    <string name="profile_conversations_section">Conversations</string>
+    <string name="profile_conversations_export">Export conversations</string>
+    <string name="profile_conversations_import">Import conversations</string>
+    <string name="profile_conversations_export_success">Conversations exported.</string>
+    <string name="profile_conversations_export_error">Couldn\'t export conversations.</string>
+    <string name="profile_conversations_import_warning_title">Import conversations?</string>
+    <string name="profile_conversations_import_warning_body">Imported conversations will overwrite saved explanations for matching lessons.</string>
+    <string name="profile_conversations_import_success">Conversations imported.</string>
+    <string name="profile_conversations_import_invalid_file">This file isn\'t a valid CodePrep conversations backup.</string>
+    <string name="profile_conversations_import_error">Couldn\'t import conversations.</string>
 
     <string name="fun_fact_opening_home">&gt;&gt; OPENING_HOME()</string>
 
