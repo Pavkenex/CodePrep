@@ -22,6 +22,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.codeprep.app.R
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.navigation.Screen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
@@ -54,7 +56,7 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Create Profile",
+            text = localizedStringResource(R.string.auth_register_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = ElectricCyan
@@ -65,7 +67,7 @@ fun RegisterScreen(
         GamifiedTextField(
             value = fullName,
             onValueChange = { fullName = it },
-            placeholder = "Full Name",
+            placeholder = localizedStringResource(R.string.auth_register_placeholder_full_name),
             modifier = Modifier.padding(bottom = 16.dp),
             backgroundColor = Charcoal,
             textColor = IceWhite,
@@ -77,7 +79,7 @@ fun RegisterScreen(
         GamifiedTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = "Email",
+            placeholder = localizedStringResource(R.string.auth_register_placeholder_email),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.padding(bottom = 16.dp),
             backgroundColor = Charcoal,
@@ -90,7 +92,7 @@ fun RegisterScreen(
         GamifiedTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = "Password",
+            placeholder = localizedStringResource(R.string.auth_register_placeholder_password),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.padding(bottom = 16.dp),
@@ -104,7 +106,7 @@ fun RegisterScreen(
         GamifiedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            placeholder = "Confirm Password",
+            placeholder = localizedStringResource(R.string.auth_register_placeholder_confirm_password),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.padding(bottom = 24.dp),
@@ -126,7 +128,7 @@ fun RegisterScreen(
         }
 
         GamifiedButton(
-            text = "CREATE ACCOUNT",
+            text = localizedStringResource(R.string.auth_register_create_account),
             onClick = {
                 if (password == confirmPassword) {
                     viewModel.register(fullName, email, password)
@@ -140,7 +142,7 @@ fun RegisterScreen(
         )
 
         GamifiedButton(
-            text = "SIGN UP WITH GOOGLE",
+            text = localizedStringResource(R.string.auth_register_google),
             onClick = { /* TODO: Google Auth */ },
             backgroundColor = Charcoal,
             shadowColor = DeepCharcoal,
@@ -154,7 +156,7 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "ALREADY HAVE AN ACCOUNT?",
+                text = localizedStringResource(R.string.auth_register_have_account),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = TextLight
@@ -162,7 +164,7 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "LOGIN",
+                text = localizedStringResource(R.string.auth_login_title),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan

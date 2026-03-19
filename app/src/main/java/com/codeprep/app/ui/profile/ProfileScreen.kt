@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codeprep.app.R
 import com.codeprep.app.ui.friends.AvatarBadge
 import com.codeprep.app.ui.friends.AvatarPresets
 import com.codeprep.app.ui.friends.BadgeStrip
@@ -43,6 +44,7 @@ import com.codeprep.app.ui.friends.FriendsCarousel
 import com.codeprep.app.ui.friends.LevelChip
 import com.codeprep.app.ui.friends.ProfileViewModel
 import com.codeprep.app.ui.friends.RequestCard
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
@@ -84,7 +86,7 @@ fun ProfileScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
+                    contentDescription = localizedStringResource(R.string.common_settings),
                     tint = LockedGrey,
                     modifier = Modifier
                         .size(28.dp)
@@ -97,7 +99,7 @@ fun ProfileScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(contentAlignment = Alignment.BottomEnd) {
                     AvatarBadge(
-                        nickname = progress?.nickname ?: "User",
+                        nickname = progress?.nickname ?: localizedStringResource(R.string.common_user_fallback),
                         avatarPresetId = uiState.avatarPresetId,
                         size = 120
                     )
@@ -120,7 +122,7 @@ fun ProfileScreen(
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit avatar",
+                                contentDescription = localizedStringResource(R.string.profile_edit_avatar),
                                 tint = Charcoal,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -131,7 +133,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = progress?.nickname ?: "User",
+                    text = progress?.nickname ?: localizedStringResource(R.string.common_user_fallback),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = IceWhite
@@ -141,15 +143,27 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    NeonStatCard(label = "XP", value = "${progress?.xp ?: 0}", modifier = Modifier.weight(1f))
-                    NeonStatCard(label = "Level", value = "${progress?.level ?: 1}", modifier = Modifier.weight(1f))
-                    NeonStatCard(label = "Friends", value = "${uiState.friends.size}", modifier = Modifier.weight(1f))
+                    NeonStatCard(
+                        label = localizedStringResource(R.string.profile_stat_xp),
+                        value = "${progress?.xp ?: 0}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    NeonStatCard(
+                        label = localizedStringResource(R.string.profile_stat_level),
+                        value = "${progress?.level ?: 1}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    NeonStatCard(
+                        label = localizedStringResource(R.string.profile_stat_friends),
+                        value = "${uiState.friends.size}",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }
 
         item {
-            SectionHeader(title = "Badges")
+            SectionHeader(title = localizedStringResource(R.string.common_badges))
         }
 
         item {
@@ -157,14 +171,14 @@ fun ProfileScreen(
         }
 
         item {
-            SectionHeader(title = "Pending Requests")
+            SectionHeader(title = localizedStringResource(R.string.profile_pending_requests))
         }
 
         if (uiState.pendingRequests.isEmpty()) {
             item {
                 EmptyStateCard(
-                    title = "No pending requests",
-                    subtitle = "Incoming friend requests will show up here."
+                    title = localizedStringResource(R.string.profile_pending_empty_title),
+                    subtitle = localizedStringResource(R.string.profile_pending_empty_body)
                 )
             }
         } else {
@@ -181,8 +195,8 @@ fun ProfileScreen(
 
         item {
             SectionHeader(
-                title = "Friends",
-                actionLabel = "Add Friends",
+                title = localizedStringResource(R.string.profile_friends_title),
+                actionLabel = localizedStringResource(R.string.profile_add_friends),
                 onActionClick = onAddFriends
             )
         }
@@ -190,12 +204,12 @@ fun ProfileScreen(
         item {
             if (uiState.friends.isEmpty()) {
                 EmptyStateCard(
-                    title = "Build your circle",
-                    subtitle = "Search by username and send your first friend request.",
+                    title = localizedStringResource(R.string.profile_friends_empty_title),
+                    subtitle = localizedStringResource(R.string.profile_friends_empty_body),
                     action = {
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = onAddFriends) {
-                            Text("Add Friends")
+                            Text(localizedStringResource(R.string.profile_add_friends))
                         }
                     }
                 )
@@ -227,7 +241,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(bottom = 32.dp)
             ) {
-                Text("SYSTEM SHUTDOWN", color = CardinalRed)
+                Text(localizedStringResource(R.string.profile_logout), color = CardinalRed)
             }
         }
     }
@@ -242,12 +256,12 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Choose avatar preset",
+                    text = localizedStringResource(R.string.profile_avatar_sheet_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = IceWhite
                 )
                 Text(
-                    text = "Preset art is still TODO. For now each preset maps to a distinct in-app style.",
+                    text = localizedStringResource(R.string.profile_avatar_sheet_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextLight
                 )
@@ -267,13 +281,13 @@ fun ProfileScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 AvatarBadge(
-                                    nickname = progress?.nickname ?: "User",
+                                    nickname = progress?.nickname ?: localizedStringResource(R.string.common_user_fallback),
                                     avatarPresetId = preset.id,
                                     size = 72
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = preset.label,
+                                    text = localizedStringResource(preset.labelResId),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = IceWhite
                                 )
@@ -296,22 +310,22 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Settings",
+                    text = localizedStringResource(R.string.common_settings),
                     style = MaterialTheme.typography.titleLarge,
                     color = IceWhite
                 )
                 Text(
-                    text = "Language",
+                    text = localizedStringResource(R.string.common_language),
                     style = MaterialTheme.typography.titleMedium,
                     color = ElectricCyan
                 )
                 LanguageOption(
-                    label = "English",
+                    label = localizedStringResource(R.string.profile_language_english),
                     isSelected = selectedLanguage == "en",
                     onClick = { settingsViewModel.setSelectedLanguage("en") }
                 )
                 LanguageOption(
-                    label = "Srpski",
+                    label = localizedStringResource(R.string.profile_language_serbian),
                     isSelected = selectedLanguage == "sr",
                     onClick = { settingsViewModel.setSelectedLanguage("sr") }
                 )
@@ -407,7 +421,7 @@ private fun LanguageOption(
         )
         if (isSelected) {
             Text(
-                text = "Selected",
+                text = localizedStringResource(R.string.common_selected),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 color = ElectricCyan
             )

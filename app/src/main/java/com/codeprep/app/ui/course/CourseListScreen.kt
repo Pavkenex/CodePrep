@@ -38,6 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.codeprep.app.R
+import com.codeprep.app.ui.localization.localizedPluralStringResource
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
 import com.codeprep.app.ui.theme.Charcoal
@@ -63,7 +66,7 @@ fun CourseListScreen(
             .padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "Modules",
+            text = localizedStringResource(R.string.course_list_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
                 color = IceWhite
@@ -71,7 +74,7 @@ fun CourseListScreen(
             modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
         )
         Text(
-            text = "Pick up where you left off and chase the star on every lesson.",
+            text = localizedStringResource(R.string.course_list_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = TextLight,
             modifier = Modifier.padding(bottom = 20.dp)
@@ -83,7 +86,7 @@ fun CourseListScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No modules available.",
+                    text = localizedStringResource(R.string.course_list_empty),
                     style = MaterialTheme.typography.titleMedium,
                     color = TextLight
                 )
@@ -148,19 +151,19 @@ private fun ModuleJourneyCard(
                 if (module.isLocked) {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Locked module",
+                        contentDescription = localizedStringResource(R.string.course_content_locked),
                         tint = LockedGrey
                     )
                 } else if (module.perfectLessons == module.lessonCount && module.lessonCount > 0) {
                     Icon(
                         imageVector = Icons.Default.Star,
-                        contentDescription = "Perfect module",
+                        contentDescription = localizedStringResource(R.string.course_content_perfect),
                         tint = SunYellow
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Continue module",
+                        contentDescription = localizedStringResource(R.string.course_content_continue),
                         tint = ElectricCyan
                     )
                 }
@@ -184,10 +187,28 @@ private fun ModuleJourneyCard(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Pill(text = "${module.lessonCount} lessons", accent = ElectricCyan)
-                Pill(text = "${module.perfectLessons} stars", accent = SunYellow)
                 Pill(
-                    text = if (module.isLocked) "Locked" else "${module.completedLessons} cleared",
+                    text = localizedPluralStringResource(
+                        R.plurals.course_pill_lessons,
+                        module.lessonCount,
+                        module.lessonCount
+                    ),
+                    accent = ElectricCyan
+                )
+                Pill(
+                    text = localizedPluralStringResource(
+                        R.plurals.course_pill_stars,
+                        module.perfectLessons,
+                        module.perfectLessons
+                    ),
+                    accent = SunYellow
+                )
+                Pill(
+                    text = if (module.isLocked) {
+                        localizedStringResource(R.string.course_progress_locked)
+                    } else {
+                        localizedStringResource(R.string.course_progress_cleared, module.completedLessons)
+                    },
                     accent = if (module.isLocked) CardinalRed else ElectricCyan
                 )
             }
@@ -204,9 +225,12 @@ private fun ModuleJourneyCard(
 
             Text(
                 text = when {
-                    module.isLocked -> "This module is locked."
-                    module.continueLessonTitle != null -> "Continue with ${module.continueLessonTitle}"
-                    else -> "Module ready."
+                    module.isLocked -> localizedStringResource(R.string.course_status_locked)
+                    module.continueLessonTitle != null -> localizedStringResource(
+                        R.string.course_status_continue,
+                        module.continueLessonTitle
+                    )
+                    else -> localizedStringResource(R.string.course_status_ready)
                 },
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,

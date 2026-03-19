@@ -43,6 +43,7 @@ import com.codeprep.app.ui.ai.AskAiLessonOverlay
 import com.codeprep.app.ui.ai.localizedAiString
 import com.codeprep.app.ui.components.CodePrepCodeBlock
 import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.localization.localizedPluralStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
 import com.codeprep.app.ui.theme.Charcoal
@@ -459,9 +460,16 @@ private fun LessonHeroCard(
                 color = IceWhite
             )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                HeroPill(text = "${lesson.xpReward} XP", accent = ElectricCyan)
                 HeroPill(
-                    text = localizedAiString(language, R.string.lesson_label_questions, lesson.questionCount),
+                    text = localizedAiString(language, R.string.common_xp_amount, lesson.xpReward),
+                    accent = ElectricCyan
+                )
+                HeroPill(
+                    text = localizedPluralStringResource(
+                        R.plurals.lesson_label_questions_count,
+                        lesson.questionCount,
+                        lesson.questionCount
+                    ),
                     accent = LockedGrey
                 )
                 if (progress?.perfectRun == true) {
@@ -675,7 +683,11 @@ private fun BulletList(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         filteredItems.forEach { item ->
             Text(
-                text = "• $item",
+                text = buildString {
+                    append('\u2022')
+                    append(' ')
+                    append(item)
+                },
                 style = style,
                 color = IceWhite
             )

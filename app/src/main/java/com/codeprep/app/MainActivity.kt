@@ -30,10 +30,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -53,6 +52,7 @@ import com.codeprep.app.ui.navigation.mainNavGraph
 import com.codeprep.app.ui.secretfact.SecretFactSensorController
 import com.codeprep.app.ui.secretfact.SecretFactOverlay
 import com.codeprep.app.ui.secretfact.SecretFactViewModel
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.CodePrepTheme
@@ -120,10 +120,10 @@ fun RootNavGraph() {
     // Bottom Nav Items - Added Home/Dashboard
     val bottomNavItems = remember {
         listOf(
-            BottomNavItem("Home", Screen.Home.route, Icons.Default.Home),
-            BottomNavItem("Modules", Screen.CourseList.route, Icons.Default.School),
-            BottomNavItem("AI Coach", Screen.AskAI.route, Icons.Default.Psychology),
-            BottomNavItem("Profile", Screen.Profile.route, Icons.Default.Person)
+            BottomNavItem(R.string.nav_home, Screen.Home.route, Icons.Default.Home),
+            BottomNavItem(R.string.nav_modules, Screen.CourseList.route, Icons.Default.School),
+            BottomNavItem(R.string.nav_ai_coach, Screen.AskAI.route, Icons.Default.Psychology),
+            BottomNavItem(R.string.nav_profile, Screen.Profile.route, Icons.Default.Person)
         )
     }
     
@@ -181,7 +181,7 @@ fun RootNavGraph() {
                  hearts = currentUserProgress?.hearts ?: 5,
                  streak = currentUserProgress?.streak ?: 0,
                  heartTimerText = heartRefillCountdown?.let { countdown ->
-                     stringResource(
+                     localizedStringResource(
                          R.string.heart_refill_countdown,
                          formatHeartRefillCountdown(countdown)
                      )
@@ -205,6 +205,7 @@ fun RootNavGraph() {
                 tonalElevation = 0.dp
             ) {
                 bottomNavItems.forEach { item ->
+                    val label = localizedStringResource(item.labelResId)
                     val selected = isBottomItemSelected(
                         itemRoute = item.route,
                         currentRoute = currentRoute
@@ -222,13 +223,12 @@ fun RootNavGraph() {
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.label
+                                contentDescription = label
                             )
                         },
                         label = { 
                             Text(
-                                item.label,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                label
                             ) 
                         },
                         colors = NavigationBarItemDefaults.colors(
@@ -290,7 +290,7 @@ private fun isBottomItemSelected(itemRoute: String, currentRoute: String?): Bool
 }
 
 private data class BottomNavItem(
-    val label: String,
+    @StringRes val labelResId: Int,
     val route: String,
     val icon: ImageVector
 )

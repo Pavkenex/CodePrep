@@ -3,10 +3,12 @@ package com.codeprep.app.ui.friends
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codeprep.app.R
 import com.codeprep.app.data.friends.DEFAULT_AVATAR_PRESET_ID
 import com.codeprep.app.data.friends.FriendRelationState
 import com.codeprep.app.data.friends.PublicUserProfile
 import com.codeprep.app.data.repository.FriendsRepository
+import com.codeprep.app.data.settings.AppStringProvider
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -50,6 +52,7 @@ data class FriendProfileScreenState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val friendsRepository: FriendsRepository,
+    private val appStringProvider: AppStringProvider,
     auth: FirebaseAuth
 ) : ViewModel() {
     private val userId = auth.currentUser?.uid
@@ -109,7 +112,7 @@ class ProfileViewModel @Inject constructor(
             runCatching {
                 friendsRepository.syncSocialGraph(currentUserId)
             }.onFailure {
-                errorMessage.value = it.message ?: "Could not refresh friends."
+                errorMessage.value = it.message ?: appStringProvider.get(R.string.friends_error_refresh)
             }
             isSyncing.value = false
         }
@@ -135,7 +138,7 @@ class ProfileViewModel @Inject constructor(
             runCatching {
                 friendsRepository.updateAvatarPreset(currentUserId, avatarPresetId)
             }.onFailure {
-                errorMessage.value = it.message ?: "Could not update avatar."
+                errorMessage.value = it.message ?: appStringProvider.get(R.string.friends_error_update_avatar)
             }
             isUpdatingAvatar.value = false
         }
@@ -148,7 +151,7 @@ class ProfileViewModel @Inject constructor(
             errorMessage.value = null
             runCatching { action() }
                 .onFailure {
-                    errorMessage.value = it.message ?: "Friend request action failed."
+                    errorMessage.value = it.message ?: appStringProvider.get(R.string.friends_error_request_action)
                 }
             requestInFlightIds.value = requestInFlightIds.value - requesterId
         }
@@ -158,6 +161,7 @@ class ProfileViewModel @Inject constructor(
 @HiltViewModel
 class AddFriendsViewModel @Inject constructor(
     private val friendsRepository: FriendsRepository,
+    private val appStringProvider: AppStringProvider,
     auth: FirebaseAuth
 ) : ViewModel() {
     private val userId = auth.currentUser?.uid
@@ -205,7 +209,7 @@ class AddFriendsViewModel @Inject constructor(
             }.onFailure {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = it.message ?: "Could not search users."
+                    errorMessage = it.message ?: appStringProvider.get(R.string.friends_error_search_users)
                 )
             }
         }
@@ -235,7 +239,7 @@ class AddFriendsViewModel @Inject constructor(
             runCatching { action() }
                 .onFailure {
                     _uiState.value = _uiState.value.copy(
-                        errorMessage = it.message ?: "Could not update friend status."
+                        errorMessage = it.message ?: appStringProvider.get(R.string.friends_error_update_status)
                     )
                 }
             _uiState.value = _uiState.value.copy(
@@ -256,7 +260,8 @@ class AddFriendsViewModel @Inject constructor(
 @HiltViewModel
 class FriendProfileViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val friendsRepository: FriendsRepository
+    private val friendsRepository: FriendsRepository,
+    private val appStringProvider: AppStringProvider
 ) : ViewModel() {
     private val friendId: String = savedStateHandle.get<String>("friendId").orEmpty()
     private val isLoading = MutableStateFlow(true)
@@ -289,7 +294,7 @@ class FriendProfileViewModel @Inject constructor(
 
     fun refresh() {
         if (friendId.isBlank()) {
-            errorMessage.value = "Friend profile is missing."
+            errorMessage.value = appStringProvider.get(R.string.friend_profile_missing)
             isLoading.value = false
             return
         }
@@ -299,7 +304,7 @@ class FriendProfileViewModel @Inject constructor(
             runCatching {
                 friendsRepository.refreshPublicProfile(friendId)
             }.onFailure {
-                errorMessage.value = it.message ?: "Could not load friend profile."
+                errorMessage.value = it.message ?: appStringProvider.get(R.string.friends_error_load_profile)
             }
             isLoading.value = false
         }

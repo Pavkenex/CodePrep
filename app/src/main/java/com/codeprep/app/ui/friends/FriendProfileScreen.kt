@@ -28,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codeprep.app.R
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.IceWhite
 
@@ -43,12 +45,12 @@ fun FriendProfileScreen(
         containerColor = AppBackground,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Friend Profile") },
+                title = { Text(localizedStringResource(R.string.friend_profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = localizedStringResource(R.string.common_back)
                         )
                     }
                 }
@@ -97,7 +99,7 @@ fun FriendProfileScreen(
                     LevelChip(level = profile.level)
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
-                        text = "Badges",
+                        text = localizedStringResource(R.string.common_badges),
                         modifier = Modifier.fillMaxWidth(),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
@@ -127,8 +129,9 @@ fun FriendProfileScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     EmptyStateCard(
-                        title = "Profile unavailable",
-                        subtitle = uiState.errorMessage ?: "This friend profile could not be loaded."
+                        title = localizedStringResource(R.string.friend_profile_unavailable_title),
+                        subtitle = uiState.errorMessage
+                            ?: localizedStringResource(R.string.friend_profile_unavailable_body)
                     )
                 }
             }

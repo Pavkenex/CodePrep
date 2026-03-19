@@ -9,6 +9,7 @@ import com.codeprep.app.data.repository.CourseRepository
 import com.codeprep.app.data.repository.LessonProgressRepository
 import com.codeprep.app.data.repository.UserRepository
 import com.codeprep.app.data.settings.AppSettingsStore
+import com.codeprep.app.work.WorkScheduler
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,6 +45,7 @@ class LessonListViewModel @Inject constructor(
     private val courseRepository: CourseRepository,
     private val lessonProgressRepository: LessonProgressRepository,
     private val userRepository: UserRepository,
+    private val workScheduler: WorkScheduler,
     appSettingsStore: AppSettingsStore,
     auth: FirebaseAuth,
     savedStateHandle: SavedStateHandle
@@ -80,6 +82,7 @@ class LessonListViewModel @Inject constructor(
         if (userId.isBlank()) return
         viewModelScope.launch {
             userRepository.refillHearts(userId)
+            workScheduler.syncHeartReminder(userId)
         }
     }
 
