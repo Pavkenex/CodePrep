@@ -2,9 +2,11 @@ package com.codeprep.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codeprep.app.R
 import com.codeprep.app.data.local.entity.Question
 import com.codeprep.app.data.repository.CourseRepository
 import com.codeprep.app.data.repository.UserRepository
+import com.codeprep.app.data.settings.AppStringProvider
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
@@ -22,6 +24,7 @@ class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val courseRepository: CourseRepository,
     private val dailyChallengeStateStore: DailyChallengeStateStore,
+    private val appStringProvider: AppStringProvider,
     auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -38,7 +41,8 @@ class HomeViewModel @Inject constructor(
     ) { progress, dailyChallenge ->
         val xp = progress?.xp ?: 0
         HomeUiState(
-            nickname = progress?.nickname?.takeIf { it.isNotBlank() } ?: "Dev",
+            nickname = progress?.nickname?.takeIf { it.isNotBlank() }
+                ?: appStringProvider.get(R.string.home_default_nickname),
             streak = progress?.streak ?: 0,
             level = progress?.level ?: 1,
             currentLevelXp = xp % XP_PER_LEVEL,
@@ -117,7 +121,11 @@ class HomeViewModel @Inject constructor(
                 it.copy(
                     question = question,
                     isLoading = false,
-                    error = if (question == null) "Dnevni izazov trenutno nije dostupan." else null,
+                    error = if (question == null) {
+                        appStringProvider.get(R.string.home_daily_challenge_unavailable)
+                    } else {
+                        null
+                    },
                     isExpanded = false,
                     selectedIndex = null,
                     isAnswered = false,
@@ -154,7 +162,7 @@ data class DailyChallengeUiState(
 }
 
 data class HomeUiState(
-    val nickname: String = "Dev",
+    val nickname: String = "",
     val streak: Int = 0,
     val level: Int = 1,
     val currentLevelXp: Int = 0,

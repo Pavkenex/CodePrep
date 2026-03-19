@@ -38,6 +38,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.annotation.StringRes
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,8 +49,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.codeprep.app.R
 import com.codeprep.app.data.friends.FriendRelationState
 import com.codeprep.app.data.friends.DEFAULT_AVATAR_PRESET_ID
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
 import com.codeprep.app.ui.theme.Charcoal
@@ -64,17 +67,17 @@ import com.codeprep.app.ui.theme.TextLight
 
 data class AvatarPresetUi(
     val id: String,
-    val label: String,
+    @StringRes val labelResId: Int,
     val colors: List<Color>
 )
 
 val AvatarPresets = listOf(
-    AvatarPresetUi("avatar_01", "Pulse", listOf(ElectricCyan, SkyBlue)),
-    AvatarPresetUi("avatar_02", "Core", listOf(SunYellow, ElectricCyan)),
-    AvatarPresetUi("avatar_03", "Volt", listOf(CardinalRed, SunYellow)),
-    AvatarPresetUi("avatar_04", "Trace", listOf(SkyBlue, LockedGreyDark)),
-    AvatarPresetUi("avatar_05", "Flux", listOf(ElectricCyan, LockedGreyDark)),
-    AvatarPresetUi("avatar_06", "Kernel", listOf(SunYellow, CardinalRed))
+    AvatarPresetUi("avatar_01", R.string.avatar_preset_pulse, listOf(ElectricCyan, SkyBlue)),
+    AvatarPresetUi("avatar_02", R.string.avatar_preset_core, listOf(SunYellow, ElectricCyan)),
+    AvatarPresetUi("avatar_03", R.string.avatar_preset_volt, listOf(CardinalRed, SunYellow)),
+    AvatarPresetUi("avatar_04", R.string.avatar_preset_trace, listOf(SkyBlue, LockedGreyDark)),
+    AvatarPresetUi("avatar_05", R.string.avatar_preset_flux, listOf(ElectricCyan, LockedGreyDark)),
+    AvatarPresetUi("avatar_06", R.string.avatar_preset_kernel, listOf(SunYellow, CardinalRed))
 )
 
 @Composable
@@ -136,14 +139,14 @@ fun BadgeStrip(
                 if (badgeId == null) {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Locked badge",
+                        contentDescription = localizedStringResource(R.string.social_locked_badge),
                         tint = LockedGreyDark
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = "Badge",
+                            contentDescription = localizedStringResource(R.string.social_badge),
                             tint = SunYellow
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -267,7 +270,7 @@ fun RequestCard(
                         onClick = onDecline,
                         enabled = !isBusy
                     ) {
-                        Text("Decline")
+                        Text(localizedStringResource(R.string.common_decline))
                     }
                     Button(
                         onClick = onAccept,
@@ -280,7 +283,7 @@ fun RequestCard(
                                 color = AppBackground
                             )
                         } else {
-                            Text("Accept")
+                            Text(localizedStringResource(R.string.common_accept))
                         }
                     }
                 }
@@ -355,7 +358,7 @@ fun FriendActionButton(
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Add")
+                Text(localizedStringResource(R.string.common_add))
             }
         }
 
@@ -372,14 +375,14 @@ fun FriendActionButton(
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Accept")
+                Text(localizedStringResource(R.string.common_accept))
             }
         }
 
         FriendRelationState.OutgoingRequest -> AssistChip(
             onClick = {},
             enabled = false,
-            label = { Text("Requested") },
+            label = { Text(localizedStringResource(R.string.social_requested)) },
             colors = AssistChipDefaults.assistChipColors(
                 disabledContainerColor = DeepCharcoal,
                 disabledLabelColor = ElectricCyan
@@ -389,7 +392,7 @@ fun FriendActionButton(
         FriendRelationState.Friends -> AssistChip(
             onClick = {},
             enabled = false,
-            label = { Text("Friends") },
+            label = { Text(localizedStringResource(R.string.social_friends)) },
             colors = AssistChipDefaults.assistChipColors(
                 disabledContainerColor = DeepCharcoal,
                 disabledLabelColor = IceWhite
@@ -406,7 +409,7 @@ fun LevelChip(level: Int) {
         border = BorderStroke(1.dp, ElectricCyan.copy(alpha = 0.35f))
     ) {
         Text(
-            text = "Level $level",
+            text = localizedStringResource(R.string.common_level_value, level),
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelMedium,
             color = ElectricCyan

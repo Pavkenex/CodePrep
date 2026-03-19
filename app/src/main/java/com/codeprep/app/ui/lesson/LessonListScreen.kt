@@ -31,8 +31,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.codeprep.app.R
 import com.codeprep.app.ui.components.LessonPathNode
 import com.codeprep.app.ui.components.NodeState
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.ElectricCyan
@@ -139,7 +141,7 @@ private fun EmptyLessonState() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "No lessons available",
+            text = localizedStringResource(R.string.lesson_list_empty),
             color = TextLight,
             style = MaterialTheme.typography.titleMedium
         )
@@ -172,12 +174,19 @@ private fun LessonModuleHeader(state: LessonListUiState) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "${state.lessons.count { it.isCompleted }}/${state.lessons.size} cleared",
+                    text = localizedStringResource(
+                        R.string.lesson_list_progress_cleared,
+                        state.lessons.count { it.isCompleted },
+                        state.lessons.size
+                    ),
                     style = MaterialTheme.typography.labelLarge,
                     color = ElectricCyan
                 )
                 Text(
-                    text = "${state.lessons.count { it.isPerfect }} stars",
+                    text = localizedStringResource(
+                        R.string.lesson_list_stars,
+                        state.lessons.count { it.isPerfect }
+                    ),
                     style = MaterialTheme.typography.labelLarge,
                     color = SunYellow
                 )
@@ -252,4 +261,3 @@ private fun Modifier.dismissTooltipOnOutsideTap(
         }
     }
 }
-

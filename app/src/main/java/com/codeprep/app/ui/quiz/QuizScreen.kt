@@ -27,7 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.codeprep.app.R
 import com.codeprep.app.ui.components.GamifiedButton
+import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
 import com.codeprep.app.ui.theme.CardinalRed
 import com.codeprep.app.ui.theme.Charcoal
@@ -57,12 +59,16 @@ fun QuizScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "❤️ ${state.userHearts}",
+                    text = localizedStringResource(R.string.quiz_hearts, state.userHearts),
                     style = MaterialTheme.typography.titleLarge,
                     color = CardinalRed
                 )
                 Text(
-                    text = "Score: ${state.score}/${state.questions.size}",
+                    text = localizedStringResource(
+                        R.string.quiz_score,
+                        state.score,
+                        state.questions.size
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     color = ElectricCyan
                 )
@@ -78,9 +84,9 @@ fun QuizScreen(
                 title = {
                     Text(
                         text = when {
-                            state.perfect -> "Perfect run!"
-                            state.passed -> "Lesson passed!"
-                            else -> "Quiz finished"
+                            state.perfect -> localizedStringResource(R.string.quiz_result_perfect_title)
+                            state.passed -> localizedStringResource(R.string.quiz_result_passed_title)
+                            else -> localizedStringResource(R.string.quiz_result_finished_title)
                         },
                         style = MaterialTheme.typography.headlineSmall
                     )
@@ -95,46 +101,59 @@ fun QuizScreen(
                         }
 
                         Text(
-                            text = "Your result: $percentage%",
+                            text = localizedStringResource(R.string.quiz_result_percentage, percentage),
                             style = MaterialTheme.typography.bodyLarge,
                             color = ElectricCyan
                         )
                         Text(
-                            text = "Correct answers: ${state.score} / $totalQuestions",
+                            text = localizedStringResource(
+                                R.string.quiz_result_correct_answers,
+                                state.score,
+                                totalQuestions
+                            ),
                             color = TextLight
                         )
                         Text(
                             text = when {
-                                state.perfect -> "Star earned for this lesson."
-                                state.passed -> "Next lesson unlocked."
-                                else -> "Score at least 50% to unlock the next lesson."
+                                state.perfect -> localizedStringResource(R.string.quiz_result_star_earned)
+                                state.passed -> localizedStringResource(R.string.quiz_result_next_lesson_unlocked)
+                                else -> localizedStringResource(R.string.quiz_result_unlock_requirement)
                             },
                             color = if (state.passed) ElectricCyan else CardinalRed
                         )
                         if (state.awardedBaseXp) {
                             Text(
-                                text = "Base reward: +${state.lessonXpReward} XP",
+                                text = localizedStringResource(
+                                    R.string.quiz_result_base_reward,
+                                    state.lessonXpReward
+                                ),
                                 color = LeafGreen
                             )
                         }
                         if (state.awardedPerfectBonus) {
                             Text(
-                                text = "Perfect bonus: +${state.perfectBonusXp} XP",
+                                text = localizedStringResource(
+                                    R.string.quiz_result_perfect_bonus,
+                                    state.perfectBonusXp
+                                ),
                                 color = SunYellow
                             )
                         }
                         if (state.xpEarned == 0) {
                             Text(
                                 text = when {
-                                    state.perfect -> "No more XP is available for this quiz."
-                                    state.passed -> "You already claimed the completion reward. Retry only if you still need the star."
-                                    else -> "No XP awarded."
+                                    state.perfect -> localizedStringResource(R.string.quiz_result_no_more_xp)
+                                    state.passed -> localizedStringResource(R.string.quiz_result_completion_claimed)
+                                    else -> localizedStringResource(R.string.quiz_result_no_xp)
                                 },
                                 color = LockedGrey
                             )
                         } else {
                             Text(
-                                text = "Total earned now: ${state.xpEarned} XP",
+                                text = localizedStringResource(
+                                    R.string.quiz_result_total_earned,
+                                    state.xpEarned
+                                ),
                                 color = SunYellow
                             )
                         }
@@ -142,7 +161,7 @@ fun QuizScreen(
                 },
                 confirmButton = {
                     GamifiedButton(
-                        text = "Finish",
+                        text = localizedStringResource(R.string.common_finish),
                         onClick = {
                             viewModel.onFinishClicked()
                             onQuizFinished()
@@ -167,14 +186,14 @@ fun QuizScreen(
                     Spacer(modifier = Modifier.weight(1f))
                     CircularProgressIndicator(color = ElectricCyan)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Loading questions...", color = TextLight)
+                    Text(localizedStringResource(R.string.quiz_loading), color = TextLight)
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
                 state.currentQuestion == null -> {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = state.loadError ?: "Questions are not available.",
+                        text = state.loadError ?: localizedStringResource(R.string.lesson_message_unavailable),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = LockedGrey
@@ -230,7 +249,7 @@ fun QuizScreen(
 
                         if (state.isAnswered) {
                             GamifiedButton(
-                                text = "Next question",
+                                text = localizedStringResource(R.string.quiz_next_question),
                                 onClick = { viewModel.nextQuestion() },
                                 backgroundColor = ElectricCyan,
                                 textColor = TrueBlack
@@ -239,9 +258,15 @@ fun QuizScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             if (state.selectedIndex != question.correctIndex) {
-                                Text("Wrong answer. You lost a heart.", color = CardinalRed)
+                                Text(
+                                    localizedStringResource(R.string.quiz_wrong_answer_lost_heart),
+                                    color = CardinalRed
+                                )
                             } else {
-                                Text("Correct answer.", color = LeafGreen)
+                                Text(
+                                    localizedStringResource(R.string.quiz_correct_answer),
+                                    color = LeafGreen
+                                )
                             }
                         }
                     }

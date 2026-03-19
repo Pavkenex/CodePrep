@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,41 +42,38 @@ fun GamifiedButton(
 
     Box(
         modifier = modifier
-            .height(height + elevationHeight) // Total height reserves space for shadow
+            .defaultMinSize(minHeight = height + elevationHeight)
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // No ripple, we animate movement
+                indication = null,
                 enabled = enabled,
                 onClick = onClick
             )
     ) {
-        // Shadow Layer (Static Bottom)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(height) // Same height as main button
+                .defaultMinSize(minHeight = height)
                 .clip(RoundedCornerShape(16.dp))
                 .background(if (enabled) shadowColor else AppBackground)
         )
 
-        // Main Button Layer (Animated Top)
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = topOffset) // Moves down when pressed
+                .offset(y = topOffset)
                 .fillMaxWidth()
-                .height(height)
+                .defaultMinSize(minHeight = height)
                 .clip(RoundedCornerShape(16.dp))
                 .background(if (enabled) backgroundColor else DeepCharcoal)
-                .padding(horizontal = 16.dp), // Padding inside button
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = text.uppercase(),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
+                text = text,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    letterSpacing = 0.2.sp,
                     color = if (enabled) textColor else TextLight
                 )
             )

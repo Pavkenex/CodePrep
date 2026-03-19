@@ -46,6 +46,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +67,12 @@ import com.codeprep.app.ui.theme.LockedGrey
 import com.codeprep.app.ui.theme.SunYellow
 import com.codeprep.app.ui.theme.TextLight
 import com.codeprep.app.ui.theme.TrueBlack
+import com.mikepenz.markdown.compose.components.markdownComponents
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownColor
+import com.mikepenz.markdown.model.rememberMarkdownState
+
+private val AssistantMarkdownTextColor = Color(0xFFD9DEE3)
 
 @Composable
 fun AskAiLessonOverlay(
@@ -350,7 +357,7 @@ private fun AskAiComposer(
 }
 
 @Composable
-private fun ConversationBubble(message: AiConversationMessage) {
+internal fun ConversationBubble(message: AiConversationMessage) {
     val isUser = message.role == AiConversationRole.User
     val isSystem = message.role == AiConversationRole.System
     val alignment = if (isUser) Alignment.End else Alignment.Start
@@ -379,13 +386,29 @@ private fun ConversationBubble(message: AiConversationMessage) {
                 bottomEnd = if (isUser) 8.dp else 22.dp
             )
         ) {
-            Text(
-                text = message.content,
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-                modifier = Modifier.padding(16.dp),
-                textAlign = if (isSystem) TextAlign.Center else TextAlign.Start
-            )
+            if (message.role == AiConversationRole.Assistant) {
+                val markdownState = rememberMarkdownState(
+                    message.content,
+                    retainState = true
+                )
+                Markdown(
+                    markdownState = markdownState,
+                    colors = markdownColor(text = AssistantMarkdownTextColor),
+                    components = markdownComponents(
+                        codeBlock = codePrepHighlightedCodeBlock,
+                        codeFence = codePrepHighlightedCodeFence
+                    ),
+                    modifier = Modifier.padding(16.dp)
+                )
+            } else {
+                Text(
+                    text = message.content,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = textColor,
+                    modifier = Modifier.padding(16.dp),
+                    textAlign = if (isSystem) TextAlign.Center else TextAlign.Start
+                )
+            }
         }
     }
 }
