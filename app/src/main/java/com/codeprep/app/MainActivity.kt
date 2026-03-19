@@ -228,7 +228,8 @@ fun RootNavGraph() {
                         },
                         label = { 
                             Text(
-                                label
+                                text = label,
+                                style = MaterialTheme.typography.labelMedium
                             ) 
                         },
                         colors = NavigationBarItemDefaults.colors(
