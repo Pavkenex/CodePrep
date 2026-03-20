@@ -71,6 +71,7 @@ internal data class HomeScreenLayoutSpec(
     val useSplitLayout: Boolean,
     val screenPaddingDp: Int,
     val tabletTopPaddingDp: Int,
+    val completedChallengeTopPaddingDp: Int,
     val verticalSpacingDp: Int,
     val maxContainerWidthDp: Int,
     val railWidthDp: Int,
@@ -85,6 +86,7 @@ internal fun homeScreenLayoutFor(screenWidthDp: Int): HomeScreenLayoutSpec {
             useSplitLayout = false,
             screenPaddingDp = 16,
             tabletTopPaddingDp = 0,
+            completedChallengeTopPaddingDp = 0,
             verticalSpacingDp = 24,
             maxContainerWidthDp = 0,
             railWidthDp = 0,
@@ -96,6 +98,7 @@ internal fun homeScreenLayoutFor(screenWidthDp: Int): HomeScreenLayoutSpec {
 
     val screenPaddingDp = 40
     val tabletTopPaddingDp = 56
+    val completedChallengeTopPaddingDp = 72
     val columnGapDp = 20
     val maxContainerWidthDp = (screenWidthDp - (screenPaddingDp * 2))
         .coerceAtLeast(0)
@@ -109,6 +112,7 @@ internal fun homeScreenLayoutFor(screenWidthDp: Int): HomeScreenLayoutSpec {
         useSplitLayout = true,
         screenPaddingDp = screenPaddingDp,
         tabletTopPaddingDp = tabletTopPaddingDp,
+        completedChallengeTopPaddingDp = completedChallengeTopPaddingDp,
         verticalSpacingDp = 24,
         maxContainerWidthDp = maxContainerWidthDp,
         railWidthDp = railWidthDp,
@@ -178,6 +182,11 @@ internal fun HomeScreenContent(
                     )
                     HomePrimaryContent(
                         uiState = uiState,
+                        topPaddingDp = if (uiState.dailyChallenge.isCompleted) {
+                            layout.completedChallengeTopPaddingDp
+                        } else {
+                            0
+                        },
                         onExpand = onExpand,
                         onAnswer = onAnswer,
                         onComplete = onComplete,
@@ -243,12 +252,13 @@ private fun HomeSupportingRail(
 @Composable
 private fun HomePrimaryContent(
     uiState: HomeUiState,
+    topPaddingDp: Int = 0,
     onExpand: () -> Unit,
     onAnswer: (Int) -> Unit,
     onComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(top = topPaddingDp.dp)) {
         DailyChallengeWidget(
             dailyState = uiState.dailyChallenge,
             onExpand = onExpand,
