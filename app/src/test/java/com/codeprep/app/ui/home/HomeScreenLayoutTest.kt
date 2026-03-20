@@ -13,6 +13,7 @@ class HomeScreenLayoutTest {
 
         assertFalse(spec.useSplitLayout)
         assertEquals(16, spec.screenPaddingDp)
+        assertEquals(0, spec.tabletTopPaddingDp)
         assertEquals(24, spec.verticalSpacingDp)
         assertEquals(0, spec.maxContainerWidthDp)
         assertEquals(0, spec.railWidthDp)
@@ -34,10 +35,11 @@ class HomeScreenLayoutTest {
 
         assertTrue(spec.useSplitLayout)
         assertEquals(40, spec.screenPaddingDp)
+        assertEquals(56, spec.tabletTopPaddingDp)
         assertEquals(24, spec.verticalSpacingDp)
         assertEquals(520, spec.maxContainerWidthDp)
-        assertEquals(220, spec.railWidthDp)
-        assertEquals(280, spec.contentWidthDp)
+        assertEquals(230, spec.railWidthDp)
+        assertEquals(270, spec.contentWidthDp)
         assertEquals(20, spec.columnGapDp)
         assertEquals(220, spec.launchButtonWidthDp)
     }
@@ -48,8 +50,8 @@ class HomeScreenLayoutTest {
 
         assertTrue(spec.useSplitLayout)
         assertEquals(800, spec.maxContainerWidthDp)
-        assertEquals(260, spec.railWidthDp)
-        assertEquals(520, spec.contentWidthDp)
+        assertEquals(290, spec.railWidthDp)
+        assertEquals(490, spec.contentWidthDp)
         assertEquals(20, spec.columnGapDp)
         assertEquals(220, spec.launchButtonWidthDp)
     }
