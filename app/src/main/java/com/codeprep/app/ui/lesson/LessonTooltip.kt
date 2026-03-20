@@ -270,11 +270,7 @@ internal fun computeTooltipLayout(
     val bodyWidth = if (tooltipSize.width > 0) tooltipSize.width else fallbackWidth
     val bodyHeight = if (tooltipSize.height > 0) tooltipSize.height else fallbackHeight
     val totalTooltipHeight = bodyHeight + pointerHeight.roundToInt()
-    val placement = if (lessonIndex >= (lessonCount - 2).coerceAtLeast(0)) {
-        TooltipPlacement.ABOVE
-    } else {
-        TooltipPlacement.BELOW
-    }
+    val placement = TooltipPlacement.BELOW
 
     val desiredX = (nodeBounds.center.x - bodyWidth / 2f).roundToInt()
     val maxX = (rootSize.width - bodyWidth - horizontalPadding)
