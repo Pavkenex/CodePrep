@@ -70,6 +70,7 @@ import com.codeprep.app.ui.theme.White
 internal data class HomeScreenLayoutSpec(
     val useSplitLayout: Boolean,
     val screenPaddingDp: Int,
+    val tabletTopPaddingDp: Int,
     val verticalSpacingDp: Int,
     val maxContainerWidthDp: Int,
     val railWidthDp: Int,
@@ -83,6 +84,7 @@ internal fun homeScreenLayoutFor(screenWidthDp: Int): HomeScreenLayoutSpec {
         return HomeScreenLayoutSpec(
             useSplitLayout = false,
             screenPaddingDp = 16,
+            tabletTopPaddingDp = 0,
             verticalSpacingDp = 24,
             maxContainerWidthDp = 0,
             railWidthDp = 0,
@@ -93,18 +95,20 @@ internal fun homeScreenLayoutFor(screenWidthDp: Int): HomeScreenLayoutSpec {
     }
 
     val screenPaddingDp = 40
+    val tabletTopPaddingDp = 56
     val columnGapDp = 20
     val maxContainerWidthDp = (screenWidthDp - (screenPaddingDp * 2))
         .coerceAtLeast(0)
         .coerceAtMost(800)
-    val railWidthDp = ((maxContainerWidthDp - columnGapDp) / 3)
-        .coerceAtLeast(220)
-        .coerceAtMost(260)
+    val railWidthDp = (((maxContainerWidthDp - columnGapDp) * 0.38f).toInt())
+        .coerceAtLeast(230)
+        .coerceAtMost(290)
     val contentWidthDp = maxContainerWidthDp - columnGapDp - railWidthDp
 
     return HomeScreenLayoutSpec(
         useSplitLayout = true,
         screenPaddingDp = screenPaddingDp,
+        tabletTopPaddingDp = tabletTopPaddingDp,
         verticalSpacingDp = 24,
         maxContainerWidthDp = maxContainerWidthDp,
         railWidthDp = railWidthDp,
@@ -154,7 +158,9 @@ internal fun HomeScreenContent(
     ) {
         if (layout.useSplitLayout) {
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = layout.tabletTopPaddingDp.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
                 Row(
@@ -222,6 +228,7 @@ private fun HomeSupportingRail(
             onClick = onCoursesClick,
             modifier = Modifier
                 .testTag("home-launch-modules-button")
+                .align(Alignment.CenterHorizontally)
                 .then(
                     if (launchButtonWidthDp > 0) {
                         Modifier.widthIn(max = launchButtonWidthDp.dp)
