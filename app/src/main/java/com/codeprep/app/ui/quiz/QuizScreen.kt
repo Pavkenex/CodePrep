@@ -19,6 +19,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codeprep.app.R
+import com.codeprep.app.feedback.FeedbackEvent
+import com.codeprep.app.feedback.LocalAppFeedback
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.AppBackground
@@ -48,6 +52,7 @@ fun QuizScreen(
     onQuizFinished: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    QuizFeedbackEffects(state = state)
 
     Scaffold(
         containerColor = AppBackground,
@@ -272,6 +277,30 @@ fun QuizScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+internal fun QuizFeedbackEffects(state: QuizUiState) {
+    val feedback = LocalAppFeedback.current
+    val answeredKey = remember(state.currentIndex, state.isAnswered, state.selectedIndex) {
+        if (!state.isAnswered || state.selectedIndex == null) {
+            null
+        } else {
+            "${state.currentIndex}:${state.selectedIndex}"
+        }
+    }
+
+    LaunchedEffect(answeredKey) {
+        val selectedIndex = state.selectedIndex ?: return@LaunchedEffect
+        if (!state.isAnswered) return@LaunchedEffect
+
+        val currentQuestion = state.currentQuestion ?: return@LaunchedEffect
+        if (selectedIndex == currentQuestion.correctIndex) {
+            feedback.emit(FeedbackEvent.Success)
+        } else {
+            feedback.emit(FeedbackEvent.Error)
         }
     }
 }
