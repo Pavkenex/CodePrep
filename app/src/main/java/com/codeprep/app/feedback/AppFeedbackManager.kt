@@ -3,19 +3,22 @@ package com.codeprep.app.feedback
 enum class SoundCue {
     TapPrimary,
     Success,
-    Error
+    Error,
+    Reward
 }
 
 enum class HapticCue {
     TapPrimary,
     Success,
-    Error
+    Error,
+    Reward
 }
 
 sealed interface FeedbackEvent {
     data object TapPrimary : FeedbackEvent
     data object Success : FeedbackEvent
     data object Error : FeedbackEvent
+    data object Reward : FeedbackEvent
 }
 
 interface FeedbackSettings {
@@ -49,6 +52,7 @@ class AppFeedbackManager(
             FeedbackEvent.TapPrimary -> emitTapPrimary()
             FeedbackEvent.Success -> emitSuccess()
             FeedbackEvent.Error -> emitError()
+            FeedbackEvent.Reward -> emitReward()
         }
     }
 
@@ -81,6 +85,15 @@ class AppFeedbackManager(
         }
         if (settings.isHapticsEnabled()) {
             hapticOutput.perform(HapticCue.Error)
+        }
+    }
+
+    private fun emitReward() {
+        if (settings.isSoundEffectsEnabled()) {
+            soundOutput.play(SoundCue.Reward)
+        }
+        if (settings.isHapticsEnabled()) {
+            hapticOutput.perform(HapticCue.Reward)
         }
     }
 

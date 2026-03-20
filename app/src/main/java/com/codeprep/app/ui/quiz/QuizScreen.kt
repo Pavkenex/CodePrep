@@ -291,6 +291,13 @@ internal fun QuizFeedbackEffects(state: QuizUiState) {
             "${state.currentIndex}:${state.selectedIndex}"
         }
     }
+    val completionKey = remember(state.finished, state.passed, state.perfect) {
+        if (!state.finished || !state.passed) {
+            null
+        } else {
+            "finished:${state.passed}:${state.perfect}"
+        }
+    }
 
     LaunchedEffect(answeredKey) {
         val selectedIndex = state.selectedIndex ?: return@LaunchedEffect
@@ -302,6 +309,11 @@ internal fun QuizFeedbackEffects(state: QuizUiState) {
         } else {
             feedback.emit(FeedbackEvent.Error)
         }
+    }
+
+    LaunchedEffect(completionKey) {
+        if (!state.finished || !state.passed) return@LaunchedEffect
+        feedback.emit(FeedbackEvent.Reward)
     }
 }
 
