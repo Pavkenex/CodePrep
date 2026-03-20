@@ -57,6 +57,31 @@ class QuizFeedbackEffectsTest {
             assertEquals(listOf(FeedbackEvent.Error), recorder.events)
         }
     }
+
+    @Test
+    fun quizFeedbackEffects_emitsRewardWhenQuizFinishesAndPasses() {
+        val recorder = QuizFeedbackRecorder()
+        var state by mutableStateOf(quizState(isAnswered = false, selectedIndex = null, finished = false, passed = false))
+
+        composeTestRule.setContent {
+            CompositionLocalProvider(LocalAppFeedback provides recorder) {
+                QuizFeedbackEffects(state = state)
+            }
+        }
+
+        composeTestRule.runOnIdle {
+            state = quizState(
+                isAnswered = false,
+                selectedIndex = null,
+                finished = true,
+                passed = true
+            )
+        }
+
+        composeTestRule.runOnIdle {
+            assertEquals(listOf(FeedbackEvent.Reward), recorder.events)
+        }
+    }
 }
 
 private class QuizFeedbackRecorder : AppFeedback {
@@ -69,7 +94,9 @@ private class QuizFeedbackRecorder : AppFeedback {
 
 private fun quizState(
     isAnswered: Boolean,
-    selectedIndex: Int?
+    selectedIndex: Int?,
+    finished: Boolean = false,
+    passed: Boolean = false
 ): QuizUiState = QuizUiState(
     questions = listOf(
         Question(
@@ -81,5 +108,7 @@ private fun quizState(
         )
     ),
     selectedIndex = selectedIndex,
-    isAnswered = isAnswered
+    isAnswered = isAnswered,
+    finished = finished,
+    passed = passed
 )

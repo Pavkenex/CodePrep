@@ -35,6 +35,7 @@ class ToneGeneratorSoundOutput @Inject constructor() : SoundOutput {
             SoundCue.TapPrimary -> ToneGenerator.TONE_PROP_ACK to 35
             SoundCue.Success -> ToneGenerator.TONE_PROP_BEEP2 to 80
             SoundCue.Error -> ToneGenerator.TONE_PROP_NACK to 70
+            SoundCue.Reward -> ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD to 120
         }
 
         synchronized(toneGenerator) {
@@ -65,6 +66,11 @@ class AndroidHapticOutput @Inject constructor(
                 -1
             )
             HapticCue.Error -> VibrationEffect.createOneShot(24L, 160)
+            HapticCue.Reward -> VibrationEffect.createWaveform(
+                longArrayOf(0L, 18L, 24L, 28L),
+                intArrayOf(0, 100, 0, 170),
+                -1
+            )
         }
 
         runCatching {
