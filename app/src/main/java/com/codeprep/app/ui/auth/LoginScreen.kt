@@ -1,12 +1,9 @@
 package com.codeprep.app.ui.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -22,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,31 +49,15 @@ fun LoginScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppBackground)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // App Logo / Title
-        Text(
-            text = localizedStringResource(R.string.auth_brand_title),
-            style = MaterialTheme.typography.displayMedium.copy(
-                color = ElectricCyan
-            ),
-            modifier = Modifier.padding(bottom = 48.dp)
-        )
-
+    AuthScreenFrame(showBrand = true) {
         Text(
             text = localizedStringResource(R.string.auth_login_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 color = IceWhite
             ),
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(bottom = 24.dp)
-                .align(Alignment.Start)
         )
 
         GamifiedTextField(
