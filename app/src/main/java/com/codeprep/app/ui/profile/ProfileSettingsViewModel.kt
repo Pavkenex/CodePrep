@@ -27,12 +27,32 @@ class ProfileSettingsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = AppSettingsStore.DEFAULT_LANGUAGE
         )
+    val soundEffectsEnabled = appSettingsStore.soundEffectsEnabled()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true
+        )
+    val hapticsEnabled = appSettingsStore.hapticsEnabled()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true
+        )
 
     fun setSelectedLanguage(languageCode: String) {
         appSettingsStore.setSelectedLanguage(languageCode)
         viewModelScope.launch {
             funFactWidgetUpdater.updateAllWidgets()
         }
+    }
+
+    fun setSoundEffectsEnabled(enabled: Boolean) {
+        appSettingsStore.setSoundEffectsEnabled(enabled)
+    }
+
+    fun setHapticsEnabled(enabled: Boolean) {
+        appSettingsStore.setHapticsEnabled(enabled)
     }
 
     suspend fun createConversationExport(): ConversationExportPayload {
