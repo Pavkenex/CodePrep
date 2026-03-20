@@ -30,6 +30,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.core.content.ContextCompat
+import com.codeprep.app.feedback.AppFeedback
+import com.codeprep.app.feedback.ProvideAppFeedback
 import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.CodePrepBottomBar
 import com.codeprep.app.ui.navigation.Screen
@@ -44,9 +46,13 @@ import com.codeprep.app.ui.localization.localizedStringResource
 import com.codeprep.app.ui.theme.CodePrepTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var appFeedback: AppFeedback
+
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
@@ -57,7 +63,9 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
         setContent {
             CodePrepTheme {
-                RootNavGraph()
+                ProvideAppFeedback(appFeedback = appFeedback) {
+                    RootNavGraph()
+                }
             }
         }
 

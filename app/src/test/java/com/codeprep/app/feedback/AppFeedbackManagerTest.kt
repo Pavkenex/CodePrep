@@ -43,6 +43,25 @@ class AppFeedbackManagerTest {
         assertEquals(emptyList<SoundCue>(), soundOutput.played)
         assertEquals(listOf(HapticCue.Success), hapticOutput.performed)
     }
+
+    @Test
+    fun emit_playsErrorFeedbackWhenEnabled() {
+        val soundOutput = FakeSoundOutput()
+        val hapticOutput = FakeHapticOutput()
+        val settings = FakeFeedbackSettings(soundEnabled = true, hapticsEnabled = true)
+        val clock = FakeClock(9_000L)
+        val manager = AppFeedbackManager(
+            settings = settings,
+            soundOutput = soundOutput,
+            hapticOutput = hapticOutput,
+            clock = clock::now
+        )
+
+        manager.emit(FeedbackEvent.Error)
+
+        assertEquals(listOf(SoundCue.Error), soundOutput.played)
+        assertEquals(listOf(HapticCue.Error), hapticOutput.performed)
+    }
 }
 
 private class FakeFeedbackSettings(
