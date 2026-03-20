@@ -5,7 +5,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
@@ -42,8 +41,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -67,36 +67,187 @@ import com.codeprep.app.ui.theme.TextLight
 import com.codeprep.app.ui.theme.TrueBlack
 import com.codeprep.app.ui.theme.White
 
+internal data class HomeScreenLayoutSpec(
+    val useSplitLayout: Boolean,
+    val screenPaddingDp: Int,
+    val verticalSpacingDp: Int,
+    val maxContainerWidthDp: Int,
+    val railWidthDp: Int,
+    val contentWidthDp: Int,
+    val columnGapDp: Int,
+    val launchButtonWidthDp: Int
+)
+
+internal fun homeScreenLayoutFor(screenWidthDp: Int): HomeScreenLayoutSpec {
+    if (screenWidthDp < 600) {
+        return HomeScreenLayoutSpec(
+            useSplitLayout = false,
+            screenPaddingDp = 16,
+            verticalSpacingDp = 24,
+            maxContainerWidthDp = 0,
+            railWidthDp = 0,
+            contentWidthDp = 0,
+            columnGapDp = 0,
+            launchButtonWidthDp = 0
+        )
+    }
+
+    val screenPaddingDp = 40
+    val columnGapDp = 20
+    val maxContainerWidthDp = (screenWidthDp - (screenPaddingDp * 2))
+        .coerceAtLeast(0)
+        .coerceAtMost(800)
+    val railWidthDp = ((maxContainerWidthDp - columnGapDp) / 3)
+        .coerceAtLeast(220)
+        .coerceAtMost(260)
+    val contentWidthDp = maxContainerWidthDp - columnGapDp - railWidthDp
+
+    return HomeScreenLayoutSpec(
+        useSplitLayout = true,
+        screenPaddingDp = screenPaddingDp,
+        verticalSpacingDp = 24,
+        maxContainerWidthDp = maxContainerWidthDp,
+        railWidthDp = railWidthDp,
+        contentWidthDp = contentWidthDp,
+        columnGapDp = columnGapDp,
+        launchButtonWidthDp = railWidthDp.coerceAtMost(220)
+    )
+}
+
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onCoursesClick: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    val configuration = LocalConfiguration.current
+    val layout = homeScreenLayoutFor(configuration.screenWidthDp)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    HomeScreenContent(
+        uiState = uiState,
+        layout = layout,
+        onExpand = viewModel::expandDailyChallenge,
+        onAnswer = viewModel::submitDailyAnswer,
+        onComplete = viewModel::completeDailyChallenge,
+        onCoursesClick = onCoursesClick
+    )
+}
+
+@Composable
+internal fun HomeScreenContent(
+    uiState: HomeUiState,
+    layout: HomeScreenLayoutSpec,
+    onExpand: () -> Unit,
+    onAnswer: (Int) -> Unit,
+    onComplete: () -> Unit,
+    onCoursesClick: () -> Unit
+) {
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBackground)
             .verticalScroll(scrollState)
-            .padding(16.dp),
+            .padding(horizontal = layout.screenPaddingDp.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(layout.verticalSpacingDp.dp)
+    ) {
+        if (layout.useSplitLayout) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Row(
+                    modifier = Modifier.width(layout.maxContainerWidthDp.dp),
+                    horizontalArrangement = Arrangement.spacedBy(layout.columnGapDp.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    HomeSupportingRail(
+                        uiState = uiState,
+                        launchButtonWidthDp = layout.launchButtonWidthDp,
+                        onCoursesClick = onCoursesClick,
+                        modifier = Modifier
+                            .width(layout.railWidthDp.dp)
+                            .testTag("home-supporting-rail")
+                    )
+                    HomePrimaryContent(
+                        uiState = uiState,
+                        onExpand = onExpand,
+                        onAnswer = onAnswer,
+                        onComplete = onComplete,
+                        modifier = Modifier
+                            .width(layout.contentWidthDp.dp)
+                            .testTag("home-primary-content")
+                    )
+                }
+            }
+        } else {
+            HeaderSection(nickname = uiState.nickname)
+            SystemUptimeSection(days = uiState.streak)
+            DailyChallengeWidget(
+                dailyState = uiState.dailyChallenge,
+                onExpand = onExpand,
+                onAnswer = onAnswer,
+                onComplete = onComplete
+            )
+            SystemStatusWidget(
+                level = uiState.level,
+                currentXp = uiState.currentLevelXp,
+                xpRequired = uiState.xpRequiredForNextLevel
+            )
+            LaunchModulesButton(onClick = onCoursesClick)
+        }
+    }
+}
+
+@Composable
+private fun HomeSupportingRail(
+    uiState: HomeUiState,
+    launchButtonWidthDp: Int,
+    onCoursesClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         HeaderSection(nickname = uiState.nickname)
         SystemUptimeSection(days = uiState.streak)
-        DailyChallengeWidget(
-            dailyState = uiState.dailyChallenge,
-            onExpand = viewModel::expandDailyChallenge,
-            onAnswer = viewModel::submitDailyAnswer,
-            onComplete = viewModel::completeDailyChallenge
-        )
         SystemStatusWidget(
             level = uiState.level,
             currentXp = uiState.currentLevelXp,
             xpRequired = uiState.xpRequiredForNextLevel
         )
-        LaunchModulesButton(onClick = onCoursesClick)
+        LaunchModulesButton(
+            onClick = onCoursesClick,
+            modifier = Modifier
+                .testTag("home-launch-modules-button")
+                .then(
+                    if (launchButtonWidthDp > 0) {
+                        Modifier.widthIn(max = launchButtonWidthDp.dp)
+                    } else {
+                        Modifier
+                    }
+                )
+        )
+    }
+}
+
+@Composable
+private fun HomePrimaryContent(
+    uiState: HomeUiState,
+    onExpand: () -> Unit,
+    onAnswer: (Int) -> Unit,
+    onComplete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        DailyChallengeWidget(
+            dailyState = uiState.dailyChallenge,
+            onExpand = onExpand,
+            onAnswer = onAnswer,
+            onComplete = onComplete
+        )
     }
 }
 
@@ -538,10 +689,13 @@ fun SystemStatusWidget(
 }
 
 @Composable
-fun LaunchModulesButton(onClick: () -> Unit) {
+fun LaunchModulesButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Button(
         onClick = onClick,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(56.dp),
         colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan),
