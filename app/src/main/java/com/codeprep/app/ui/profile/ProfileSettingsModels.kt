@@ -2,6 +2,7 @@ package com.codeprep.app.ui.profile
 
 enum class ProfileSettingsSection {
     Language,
+    Feedback,
     Conversations
 }
 

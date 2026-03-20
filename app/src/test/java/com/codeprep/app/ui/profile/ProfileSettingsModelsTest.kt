@@ -34,4 +34,14 @@ class ProfileSettingsModelsTest {
 
         assertEquals(ProfileSettingsSection.Conversations, expanded)
     }
+
+    @Test
+    fun toggleSettingsSection_switchesIntoFeedbackSection() {
+        val expanded = toggleSettingsSection(
+            current = ProfileSettingsSection.Language,
+            requested = ProfileSettingsSection.Feedback
+        )
+
+        assertEquals(ProfileSettingsSection.Feedback, expanded)
+    }
 }
