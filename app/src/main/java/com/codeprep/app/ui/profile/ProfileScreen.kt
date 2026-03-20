@@ -88,6 +88,8 @@ fun ProfileScreen(
     val progress by sessionViewModel.currentUserProgress.collectAsStateWithLifecycle()
     val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
     val selectedLanguage by settingsViewModel.selectedLanguage.collectAsStateWithLifecycle()
+    val soundEffectsEnabled by settingsViewModel.soundEffectsEnabled.collectAsStateWithLifecycle()
+    val hapticsEnabled by settingsViewModel.hapticsEnabled.collectAsStateWithLifecycle()
     var isAvatarSelectorVisible by remember { mutableStateOf(false) }
     var isSettingsVisible by remember { mutableStateOf(false) }
     var isSettingsActionRunning by remember { mutableStateOf(false) }
@@ -411,6 +413,27 @@ fun ProfileScreen(
                         label = localizedStringResource(R.string.profile_language_serbian),
                         isSelected = selectedLanguage == "sr",
                         onClick = { settingsViewModel.setSelectedLanguage("sr") }
+                    )
+                }
+                SettingsSectionCard(
+                    title = localizedStringResource(R.string.profile_feedback_section),
+                    expanded = expandedSettingsSection == ProfileSettingsSection.Feedback,
+                    onToggle = {
+                        expandedSettingsSection = toggleSettingsSection(
+                            current = expandedSettingsSection,
+                            requested = ProfileSettingsSection.Feedback
+                        )
+                    }
+                ) {
+                    FeedbackSettingsSection(
+                        soundEffectsEnabled = soundEffectsEnabled,
+                        hapticsEnabled = hapticsEnabled,
+                        onSoundEffectsToggle = {
+                            settingsViewModel.setSoundEffectsEnabled(!soundEffectsEnabled)
+                        },
+                        onHapticsToggle = {
+                            settingsViewModel.setHapticsEnabled(!hapticsEnabled)
+                        }
                     )
                 }
                 SettingsSectionCard(

@@ -148,6 +148,11 @@
     <string name="profile_edit_avatar">Izmeni avatar</string>
     <string name="profile_language_english">English</string>
     <string name="profile_language_serbian">Srpski</string>
+    <string name="profile_feedback_section">Povratne informacije</string>
+    <string name="profile_feedback_sound_effects">Zvučni efekti</string>
+    <string name="profile_feedback_sound_effects_subtitle">Kratki zvuci za dodire, nagrade i greške u aplikaciji</string>
+    <string name="profile_feedback_haptics">Haptika</string>
+    <string name="profile_feedback_haptics_subtitle">Vibracija za dodire, nagrade i greške u aplikaciji</string>
     <string name="profile_conversations_section">Razgovori</string>
     <string name="profile_conversations_export">Izvezi razgovore</string>
     <string name="profile_conversations_import">Uvezi razgovore</string>
