@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codeprep.app.feedback.FeedbackEvent
+import com.codeprep.app.feedback.LocalAppFeedback
 import com.codeprep.app.ui.theme.*
 
 @Composable
@@ -33,6 +35,7 @@ fun GamifiedButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val feedback = LocalAppFeedback.current
     
     // Animate the press effect
     val topOffset by animateDpAsState(
@@ -47,7 +50,10 @@ fun GamifiedButton(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled,
-                onClick = onClick
+                onClick = {
+                    feedback.emit(FeedbackEvent.TapPrimary)
+                    onClick()
+                }
             )
     ) {
         Box(

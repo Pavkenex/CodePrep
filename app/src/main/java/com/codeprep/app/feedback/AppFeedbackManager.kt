@@ -29,15 +29,19 @@ interface HapticOutput {
     fun perform(cue: HapticCue)
 }
 
+interface AppFeedback {
+    fun emit(event: FeedbackEvent)
+}
+
 class AppFeedbackManager(
     private val settings: FeedbackSettings,
     private val soundOutput: SoundOutput,
     private val hapticOutput: HapticOutput,
     private val clock: () -> Long
-) {
+) : AppFeedback {
     private var lastTapPrimaryAtMs: Long? = null
 
-    fun emit(event: FeedbackEvent) {
+    override fun emit(event: FeedbackEvent) {
         when (event) {
             FeedbackEvent.TapPrimary -> emitTapPrimary()
             FeedbackEvent.Success -> emitSuccess()
