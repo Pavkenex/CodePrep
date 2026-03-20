@@ -304,43 +304,10 @@ class CourseRepository @Inject constructor(
     }
 
     private fun DocumentSnapshot.toDailyChallengeQuestionOrNull(selectedLanguage: String): Question? {
-        val prompt = getString("prompt")
-            ?: get("promptLocalized").toLocalizedTextOrNull()?.resolve(selectedLanguage)
-            ?: return null
-        val options = (get("options") as? List<*>)?.mapNotNull { it as? String }.orEmpty()
-        if (options.isEmpty()) return null
-
-        val correctIndexes = (get("correctOptionIndexes") as? List<*>)?.mapNotNull { raw ->
-            when (raw) {
-                is Long -> raw.toInt()
-                is Int -> raw
-                is Double -> raw.toInt()
-                else -> null
-            }
-        }.orEmpty()
-
-        val correctIndex = correctIndexes.firstOrNull()?.coerceIn(0, options.lastIndex) ?: 0
-        return Question(
-            id = getString("id") ?: id,
-            moduleId = "",
-            lessonId = "",
-            lessonRefPath = getString("locale").orEmpty(),
-            text = prompt,
-            options = options,
-            correctIndex = correctIndex,
-            explanation = getString("explanation")
-                ?: getString("description")
-                ?: "",
-            type = getString("challengeType").orEmpty(),
-            difficulty = getString("difficulty").orEmpty(),
-            difficultyWeight = getLong("pointsReward")?.toDouble() ?: 0.0,
-            tags = emptyList(),
-            format = "single_choice",
-            quizEnabled = true,
-            randomKey = 0L,
-            orderIndex = 0,
-            seedVersion = "",
-            codeSnippet = getString("codeSnippet")
+        return parseDailyChallengeQuestion(
+            data = data.orEmpty(),
+            selectedLanguage = selectedLanguage,
+            fallbackId = id
         )
     }
 

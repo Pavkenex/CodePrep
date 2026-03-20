@@ -43,12 +43,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codeprep.app.R
 import com.codeprep.app.data.local.entity.Question
+import com.codeprep.app.ui.components.CodePrepCodeBlock
 import com.codeprep.app.ui.components.GamifiedButton
 import com.codeprep.app.ui.localization.localizedPluralStringResource
 import com.codeprep.app.ui.localization.localizedStringResource
@@ -180,6 +182,7 @@ fun SystemUptimeSection(days: Int) {
         }
     }
 }
+
 
 @Composable
 fun DailyChallengeWidget(
@@ -319,6 +322,7 @@ private fun DailyChallengePreview(
         modifier = Modifier.padding(top = 8.dp)
     )
 
+
     Spacer(modifier = Modifier.height(12.dp))
 
     GamifiedButton(
@@ -359,7 +363,10 @@ private fun DailyChallengeQuestionContent(
 
     if (!question.codeSnippet.isNullOrBlank()) {
         Spacer(modifier = Modifier.height(16.dp))
-        DailyChallengeCodeSnippet(snippet = question.codeSnippet)
+        DailyChallengeCodeSnippet(
+            snippet = question.codeSnippet,
+            language = question.codeSnippetLanguage
+        )
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -463,23 +470,22 @@ private fun ChallengeBadge(
 
 @Composable
 private fun DailyChallengeCodeSnippet(snippet: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = DeepCharcoal,
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(1.dp, Charcoal)
-    ) {
-        SelectionContainer {
-            Text(
-                text = snippet.trim(),
-                style = AppCodeTypography.bodySmall,
-                color = ElectricCyan,
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(12.dp)
-            )
-        }
-    }
+    DailyChallengeCodeSnippet(
+        snippet = snippet,
+        language = null
+    )
+}
+
+@Composable
+private fun DailyChallengeCodeSnippet(
+    snippet: String,
+    language: String?
+) {
+    CodePrepCodeBlock(
+        code = snippet.trim(),
+        language = language,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
