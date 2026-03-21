@@ -72,7 +72,7 @@ internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
             useTabletContainer = true,
             screenPaddingDp = 40,
             verticalSpacingDp = 24,
-            maxContainerWidthDp = screenWidthDp.coerceAtMost(800)
+            maxContainerWidthDp = 800
         )
     }
 }
