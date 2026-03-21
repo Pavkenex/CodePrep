@@ -23,6 +23,7 @@ data class Question(
     val randomKey: Long = 0L,
     val orderIndex: Int = 0,
     val seedVersion: String = "",
+    val codeSnippetLanguage: String? = null,
     val codeSnippet: String? = null
 ) {
     val questionId: String get() = id

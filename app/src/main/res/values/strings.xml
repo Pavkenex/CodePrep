@@ -161,6 +161,11 @@
     <string name="profile_edit_avatar">Edit avatar</string>
     <string name="profile_language_english">English</string>
     <string name="profile_language_serbian">Srpski</string>
+    <string name="profile_feedback_section">Feedback</string>
+    <string name="profile_feedback_sound_effects">Sound effects</string>
+    <string name="profile_feedback_sound_effects_subtitle">Short sounds for taps, rewards, and errors in the app</string>
+    <string name="profile_feedback_haptics">Haptics</string>
+    <string name="profile_feedback_haptics_subtitle">Vibration feedback for taps, rewards, and errors in the app</string>
     <string name="profile_conversations_section">Conversations</string>
     <string name="profile_conversations_export">Export conversations</string>
     <string name="profile_conversations_import">Import conversations</string>

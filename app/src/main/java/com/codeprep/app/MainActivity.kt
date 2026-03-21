@@ -10,31 +10,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.annotation.StringRes
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,7 +30,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.core.content.ContextCompat
+import com.codeprep.app.feedback.AppFeedback
+import com.codeprep.app.feedback.ProvideAppFeedback
 import com.codeprep.app.ui.components.TopBarStats
+import com.codeprep.app.ui.navigation.CodePrepBottomBar
 import com.codeprep.app.ui.navigation.Screen
 import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
@@ -53,16 +43,16 @@ import com.codeprep.app.ui.secretfact.SecretFactSensorController
 import com.codeprep.app.ui.secretfact.SecretFactOverlay
 import com.codeprep.app.ui.secretfact.SecretFactViewModel
 import com.codeprep.app.ui.localization.localizedStringResource
-import com.codeprep.app.ui.theme.AppBackground
-import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.CodePrepTheme
-import com.codeprep.app.ui.theme.ElectricCyan
-import com.codeprep.app.ui.theme.LockedGrey
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var appFeedback: AppFeedback
+
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
@@ -73,7 +63,9 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
         setContent {
             CodePrepTheme {
-                RootNavGraph()
+                ProvideAppFeedback(appFeedback = appFeedback) {
+                    RootNavGraph()
+                }
             }
         }
 
@@ -116,17 +108,6 @@ fun RootNavGraph() {
             }
         )
     }
-    
-    // Bottom Nav Items - Added Home/Dashboard
-    val bottomNavItems = remember {
-        listOf(
-            BottomNavItem(R.string.nav_home, Screen.Home.route, Icons.Default.Home),
-            BottomNavItem(R.string.nav_modules, Screen.CourseList.route, Icons.Default.School),
-            BottomNavItem(R.string.nav_ai_coach, Screen.AskAI.route, Icons.Default.Psychology),
-            BottomNavItem(R.string.nav_profile, Screen.Profile.route, Icons.Default.Person)
-        )
-    }
-    
     val mainRoutes = remember {
         setOf(
             Screen.Home.route,
@@ -200,48 +181,15 @@ fun RootNavGraph() {
         }
 
         if (shouldShowBottomNav) {
-            NavigationBar(
-                containerColor = AppBackground,
-                tonalElevation = 0.dp
-            ) {
-                bottomNavItems.forEach { item ->
-                    val label = localizedStringResource(item.labelResId)
-                    val selected = isBottomItemSelected(
-                        itemRoute = item.route,
-                        currentRoute = currentRoute
-                    )
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            if (!selected) {
-                                navigateToTopLevelRoute(
-                                    navController = navController,
-                                    route = item.route
-                                )
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = label
-                            )
-                        },
-                        label = { 
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelMedium
-                            ) 
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = ElectricCyan,
-                            selectedTextColor = ElectricCyan,
-                            indicatorColor = Charcoal,
-                            unselectedIconColor = LockedGrey,
-                            unselectedTextColor = LockedGrey
-                        )
+            CodePrepBottomBar(
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navigateToTopLevelRoute(
+                        navController = navController,
+                        route = route
                     )
                 }
-            }
+            )
         }
         }
 
@@ -268,30 +216,3 @@ private fun navigateToTopLevelRoute(
         restoreState = true
     }
 }
-
-private fun isBottomItemSelected(itemRoute: String, currentRoute: String?): Boolean {
-    return when (itemRoute) {
-        Screen.Home.route -> currentRoute == Screen.Home.route
-
-        Screen.CourseList.route -> currentRoute in setOf(
-            Screen.CourseList.route,
-            Screen.LessonList.route,
-            Screen.LessonDetail.route,
-            Screen.Quiz.route
-        )
-
-        Screen.Profile.route -> currentRoute in setOf(
-            Screen.Profile.route,
-            Screen.AddFriends.route,
-            Screen.FriendProfile.route
-        )
-
-        else -> currentRoute == itemRoute
-    }
-}
-
-private data class BottomNavItem(
-    @StringRes val labelResId: Int,
-    val route: String,
-    val icon: ImageVector
-)
