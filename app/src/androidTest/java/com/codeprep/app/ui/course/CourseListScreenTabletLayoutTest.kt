@@ -52,6 +52,53 @@ class CourseListScreenTabletLayoutTest {
         assertTrue(abs(containerBounds.width - expectedContainerWidth) <= tolerance)
         assertTrue(abs(containerCenter - rootCenter) <= tolerance)
     }
+
+    @Test
+    fun tabletHeaderSpacing_comesFromLayoutSpec() {
+        val tabletLayout = courseListLayoutFor(screenWidthDp = 900)
+
+        val header = measureHeaderBounds(
+            widthDp = 900,
+            layout = tabletLayout
+        )
+
+        val tolerance = with(composeTestRule.density) { 2.dp.toPx() }
+        val expectedTabletTitleTop = with(composeTestRule.density) {
+            tabletLayout.titleTopPaddingDp.dp.toPx()
+        }
+
+        assertTrue(abs(header.titleTop - expectedTabletTitleTop) <= tolerance)
+        assertTrue(header.subtitleTop > header.titleTop)
+    }
+
+    private fun measureHeaderBounds(
+        widthDp: Int,
+        layout: CourseListLayoutSpec
+    ): HeaderBounds {
+        composeTestRule.setContent {
+            CodePrepTheme {
+                Box(
+                    modifier = Modifier
+                        .width(widthDp.dp)
+                        .height(1200.dp)
+                ) {
+                    CourseListScreenContent(
+                        courses = sampleModules(),
+                        layout = layout,
+                        onCourseClick = {}
+                    )
+                }
+            }
+        }
+
+        val title = composeTestRule.onNodeWithTag(COURSE_LIST_TITLE_TAG).assertExists()
+        val subtitle = composeTestRule.onNodeWithTag(COURSE_LIST_SUBTITLE_TAG).assertExists()
+
+        return HeaderBounds(
+            titleTop = title.fetchSemanticsNode().boundsInRoot.top,
+            subtitleTop = subtitle.fetchSemanticsNode().boundsInRoot.top
+        )
+    }
 }
 
 private fun sampleModules(): List<ModuleCardUi> {
@@ -82,3 +129,8 @@ private fun sampleModules(): List<ModuleCardUi> {
         )
     )
 }
+
+private data class HeaderBounds(
+    val titleTop: Float,
+    val subtitleTop: Float
+)

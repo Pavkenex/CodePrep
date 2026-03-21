@@ -68,6 +68,8 @@ internal data class CourseListLayoutSpec(
 
 internal const val COURSE_LIST_ROOT_TAG = "course-list-root"
 internal const val COURSE_LIST_CONTAINER_TAG = "course-list-container"
+internal const val COURSE_LIST_TITLE_TAG = "course-list-title"
+internal const val COURSE_LIST_SUBTITLE_TAG = "course-list-subtitle"
 
 internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
     return if (screenWidthDp < 600) {
@@ -172,13 +174,15 @@ private fun CourseListContentColumn(
             modifier = Modifier.padding(
                 top = layout.titleTopPaddingDp.dp,
                 bottom = layout.titleBottomPaddingDp.dp
-            )
+            ).testTag(COURSE_LIST_TITLE_TAG)
         )
         Text(
             text = localizedStringResource(R.string.course_list_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = TextLight,
-            modifier = Modifier.padding(bottom = layout.subtitleBottomPaddingDp.dp)
+            modifier = Modifier
+                .padding(bottom = layout.subtitleBottomPaddingDp.dp)
+                .testTag(COURSE_LIST_SUBTITLE_TAG)
         )
 
         if (courses.isEmpty()) {
