@@ -110,6 +110,7 @@ internal class LessonTooltipState {
 internal fun rememberLessonTooltipState(
     lessons: List<LessonListItemUi>,
     scrollState: ScrollState,
+    isTabletLayout: Boolean,
     density: Density
 ): LessonTooltipState {
     val tooltipState = remember { LessonTooltipState() }
@@ -161,6 +162,7 @@ internal fun rememberLessonTooltipState(
                         lessonCount = lessons.size,
                         rootSize = tooltipState.rootSize,
                         tooltipSize = tooltipState.tooltipSize,
+                        isTabletLayout = isTabletLayout,
                         density = density
                     )
                 }
