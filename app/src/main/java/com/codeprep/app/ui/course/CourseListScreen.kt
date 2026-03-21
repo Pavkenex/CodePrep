@@ -63,6 +63,9 @@ internal data class CourseListLayoutSpec(
     val maxContainerWidthDp: Int
 )
 
+internal const val COURSE_LIST_ROOT_TAG = "course-list-root"
+internal const val COURSE_LIST_CONTAINER_TAG = "course-list-container"
+
 internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
     return if (screenWidthDp < 600) {
         CourseListLayoutSpec(
@@ -107,7 +110,7 @@ internal fun CourseListScreenContent(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBackground)
-            .testTag("course-list-root")
+            .testTag(COURSE_LIST_ROOT_TAG)
     ) {
         if (layout.useTabletContainer) {
             Box(
@@ -123,7 +126,7 @@ internal fun CourseListScreenContent(
                     modifier = Modifier
                         .width(layout.maxContainerWidthDp.dp)
                         .fillMaxHeight()
-                        .testTag("course-list-container")
+                        .testTag(COURSE_LIST_CONTAINER_TAG)
                 )
             }
         } else {
@@ -134,7 +137,7 @@ internal fun CourseListScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = layout.screenPaddingDp.dp)
-                    .testTag("course-list-container")
+                    .testTag(COURSE_LIST_CONTAINER_TAG)
             )
         }
     }
