@@ -52,6 +52,31 @@ import com.codeprep.app.ui.theme.SunYellow
 import com.codeprep.app.ui.theme.TextLight
 import com.codeprep.app.ui.theme.TrueBlack
 
+internal data class CourseListLayoutSpec(
+    val useTabletContainer: Boolean,
+    val screenPaddingDp: Int,
+    val verticalSpacingDp: Int,
+    val maxContainerWidthDp: Int
+)
+
+internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
+    return if (screenWidthDp < 600) {
+        CourseListLayoutSpec(
+            useTabletContainer = false,
+            screenPaddingDp = 16,
+            verticalSpacingDp = 16,
+            maxContainerWidthDp = 0
+        )
+    } else {
+        CourseListLayoutSpec(
+            useTabletContainer = true,
+            screenPaddingDp = 40,
+            verticalSpacingDp = 24,
+            maxContainerWidthDp = screenWidthDp.coerceAtMost(800)
+        )
+    }
+}
+
 @Composable
 fun CourseListScreen(
     viewModel: CourseViewModel = hiltViewModel(),
