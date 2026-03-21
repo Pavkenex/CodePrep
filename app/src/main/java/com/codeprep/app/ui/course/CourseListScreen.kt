@@ -60,6 +60,9 @@ internal data class CourseListLayoutSpec(
     val useTabletContainer: Boolean,
     val screenPaddingDp: Int,
     val verticalSpacingDp: Int,
+    val titleTopPaddingDp: Int,
+    val titleBottomPaddingDp: Int,
+    val subtitleBottomPaddingDp: Int,
     val maxContainerWidthDp: Int
 )
 
@@ -72,6 +75,9 @@ internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
             useTabletContainer = false,
             screenPaddingDp = 16,
             verticalSpacingDp = 16,
+            titleTopPaddingDp = 24,
+            titleBottomPaddingDp = 8,
+            subtitleBottomPaddingDp = 20,
             maxContainerWidthDp = 0
         )
     } else {
@@ -79,6 +85,9 @@ internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
             useTabletContainer = true,
             screenPaddingDp = 40,
             verticalSpacingDp = 24,
+            titleTopPaddingDp = 40,
+            titleBottomPaddingDp = 16,
+            subtitleBottomPaddingDp = 32,
             maxContainerWidthDp = 800
         )
     }
@@ -160,13 +169,16 @@ private fun CourseListContentColumn(
                 fontWeight = FontWeight.ExtraBold,
                 color = IceWhite
             ),
-            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            modifier = Modifier.padding(
+                top = layout.titleTopPaddingDp.dp,
+                bottom = layout.titleBottomPaddingDp.dp
+            )
         )
         Text(
             text = localizedStringResource(R.string.course_list_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = TextLight,
-            modifier = Modifier.padding(bottom = 20.dp)
+            modifier = Modifier.padding(bottom = layout.subtitleBottomPaddingDp.dp)
         )
 
         if (courses.isEmpty()) {
