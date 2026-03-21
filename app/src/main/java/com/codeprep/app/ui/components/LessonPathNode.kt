@@ -32,6 +32,8 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.codeprep.app.feedback.FeedbackEvent
+import com.codeprep.app.feedback.LocalAppFeedback
 import com.codeprep.app.ui.theme.Charcoal
 import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.LeafGreen
@@ -73,6 +75,7 @@ fun LessonPathNode(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val palette = remember(state) { paletteFor(state) }
+    val feedback = LocalAppFeedback.current
 
     val puckDepth = 4.dp
     val faceInset = 1.dp
@@ -93,7 +96,10 @@ fun LessonPathNode(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = state != NodeState.LOCKED,
-                onClick = onClick
+                onClick = {
+                    feedback.emit(FeedbackEvent.TapPrimary)
+                    onClick()
+                }
             )
     ) {
         Box(
