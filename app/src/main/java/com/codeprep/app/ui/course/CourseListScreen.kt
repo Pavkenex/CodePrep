@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -34,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -83,12 +87,69 @@ fun CourseListScreen(
     onCourseClick: (String) -> Unit
 ) {
     val courses by viewModel.courses.collectAsState()
+    val configuration = LocalConfiguration.current
+    val layout = courseListLayoutFor(configuration.screenWidthDp)
 
-    Column(
+    CourseListScreenContent(
+        courses = courses,
+        layout = layout,
+        onCourseClick = onCourseClick
+    )
+}
+
+@Composable
+internal fun CourseListScreenContent(
+    courses: List<ModuleCardUi>,
+    layout: CourseListLayoutSpec,
+    onCourseClick: (String) -> Unit
+) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBackground)
-            .padding(horizontal = 16.dp)
+            .testTag("course-list-root")
+    ) {
+        if (layout.useTabletContainer) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = layout.screenPaddingDp.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                CourseListContentColumn(
+                    courses = courses,
+                    layout = layout,
+                    onCourseClick = onCourseClick,
+                    modifier = Modifier
+                        .width(layout.maxContainerWidthDp.dp)
+                        .fillMaxHeight()
+                        .testTag("course-list-container")
+                )
+            }
+        } else {
+            CourseListContentColumn(
+                courses = courses,
+                layout = layout,
+                onCourseClick = onCourseClick,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = layout.screenPaddingDp.dp)
+                    .testTag("course-list-container")
+            )
+        }
+    }
+}
+
+@Composable
+private fun CourseListContentColumn(
+    courses: List<ModuleCardUi>,
+    layout: CourseListLayoutSpec,
+    onCourseClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(layout.verticalSpacingDp.dp)
     ) {
         Text(
             text = localizedStringResource(R.string.course_list_title),
@@ -118,7 +179,7 @@ fun CourseListScreen(
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(layout.verticalSpacingDp.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(courses, key = { it.courseId }) { course ->
