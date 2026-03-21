@@ -36,16 +36,20 @@ class CourseListScreenTabletLayoutTest {
             }
         }
 
-        val container = composeTestRule.onNodeWithTag("course-list-container").assertExists()
-        val root = composeTestRule.onNodeWithTag("course-list-root").assertExists()
+        val layout = courseListLayoutFor(screenWidthDp = 900)
+        val container = composeTestRule.onNodeWithTag(COURSE_LIST_CONTAINER_TAG).assertExists()
+        val root = composeTestRule.onNodeWithTag(COURSE_LIST_ROOT_TAG).assertExists()
 
         val containerBounds = container.fetchSemanticsNode().boundsInRoot
         val rootBounds = root.fetchSemanticsNode().boundsInRoot
         val containerCenter = (containerBounds.left + containerBounds.right) / 2f
         val rootCenter = (rootBounds.left + rootBounds.right) / 2f
         val tolerance = with(composeTestRule.density) { 2.dp.toPx() }
+        val expectedContainerWidth = with(composeTestRule.density) {
+            layout.maxContainerWidthDp.dp.toPx()
+        }
 
-        assertTrue(containerBounds.width < rootBounds.width)
+        assertTrue(abs(containerBounds.width - expectedContainerWidth) <= tolerance)
         assertTrue(abs(containerCenter - rootCenter) <= tolerance)
     }
 }
