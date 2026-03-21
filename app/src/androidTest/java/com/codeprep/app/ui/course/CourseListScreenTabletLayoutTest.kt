@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
+import com.codeprep.app.ui.theme.CardinalRed
+import com.codeprep.app.ui.theme.ElectricCyan
 import com.codeprep.app.ui.theme.CodePrepTheme
+import com.codeprep.app.ui.theme.SunYellow
 import kotlin.math.abs
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -69,6 +73,49 @@ class CourseListScreenTabletLayoutTest {
 
         assertTrue(abs(header.titleTop - expectedTabletTitleTop) <= tolerance)
         assertTrue(header.subtitleTop > header.titleTop)
+    }
+
+    @Test
+    fun pillMetadata_wrapsWhenLabelsAreLong() {
+        composeTestRule.setContent {
+            CodePrepTheme {
+                Box(
+                    modifier = Modifier
+                        .width(260.dp)
+                        .height(240.dp)
+                ) {
+                    ModuleJourneyCardPills(
+                        pills = listOf(
+                            CourseCardPill(
+                                text = "A very long lessons label that should wrap",
+                                accent = ElectricCyan
+                            ),
+                            CourseCardPill(
+                                text = "An equally long stars label that should wrap",
+                                accent = SunYellow
+                            ),
+                            CourseCardPill(
+                                text = "A long progress label that should wrap too",
+                                accent = CardinalRed
+                            )
+                        ),
+                        layout = courseListLayoutFor(screenWidthDp = 900)
+                    )
+                }
+            }
+        }
+
+        val firstPill = composeTestRule
+            .onNodeWithText("A very long lessons label that should wrap")
+            .assertExists()
+        val secondPill = composeTestRule
+            .onNodeWithText("An equally long stars label that should wrap")
+            .assertExists()
+
+        val firstBounds = firstPill.fetchSemanticsNode().boundsInRoot
+        val secondBounds = secondPill.fetchSemanticsNode().boundsInRoot
+
+        assertTrue(secondBounds.top > firstBounds.top)
     }
 
     private fun measureHeaderBounds(

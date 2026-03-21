@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -63,7 +64,11 @@ internal data class CourseListLayoutSpec(
     val titleTopPaddingDp: Int,
     val titleBottomPaddingDp: Int,
     val subtitleBottomPaddingDp: Int,
-    val maxContainerWidthDp: Int
+    val maxContainerWidthDp: Int,
+    val cardPaddingDp: Int,
+    val cardSectionSpacingDp: Int,
+    val pillHorizontalSpacingDp: Int,
+    val pillVerticalSpacingDp: Int
 )
 
 internal const val COURSE_LIST_ROOT_TAG = "course-list-root"
@@ -80,7 +85,11 @@ internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
             titleTopPaddingDp = 24,
             titleBottomPaddingDp = 8,
             subtitleBottomPaddingDp = 20,
-            maxContainerWidthDp = 0
+            maxContainerWidthDp = 0,
+            cardPaddingDp = 18,
+            cardSectionSpacingDp = 14,
+            pillHorizontalSpacingDp = 8,
+            pillVerticalSpacingDp = 8
         )
     } else {
         CourseListLayoutSpec(
@@ -90,7 +99,11 @@ internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
             titleTopPaddingDp = 40,
             titleBottomPaddingDp = 16,
             subtitleBottomPaddingDp = 32,
-            maxContainerWidthDp = 800
+            maxContainerWidthDp = 800,
+            cardPaddingDp = 22,
+            cardSectionSpacingDp = 18,
+            pillHorizontalSpacingDp = 10,
+            pillVerticalSpacingDp = 10
         )
     }
 }
@@ -204,6 +217,7 @@ private fun CourseListContentColumn(
                 items(courses, key = { it.courseId }) { course ->
                     ModuleJourneyCard(
                         module = course,
+                        layout = layout,
                         onClick = { if (!course.isLocked) onCourseClick(course.courseId) }
                     )
                 }
@@ -216,6 +230,7 @@ private fun CourseListContentColumn(
 @Composable
 private fun ModuleJourneyCard(
     module: ModuleCardUi,
+    layout: CourseListLayoutSpec,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -244,8 +259,8 @@ private fun ModuleJourneyCard(
                     color = if (module.isLocked) LockedGrey.copy(alpha = 0.25f) else ElectricCyan.copy(alpha = 0.4f),
                     shape = RoundedCornerShape(24.dp)
                 )
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(layout.cardPaddingDp.dp),
+            verticalArrangement = Arrangement.spacedBy(layout.cardSectionSpacingDp.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -289,34 +304,35 @@ private fun ModuleJourneyCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Pill(
-                    text = localizedPluralStringResource(
-                        R.plurals.course_pill_lessons,
-                        module.lessonCount,
-                        module.lessonCount
+            ModuleJourneyCardPills(
+                pills = listOf(
+                    CourseCardPill(
+                        text = localizedPluralStringResource(
+                            R.plurals.course_pill_lessons,
+                            module.lessonCount,
+                            module.lessonCount
+                        ),
+                        accent = ElectricCyan
                     ),
-                    accent = ElectricCyan
-                )
-                Pill(
-                    text = localizedPluralStringResource(
-                        R.plurals.course_pill_stars,
-                        module.perfectLessons,
-                        module.perfectLessons
+                    CourseCardPill(
+                        text = localizedPluralStringResource(
+                            R.plurals.course_pill_stars,
+                            module.perfectLessons,
+                            module.perfectLessons
+                        ),
+                        accent = SunYellow
                     ),
-                    accent = SunYellow
-                )
-                Pill(
-                    text = if (module.isLocked) {
-                        localizedStringResource(R.string.course_progress_locked)
-                    } else {
-                        localizedStringResource(R.string.course_progress_cleared, module.completedLessons)
-                    },
-                    accent = if (module.isLocked) CardinalRed else ElectricCyan
-                )
-            }
+                    CourseCardPill(
+                        text = if (module.isLocked) {
+                            localizedStringResource(R.string.course_progress_locked)
+                        } else {
+                            localizedStringResource(R.string.course_progress_cleared, module.completedLessons)
+                        },
+                        accent = if (module.isLocked) CardinalRed else ElectricCyan
+                    )
+                ),
+                layout = layout
+            )
 
             LinearProgressIndicator(
                 progress = { completionRatio },
@@ -381,7 +397,34 @@ private fun Pill(
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-            color = accent
+            color = accent,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+internal data class CourseCardPill(
+    val text: String,
+    val accent: androidx.compose.ui.graphics.Color
+)
+
+@Composable
+internal fun ModuleJourneyCardPills(
+    pills: List<CourseCardPill>,
+    layout: CourseListLayoutSpec,
+    modifier: Modifier = Modifier
+) {
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(layout.pillHorizontalSpacingDp.dp),
+        verticalArrangement = Arrangement.spacedBy(layout.pillVerticalSpacingDp.dp)
+    ) {
+        pills.forEach { pill ->
+            Pill(
+                text = pill.text,
+                accent = pill.accent
+            )
+        }
     }
 }

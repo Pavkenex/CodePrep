@@ -18,6 +18,10 @@ class CourseListLayoutSpecTest {
         assertEquals(8, layout.titleBottomPaddingDp)
         assertEquals(20, layout.subtitleBottomPaddingDp)
         assertTrue(layout.maxContainerWidthDp == 0)
+        assertEquals(18, layout.cardPaddingDp)
+        assertEquals(14, layout.cardSectionSpacingDp)
+        assertEquals(8, layout.pillHorizontalSpacingDp)
+        assertEquals(8, layout.pillVerticalSpacingDp)
     }
 
     @Test
@@ -31,5 +35,9 @@ class CourseListLayoutSpecTest {
         assertEquals(16, layout.titleBottomPaddingDp)
         assertEquals(32, layout.subtitleBottomPaddingDp)
         assertEquals(800, layout.maxContainerWidthDp)
+        assertEquals(22, layout.cardPaddingDp)
+        assertEquals(18, layout.cardSectionSpacingDp)
+        assertEquals(10, layout.pillHorizontalSpacingDp)
+        assertEquals(10, layout.pillVerticalSpacingDp)
     }
 }
