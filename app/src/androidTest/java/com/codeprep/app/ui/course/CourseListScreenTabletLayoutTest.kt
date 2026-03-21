@@ -81,21 +81,21 @@ class CourseListScreenTabletLayoutTest {
             CodePrepTheme {
                 Box(
                     modifier = Modifier
-                        .width(260.dp)
+                        .width(280.dp)
                         .height(240.dp)
                 ) {
                     ModuleJourneyCardPills(
                         pills = listOf(
                             CourseCardPill(
-                                text = "A very long lessons label that should wrap",
+                                text = "12 lessons",
                                 accent = ElectricCyan
                             ),
                             CourseCardPill(
-                                text = "An equally long stars label that should wrap",
+                                text = "5 stars",
                                 accent = SunYellow
                             ),
                             CourseCardPill(
-                                text = "A long progress label that should wrap too",
+                                text = "Progress cleared 3 of 12 lessons",
                                 accent = CardinalRed
                             )
                         ),
@@ -106,16 +106,25 @@ class CourseListScreenTabletLayoutTest {
         }
 
         val firstPill = composeTestRule
-            .onNodeWithText("A very long lessons label that should wrap")
+            .onNodeWithText("12 lessons")
             .assertExists()
         val secondPill = composeTestRule
-            .onNodeWithText("An equally long stars label that should wrap")
+            .onNodeWithText("5 stars")
             .assertExists()
 
         val firstBounds = firstPill.fetchSemanticsNode().boundsInRoot
         val secondBounds = secondPill.fetchSemanticsNode().boundsInRoot
+        val thirdBounds = composeTestRule
+            .onNodeWithText("Progress cleared 3 of 12 lessons")
+            .assertExists()
+            .fetchSemanticsNode()
+            .boundsInRoot
 
-        assertTrue(secondBounds.top > firstBounds.top)
+        val tolerance = with(composeTestRule.density) { 2.dp.toPx() }
+
+        assertTrue(abs(secondBounds.top - firstBounds.top) <= tolerance)
+        assertTrue(secondBounds.left > firstBounds.left)
+        assertTrue(thirdBounds.top > firstBounds.top + tolerance)
     }
 
     private fun measureHeaderBounds(
