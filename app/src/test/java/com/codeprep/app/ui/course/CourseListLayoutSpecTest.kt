@@ -14,16 +14,22 @@ class CourseListLayoutSpecTest {
         assertFalse(layout.useTabletContainer)
         assertEquals(16, layout.screenPaddingDp)
         assertEquals(16, layout.verticalSpacingDp)
+        assertEquals(24, layout.titleTopPaddingDp)
+        assertEquals(8, layout.titleBottomPaddingDp)
+        assertEquals(20, layout.subtitleBottomPaddingDp)
         assertTrue(layout.maxContainerWidthDp == 0)
     }
 
     @Test
-    fun width600_usesBoundedCenteredContainer() {
+    fun width600_usesBoundedCenteredContainerAndStrongerHeaderSpacing() {
         val layout = courseListLayoutFor(screenWidthDp = 600)
 
         assertTrue(layout.useTabletContainer)
         assertEquals(40, layout.screenPaddingDp)
         assertEquals(24, layout.verticalSpacingDp)
+        assertEquals(40, layout.titleTopPaddingDp)
+        assertEquals(16, layout.titleBottomPaddingDp)
+        assertEquals(32, layout.subtitleBottomPaddingDp)
         assertEquals(800, layout.maxContainerWidthDp)
     }
 }
