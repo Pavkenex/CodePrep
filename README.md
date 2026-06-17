@@ -13,7 +13,6 @@ CodePrep is a single-module Android learning app that helps users prepare for co
 - [Build and Development](#build-and-development)
 - [Key Conventions](#key-conventions)
 - [Database Schema](#database-schema)
-- [Header Shortcuts Check](#header-shortcuts-check)
 - [Contributing](#contributing)
 
 ## Features
@@ -133,10 +132,6 @@ Windows equivalents:
 - `cached_public_users`
 - `friends`
 - `friend_requests`
-
-## Header Shortcuts Check
-
-All table-of-contents header shortcuts above point to existing sections in this README.
 
 ## Contributing
 
