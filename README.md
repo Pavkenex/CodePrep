@@ -1,6 +1,6 @@
 # CodePrep
 
-CodePrep is a single-module Android learning app that helps users prepare for coding interviews through structured lessons, quizzes, and gamified progression.
+CodePrep is a private single-module Android learning app built for internship preparation, with structured lessons, quizzes, and gamified progression.
 
 ## Table of Contents
 
@@ -13,7 +13,6 @@ CodePrep is a single-module Android learning app that helps users prepare for co
 - [Build and Development](#build-and-development)
 - [Key Conventions](#key-conventions)
 - [Database Schema](#database-schema)
-- [Contributing](#contributing)
 
 ## Features
 
@@ -132,10 +131,3 @@ Windows equivalents:
 - `cached_public_users`
 - `friends`
 - `friend_requests`
-
-## Contributing
-
-1. Create a feature branch.
-2. Keep changes focused and small.
-3. Run build, tests, and lint before opening a PR.
-4. Submit a PR with a clear summary of behavior and validation steps.
