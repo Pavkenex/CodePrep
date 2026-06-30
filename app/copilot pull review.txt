@@ -1,7 +1,0 @@
-getDailyQuestion() loads all question documents via a collectionGroup("questions").get() and then sorts them client-side. This can become very expensive (bandwidth/latency) as the question bank grows, and it runs each time the Home screen ViewModel is created. Consider switching to a deterministic query that returns only 1 (or a small page of) candidate(s) for the given date (e.g., query by randomKey with limit(1) and wrap-around), or persist the selected daily question id in Firestore/Room so the app doesn’t need to enumerate the entire collection.
-
-
-The fallback path fetchAllQuestionsFromModules() issues nested queries (modules -> lessons -> questions), which is an N+1 pattern and can trigger many Firestore reads on cold start. If collectionGroup isn’t available/indexed, consider a more bounded fallback (e.g., limit modules/lessons,
-
-
-completeDailyChallenge() grants XP based only on difficulty and does not consider whether the selected answer is correct. In the quiz flow XP is only awarded for correct answers; if daily challenges should follow the same rule, compute correctness from selectedIndex vs question.correctIndex and only award XP (or vary the reward) accordingly.
