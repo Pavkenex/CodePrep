@@ -67,6 +67,8 @@
     <string name="auth_register_have_account">Već imaš nalog?</string>
     <string name="auth_error_login">Prijava nije uspela.</string>
     <string name="auth_error_register">Registracija nije uspela.</string>
+    <string name="auth_error_google">Prijava putem Google-a nije uspela.</string>
+    <string name="auth_error_google_account_exists">Ovaj Google email je već registrovan putem emaila i lozinke. Prijavi se emailom i lozinkom.</string>
 
     <string name="nav_home">Početna</string>
     <string name="nav_modules">Moduli</string>

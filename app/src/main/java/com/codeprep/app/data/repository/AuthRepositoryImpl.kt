@@ -6,6 +6,7 @@ import com.codeprep.app.data.local.dao.UserProgressDao
 import com.codeprep.app.data.local.entity.UserProgressEntity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -47,34 +48,21 @@ class AuthRepositoryImpl @Inject constructor(
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val user = result.user!!
 
-            try {
-                val doc = firestore.collection("users").document(user.uid).get().await()
-                if (doc.exists()) {
-                    userDao.upsert(doc.toUserProgressEntity(user.uid))
-                } else {
-                    createOrUpdateUserProfile(
-                        userId = user.uid,
-                        nickname = user.displayName?.takeIf { it.isNotBlank() }
-                            ?: email.substringBefore('@'),
-                        email = email
-                    )
-                }
-            } catch (_: Exception) {
-                // Firestore unreachable — ensure at least a local record exists
-                val existing = userDao.getUserById(user.uid)
-                if (existing == null) {
-                    userDao.upsert(
-                        UserProgressEntity(
-                            userId = user.uid,
-                            nickname = email.substringBefore('@'),
-                            xp = 0, level = 1, streak = 0,
-                            hearts = 5, lastHeartLostAt = null,
-                            lastActiveDate = null,
-                            updatedAt = Instant.now()
-                        )
-                    )
-                }
-            }
+            syncUserProfileAfterLogin(user, email)
+
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun loginWithGoogle(idToken: String): Result<FirebaseUser> {
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val result = auth.signInWithCredential(credential).await()
+            val user = result.user!!
+
+            syncUserProfileAfterLogin(user, user.email.orEmpty())
 
             Result.success(user)
         } catch (e: Exception) {
@@ -85,6 +73,48 @@ class AuthRepositoryImpl @Inject constructor(
     override fun getCurrentUser() = auth.currentUser
 
     override fun logout() = auth.signOut()
+
+    private suspend fun syncUserProfileAfterLogin(
+        user: FirebaseUser,
+        fallbackEmail: String
+    ) {
+        val email = user.email?.takeIf { it.isNotBlank() } ?: fallbackEmail
+        val fallbackNickname = user.displayName?.takeIf { it.isNotBlank() }
+            ?: email.substringBefore('@')
+        val local = userDao.getUserById(user.uid)
+
+        try {
+            val doc = firestore.collection("users").document(user.uid).get().await()
+            if (doc.exists()) {
+                val remote = doc.toUserProgressEntity(user.uid)
+                val localUpdatedAt = local?.updatedAt ?: Instant.EPOCH
+                val remoteUpdatedAt = remote.updatedAt ?: Instant.EPOCH
+                if (local == null || !localUpdatedAt.isAfter(remoteUpdatedAt)) {
+                    userDao.upsert(remote)
+                }
+            } else if (local == null) {
+                createOrUpdateUserProfile(
+                    userId = user.uid,
+                    nickname = fallbackNickname,
+                    email = email
+                )
+            }
+        } catch (_: Exception) {
+            // Firestore unreachable — ensure at least a local record exists
+            if (local == null) {
+                userDao.upsert(
+                    UserProgressEntity(
+                        userId = user.uid,
+                        nickname = fallbackNickname,
+                        xp = 0, level = 1, streak = 0,
+                        hearts = 5, lastHeartLostAt = null,
+                        lastActiveDate = null,
+                        updatedAt = Instant.now()
+                    )
+                )
+            }
+        }
+    }
 
     private suspend fun createOrUpdateUserProfile(
         userId: String,

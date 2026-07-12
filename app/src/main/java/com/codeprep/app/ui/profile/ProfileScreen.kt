@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codeprep.app.R
+import com.codeprep.app.ui.auth.signOutFromGoogle
 import com.codeprep.app.ui.friends.AvatarBadge
 import com.codeprep.app.ui.friends.AvatarPresets
 import com.codeprep.app.ui.friends.BadgeStrip
@@ -311,7 +312,7 @@ fun ProfileScreen(
             Button(
                 onClick = {
                     FirebaseAuth.getInstance().signOut()
-                    onLogout()
+                    signOutFromGoogle(context, onComplete = onLogout)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

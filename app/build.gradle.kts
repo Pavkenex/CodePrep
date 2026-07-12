@@ -33,6 +33,11 @@ android {
             "OPENROUTER_API_KEY",
             "\"${localProps.getProperty("OPENROUTER_API_KEY", "").trim()}\""
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${localProps.getProperty("GOOGLE_WEB_CLIENT_ID", "").trim()}\""
+        )
     }
 
     buildTypes {

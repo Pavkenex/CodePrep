@@ -40,6 +40,10 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
+    val launchGoogleSignIn = rememberGoogleSignInAction(
+        onIdToken = viewModel::loginWithGoogle,
+        onFailure = viewModel::googleSignInFailed
+    )
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -109,10 +113,11 @@ fun LoginScreen(
 
         GamifiedButton(
             text = localizedStringResource(R.string.auth_login_google),
-            onClick = { /* TODO: Google Auth */ },
+            onClick = launchGoogleSignIn,
             backgroundColor = Charcoal,
             shadowColor = DeepCharcoal,
             textColor = IceWhite,
+            enabled = authState !is AuthState.Loading,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 

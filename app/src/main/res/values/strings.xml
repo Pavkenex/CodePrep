@@ -80,6 +80,8 @@
     <string name="auth_register_have_account">Already have an account?</string>
     <string name="auth_error_login">Login failed.</string>
     <string name="auth_error_register">Registration failed.</string>
+    <string name="auth_error_google">Google sign-in failed.</string>
+    <string name="auth_error_google_account_exists">This Google email is already registered with email and password. Log in with email and password instead.</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_modules">Modules</string>
