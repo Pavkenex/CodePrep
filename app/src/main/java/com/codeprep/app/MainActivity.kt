@@ -24,14 +24,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.core.content.ContextCompat
 import com.codeprep.app.feedback.AppFeedback
 import com.codeprep.app.feedback.ProvideAppFeedback
+import com.codeprep.app.data.settings.PendingSettingsActionHolder
 import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.CodePrepBottomBar
 import com.codeprep.app.ui.navigation.Screen
@@ -39,6 +38,7 @@ import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.formatHeartRefillCountdown
 import com.codeprep.app.ui.navigation.mainNavGraph
+import com.codeprep.app.ui.navigation.navigateToTopLevelRoute
 import com.codeprep.app.ui.secretfact.SecretFactSensorController
 import com.codeprep.app.ui.secretfact.SecretFactOverlay
 import com.codeprep.app.ui.secretfact.SecretFactViewModel
@@ -53,6 +53,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var appFeedback: AppFeedback
 
+    @Inject
+    lateinit var pendingSettingsActionHolder: PendingSettingsActionHolder
+
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
@@ -64,7 +67,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             CodePrepTheme {
                 ProvideAppFeedback(appFeedback = appFeedback) {
-                    RootNavGraph()
+                    RootNavGraph(
+                        pendingSettingsActionHolder = pendingSettingsActionHolder
+                    )
                 }
             }
         }
@@ -86,7 +91,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun RootNavGraph() {
+fun RootNavGraph(
+    pendingSettingsActionHolder: PendingSettingsActionHolder
+) {
     val navController = rememberNavController()
     val bootstrapViewModel: SessionBootstrapViewModel = hiltViewModel()
     val secretFactViewModel: SecretFactViewModel = hiltViewModel()
@@ -177,7 +184,10 @@ fun RootNavGraph() {
             modifier = Modifier.weight(1f)
         ) {
             authNavGraph(navController)
-            mainNavGraph(navController)
+            mainNavGraph(
+                navController = navController,
+                pendingSettingsActionHolder = pendingSettingsActionHolder
+            )
         }
 
         if (shouldShowBottomNav) {
@@ -197,22 +207,5 @@ fun RootNavGraph() {
             uiState = secretFactUiState,
             onDismiss = secretFactViewModel::onDismiss
         )
-    }
-}
-
-private fun navigateToTopLevelRoute(
-    navController: NavHostController,
-    route: String
-) {
-    val popped = navController.popBackStack(route, inclusive = false)
-    val currentRoute = navController.currentDestination?.route
-    if (popped && currentRoute == route) return
-
-    navController.navigate(route) {
-        popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
     }
 }

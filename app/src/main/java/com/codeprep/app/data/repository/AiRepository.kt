@@ -15,6 +15,7 @@ import com.codeprep.app.data.remote.api.AiMessage
 import com.codeprep.app.data.remote.api.AiRequest
 import com.codeprep.app.data.remote.api.OpenRouterApi
 import com.codeprep.app.data.settings.AppStringProvider
+import com.codeprep.app.data.settings.AiSettingsStore
 import com.codeprep.app.domain.AiPromptBuilder
 import com.codeprep.app.domain.model.AiConversationMessage
 import com.codeprep.app.domain.model.AiConversationRole
@@ -39,6 +40,7 @@ class AiRepository @Inject constructor(
     private val conversationDao: AiConversationDao,
     private val cacheDao: AiResponseCacheDao,
     private val strings: AppStringProvider,
+    private val aiSettingsStore: AiSettingsStore,
     private val api: OpenRouterApi
 ) {
     suspend fun askQuestion(
@@ -61,6 +63,10 @@ class AiRepository @Inject constructor(
 
         val canUseCache = conversationHistory.isEmpty()
         if (canUseCache) {
+            // NOTE: cached answers are valid for AiConfig.CACHE_VALIDITY_DAYS and are
+            // keyed by userId/question/lessonId, not by provider settings. After the
+            // user switches AI providers (base URL/model/key), a fresh question that
+            // matches a cached one may still be served from cache. Accepted behavior.
             val freshCache = cacheDao.getCachedAnswer(
                 userId = userId,
                 question = normalizedQuestion,
@@ -89,7 +95,8 @@ class AiRepository @Inject constructor(
         return try {
             val response = api.askQuestion(
                 AiRequest(
-                    model = AiConfig.MODEL,
+                    model = aiSettingsStore.getModelId()
+                        .ifBlank { AiSettingsStore.DEFAULT_MODEL_ID },
                     messages = buildApiMessages(
                         systemPrompt = systemPrompt,
                         conversationHistory = conversationHistory,
@@ -122,7 +129,19 @@ class AiRepository @Inject constructor(
         } catch (e: HttpException) {
             if (e.code() == 429) {
                 AiResponse.RateLimited
+            } else if (e.code() == 401) {
+                // The configured API key was rejected by the provider.
+                resolveFallback(
+                    userId = userId,
+                    question = normalizedQuestion,
+                    context = context,
+                    defaultError = strings.get(R.string.ai_invalid_api_key)
+                )
             } else {
+                // 403 (and every other status) intentionally falls through to the
+                // generic service-unavailable message; the daily-limit 429 case is
+                // handled above and the provider does not report a distinct
+                // meaning for 403 that warrants a dedicated message.
                 resolveFallback(
                     userId = userId,
                     question = normalizedQuestion,
@@ -131,6 +150,15 @@ class AiRepository @Inject constructor(
                 )
             }
         } catch (_: IOException) {
+            resolveFallback(
+                userId = userId,
+                question = normalizedQuestion,
+                context = context,
+                defaultError = strings.get(R.string.ai_unavailable_try_again)
+            )
+        } catch (_: IllegalArgumentException) {
+            // Malformed user-configured base URL: the interceptor cannot build a
+            // request URL. Degrade to the same retry message instead of crashing.
             resolveFallback(
                 userId = userId,
                 question = normalizedQuestion,

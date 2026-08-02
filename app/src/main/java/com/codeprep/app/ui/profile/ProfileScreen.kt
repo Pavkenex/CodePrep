@@ -38,6 +38,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codeprep.app.R
+import com.codeprep.app.data.settings.PendingSettingsAction
+import com.codeprep.app.data.settings.PendingSettingsActionHolder
 import com.codeprep.app.ui.auth.signOutFromGoogle
 import com.codeprep.app.ui.friends.AvatarBadge
 import com.codeprep.app.ui.friends.AvatarPresets
@@ -80,6 +83,7 @@ fun ProfileScreen(
     onAddFriends: () -> Unit,
     onFriendClick: (String) -> Unit,
     onLogout: () -> Unit,
+    pendingSettingsActionHolder: PendingSettingsActionHolder,
     sessionViewModel: SessionBootstrapViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel(),
     settingsViewModel: ProfileSettingsViewModel = hiltViewModel()
@@ -98,6 +102,18 @@ fun ProfileScreen(
     var pendingExport by remember { mutableStateOf<ConversationExportPayload?>(null) }
     var settingsNotice by remember { mutableStateOf<SettingsNotice?>(null) }
     var expandedSettingsSection by rememberSaveable { mutableStateOf<ProfileSettingsSection?>(null) }
+
+    // Deep link from the locked Ask AI surfaces: open the settings sheet with the
+    // AI section expanded, exactly once (the holder clears on consumption).
+    LaunchedEffect(pendingSettingsActionHolder) {
+        val pendingAction = pendingSettingsActionHolder.consume()
+        if (pendingAction != null) {
+            isSettingsVisible = true
+            if (pendingAction.section == PendingSettingsAction.AI_SETTINGS) {
+                expandedSettingsSection = ProfileSettingsSection.Ai
+            }
+        }
+    }
 
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
@@ -469,6 +485,18 @@ fun ProfileScreen(
                             importLauncher.launch(arrayOf("application/json"))
                         }
                     )
+                }
+                SettingsSectionCard(
+                    title = localizedStringResource(R.string.profile_ai_settings_section),
+                    expanded = expandedSettingsSection == ProfileSettingsSection.Ai,
+                    onToggle = {
+                        expandedSettingsSection = toggleSettingsSection(
+                            current = expandedSettingsSection,
+                            requested = ProfileSettingsSection.Ai
+                        )
+                    }
+                ) {
+                    AiSettingsSection()
                 }
                 settingsNotice?.let { notice ->
                     Text(

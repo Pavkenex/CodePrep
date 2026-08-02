@@ -80,9 +80,11 @@ fun AskAiLessonOverlay(
     languageCode: String,
     visible: Boolean,
     onDismiss: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: AskAiViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val hasApiKey by viewModel.hasApiKey.collectAsState()
     var question by rememberSaveable(lessonContext.lessonId) { mutableStateOf("") }
     val listState = rememberLazyListState()
 
@@ -164,16 +166,27 @@ fun AskAiLessonOverlay(
                         }
                     }
 
-                    AskAiComposer(
-                        languageCode = languageCode,
-                        question = question,
-                        onQuestionChange = { question = it },
-                        onSend = {
-                            viewModel.ask(question)
-                            question = ""
-                        },
-                        enabled = !uiState.isLoading
-                    )
+                    if (hasApiKey) {
+                        AskAiComposer(
+                            languageCode = languageCode,
+                            question = question,
+                            onQuestionChange = { question = it },
+                            onSend = {
+                                viewModel.ask(question)
+                                question = ""
+                            },
+                            enabled = !uiState.isLoading
+                        )
+                    } else {
+                        // Locked state: no question input, no network call.
+                        AskAiLockedCard(
+                            languageCode = languageCode,
+                            onOpenSettings = onOpenSettings,
+                            modifier = Modifier
+                                .navigationBarsPadding()
+                                .padding(16.dp)
+                        )
+                    }
                 }
             }
         }

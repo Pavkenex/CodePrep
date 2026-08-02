@@ -1,7 +1,8 @@
 package com.codeprep.app.di
 
-import com.codeprep.app.data.remote.api.AiConfig
+import com.codeprep.app.data.remote.api.EndpointBuilder
 import com.codeprep.app.data.remote.api.OpenRouterApi
+import com.codeprep.app.data.settings.AiSettingsStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,15 +17,34 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+    // Placeholder only: the interceptor rewrites the URL per request using the
+    // user-configured base URL (see EndpointBuilder). Retrofit needs a valid,
+    // absolute URL at construction time.
+    private const val RETROFIT_PLACEHOLDER_BASE_URL = "https://placeholder.invalid/"
+
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(aiSettingsStore: AiSettingsStore): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer ${AiConfig.apiKey}")
+                val originalRequest = chain.request()
+                val endpointUrl = EndpointBuilder.build(
+                    baseUrl = aiSettingsStore.getBaseUrl(),
+                    path = originalRequest.url.encodedPath.removePrefix("/")
+                )
+
+                val requestBuilder = originalRequest.newBuilder()
+                    .url(endpointUrl)
                     .addHeader("Content-Type", "application/json")
-                    .build()
+
+                // Only send the Authorization header when a key is configured;
+                // OkHttp's logging interceptor redacts it by default.
+                val apiKey = aiSettingsStore.getApiKey()
+                if (apiKey.isNotBlank()) {
+                    requestBuilder.addHeader("Authorization", "Bearer $apiKey")
+                }
+
+                val request = requestBuilder.build()
 
                 var response = chain.proceed(request)
                 var retryCount = 0
@@ -56,7 +76,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(AiConfig.BASE_URL)
+            .baseUrl(RETROFIT_PLACEHOLDER_BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

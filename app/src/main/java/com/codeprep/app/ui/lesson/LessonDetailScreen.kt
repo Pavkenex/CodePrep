@@ -61,7 +61,8 @@ import kotlinx.coroutines.flow.collectLatest
 fun LessonDetailScreen(
     viewModel: LessonViewModel = hiltViewModel(),
     startWithAiOpen: Boolean = false,
-    onStartQuiz: (String) -> Unit
+    onStartQuiz: (String) -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     val lesson by viewModel.lesson.collectAsState()
     val courseTitle by viewModel.courseTitle.collectAsState()
@@ -341,7 +342,8 @@ fun LessonDetailScreen(
                 ),
                 languageCode = language,
                 visible = showAiSheet,
-                onDismiss = { showAiSheet = false }
+                onDismiss = { showAiSheet = false },
+                onOpenSettings = onOpenSettings
             )
         }
     }

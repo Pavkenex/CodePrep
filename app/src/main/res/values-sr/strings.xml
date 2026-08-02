@@ -165,6 +165,28 @@
     <string name="profile_conversations_import_success">Razgovori su uvezeni.</string>
     <string name="profile_conversations_import_invalid_file">Ova datoteka nije ispravan CodePrep backup razgovora.</string>
     <string name="profile_conversations_import_error">Nije moguće uvesti razgovore.</string>
+    <string name="profile_ai_settings_section">AI podešavanja</string>
+    <string name="profile_ai_api_key_label">API ključ</string>
+    <string name="profile_ai_api_key_placeholder">Nalepi svoj API ključ</string>
+    <string name="profile_ai_model_label">Model</string>
+    <string name="profile_ai_model_placeholder">npr. stepfun/step-3.5-flash:freegi</string>
+    <string name="profile_ai_base_url_label">Osnovni URL</string>
+    <string name="profile_ai_base_url_placeholder">https://openrouter.ai/api/v1/</string>
+    <string name="profile_ai_show_key">Prikaži API ključ</string>
+    <string name="profile_ai_hide_key">Sakrij API ključ</string>
+    <string name="profile_ai_test_connection">Testiraj vezu</string>
+    <string name="profile_ai_test_success">Veza je uspešna.</string>
+    <string name="profile_ai_test_invalid_key">Nevažeći API ključ. Proveri ključ i pokušaj ponovo.</string>
+    <string name="profile_ai_test_bad_endpoint">Nije moguće doseći ovu adresu. Proveri osnovni URL i model.</string>
+    <string name="profile_ai_test_unreachable">Veza nije uspela. Proveri mrežnu vezu.</string>
+    <string name="profile_ai_save">Sačuvaj</string>
+    <string name="profile_ai_saved_notice">AI podešavanja su sačuvana.</string>
+    <string name="profile_ai_storage_note">Tvoj API ključ se čuva samo na ovom uređaju i nikada se ne sinhronizuje niti pravi backup.</string>
+    <string name="ai_invalid_api_key">AI API ključ je nevažeći. Ažuriraj ga u Podešavanjima.</string>
+    <string name="ai_key_required_title">AI nije podešen</string>
+    <string name="ai_key_required_body">Dodaj svoj AI API ključ u Podešavanjima da otključaš AI tutora.</string>
+    <string name="ai_key_required_open_settings">Otvori podešavanja</string>
+    <string name="ai_key_required_system_message">Podesi svoj AI API ključ u Podešavanjima da postavljaš pitanja.</string>
 
     <string name="fun_fact_opening_home">&gt;&gt; OTVARAM_POCETNU()</string>
 

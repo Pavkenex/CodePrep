@@ -51,10 +51,12 @@ import com.codeprep.app.ui.theme.TextLight
 @Composable
 fun AskAiScreen(
     onLessonClick: (String) -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: AskAiViewModel = hiltViewModel()
 ) {
     val explanationsUiState by viewModel.explanationsUiState.collectAsState()
     val languageCode by viewModel.selectedLanguage.collectAsState()
+    val hasApiKey by viewModel.hasApiKey.collectAsState()
     var expandedCourseId by rememberSaveable { mutableStateOf<String?>(null) }
     var lessonPendingDeletion by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -81,6 +83,16 @@ fun AskAiScreen(
             color = LockedGrey,
             modifier = Modifier.padding(top = 6.dp)
         )
+
+        // Locked banner: saved explanations stay browsable, only new questions
+        // are gated (the tutor itself is opened from a lesson).
+        if (!hasApiKey) {
+            AskAiLockedCard(
+                languageCode = languageCode,
+                onOpenSettings = onOpenSettings,
+                modifier = Modifier.padding(top = 18.dp)
+            )
+        }
 
         Box(
             modifier = Modifier
