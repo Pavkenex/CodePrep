@@ -142,6 +142,10 @@ fun AskAiLessonOverlay(
                             modifier = Modifier.weight(1f),
                             lessonContext = lessonContext,
                             languageCode = languageCode,
+                            // Quick prompts are useless while locked: they only
+                            // fill the draft, and the composer is replaced by
+                            // the locked card when no key is configured.
+                            showQuickPrompts = hasApiKey,
                             onPrompt = { prompt ->
                                 question = prompt
                             }
@@ -251,6 +255,7 @@ private fun AskAiEmptyState(
     modifier: Modifier = Modifier,
     lessonContext: LessonContext,
     languageCode: String,
+    showQuickPrompts: Boolean,
     onPrompt: (String) -> Unit
 ) {
     Column(
@@ -283,10 +288,12 @@ private fun AskAiEmptyState(
                     style = MaterialTheme.typography.bodyLarge,
                     color = TextLight
                 )
-                QuickPromptRow(
-                    languageCode = languageCode,
-                    onPrompt = onPrompt
-                )
+                if (showQuickPrompts) {
+                    QuickPromptRow(
+                        languageCode = languageCode,
+                        onPrompt = onPrompt
+                    )
+                }
             }
         }
     }

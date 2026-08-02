@@ -23,14 +23,18 @@ class AiSettingsViewModel @Inject constructor(
     private val api: OpenRouterApi
 ) : ViewModel() {
 
+    // Seed each state with the synchronous store getter so the very first
+    // collection already carries the persisted values; otherwise the draft
+    // fields in AiSettingsSection capture "" and a subsequent Save/Test would
+    // wipe the stored key.
     val apiKey = aiSettingsStore.apiKey()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AiSettingsStore.DEFAULT_API_KEY)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), aiSettingsStore.getApiKey())
 
     val modelId = aiSettingsStore.modelId()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AiSettingsStore.DEFAULT_MODEL_ID)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), aiSettingsStore.getModelId())
 
     val baseUrl = aiSettingsStore.baseUrl()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AiSettingsStore.DEFAULT_BASE_URL)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), aiSettingsStore.getBaseUrl())
 
     private val _isTestingConnection = MutableStateFlow(false)
     val isTestingConnection = _isTestingConnection.asStateFlow()

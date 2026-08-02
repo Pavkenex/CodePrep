@@ -63,47 +63,68 @@ fun AiSettingsSection(
     var showSavedNotice by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            GamifiedTextField(
-                value = apiKeyDraft,
-                onValueChange = { apiKeyDraft = it },
-                placeholder = localizedStringResource(R.string.profile_ai_api_key_placeholder),
-                visualTransformation = if (isKeyVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                backgroundColor = DeepCharcoal,
-                modifier = Modifier.weight(1f)
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = localizedStringResource(R.string.profile_ai_api_key_label),
+                style = MaterialTheme.typography.bodySmall,
+                color = TextLight
             )
-            IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
-                Icon(
-                    imageVector = if (isKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                    contentDescription = localizedStringResource(
-                        if (isKeyVisible) R.string.profile_ai_hide_key else R.string.profile_ai_show_key
-                    ),
-                    tint = LockedGrey
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                GamifiedTextField(
+                    value = apiKeyDraft,
+                    onValueChange = { apiKeyDraft = it },
+                    placeholder = localizedStringResource(R.string.profile_ai_api_key_placeholder),
+                    visualTransformation = if (isKeyVisible) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
+                    backgroundColor = DeepCharcoal,
+                    modifier = Modifier.weight(1f)
                 )
+                IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
+                    Icon(
+                        imageVector = if (isKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = localizedStringResource(
+                            if (isKeyVisible) R.string.profile_ai_hide_key else R.string.profile_ai_show_key
+                        ),
+                        tint = LockedGrey
+                    )
+                }
             }
         }
 
-        GamifiedTextField(
-            value = modelDraft,
-            onValueChange = { modelDraft = it },
-            placeholder = localizedStringResource(R.string.profile_ai_model_placeholder),
-            backgroundColor = DeepCharcoal
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = localizedStringResource(R.string.profile_ai_model_label),
+                style = MaterialTheme.typography.bodySmall,
+                color = TextLight
+            )
+            GamifiedTextField(
+                value = modelDraft,
+                onValueChange = { modelDraft = it },
+                placeholder = localizedStringResource(R.string.profile_ai_model_placeholder),
+                backgroundColor = DeepCharcoal
+            )
+        }
 
-        GamifiedTextField(
-            value = baseUrlDraft,
-            onValueChange = { baseUrlDraft = it },
-            placeholder = localizedStringResource(R.string.profile_ai_base_url_placeholder),
-            backgroundColor = DeepCharcoal
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = localizedStringResource(R.string.profile_ai_base_url_label),
+                style = MaterialTheme.typography.bodySmall,
+                color = TextLight
+            )
+            GamifiedTextField(
+                value = baseUrlDraft,
+                onValueChange = { baseUrlDraft = it },
+                placeholder = localizedStringResource(R.string.profile_ai_base_url_placeholder),
+                backgroundColor = DeepCharcoal
+            )
+        }
 
         GamifiedButton(
             text = localizedStringResource(R.string.profile_ai_test_connection),
