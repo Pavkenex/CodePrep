@@ -193,7 +193,6 @@
     <string name="profile_ai_test_bad_endpoint">Couldn\'t reach this endpoint. Check the base URL and model.</string>
     <string name="profile_ai_test_unreachable">Connection failed. Check your network connection.</string>
     <string name="profile_ai_save">Save</string>
-    <string name="profile_ai_saved_notice">AI settings saved.</string>
     <string name="profile_ai_storage_note">Your API key is stored only on this device and is never synced or backed up.</string>
     <string name="ai_invalid_api_key">The AI API key is invalid. Update it in Settings.</string>
     <string name="ai_key_required_title">AI is not configured</string>

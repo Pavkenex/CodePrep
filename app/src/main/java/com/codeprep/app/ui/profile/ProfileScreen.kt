@@ -496,7 +496,10 @@ fun ProfileScreen(
                         )
                     }
                 ) {
-                    AiSettingsSection()
+                    AiSettingsSection(onSaved = {
+                        isSettingsVisible = false
+                        expandedSettingsSection = null
+                    })
                 }
                 settingsNotice?.let { notice ->
                     Text(

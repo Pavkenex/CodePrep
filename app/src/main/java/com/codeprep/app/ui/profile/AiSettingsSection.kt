@@ -15,10 +15,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -40,12 +38,12 @@ import com.codeprep.app.ui.theme.IceWhite
 import com.codeprep.app.ui.theme.LockedGrey
 import com.codeprep.app.ui.theme.TextLight
 import com.codeprep.app.ui.theme.TrueBlack
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun AiSettingsSection(
-    viewModel: AiSettingsViewModel = hiltViewModel()
+    viewModel: AiSettingsViewModel = hiltViewModel(),
+    onSaved: () -> Unit = {}
 ) {
     val savedApiKey by viewModel.apiKey.collectAsStateWithLifecycle()
     val savedModelId by viewModel.modelId.collectAsStateWithLifecycle()
@@ -60,7 +58,6 @@ fun AiSettingsSection(
     var modelDraft by rememberSaveable { mutableStateOf(savedModelId) }
     var baseUrlDraft by rememberSaveable { mutableStateOf(savedBaseUrl) }
     var isKeyVisible by rememberSaveable { mutableStateOf(false) }
-    var showSavedNotice by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -164,24 +161,12 @@ fun AiSettingsSection(
             text = localizedStringResource(R.string.profile_ai_save),
             onClick = {
                 viewModel.save(apiKeyDraft, modelDraft, baseUrlDraft)
-                showSavedNotice = true
+                onSaved()
             },
             backgroundColor = ElectricCyan,
             textColor = TrueBlack,
             modifier = Modifier.fillMaxWidth()
         )
-
-        if (showSavedNotice) {
-            LaunchedEffect(showSavedNotice) {
-                delay(2_500)
-                showSavedNotice = false
-            }
-            Text(
-                text = localizedStringResource(R.string.profile_ai_saved_notice),
-                style = MaterialTheme.typography.bodyMedium,
-                color = ElectricCyan
-            )
-        }
 
         Text(
             text = localizedStringResource(R.string.profile_ai_storage_note),

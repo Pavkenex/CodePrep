@@ -180,7 +180,6 @@
     <string name="profile_ai_test_bad_endpoint">Nije moguće doseći ovu adresu. Proveri osnovni URL i model.</string>
     <string name="profile_ai_test_unreachable">Veza nije uspela. Proveri mrežnu vezu.</string>
     <string name="profile_ai_save">Sačuvaj</string>
-    <string name="profile_ai_saved_notice">AI podešavanja su sačuvana.</string>
     <string name="profile_ai_storage_note">Tvoj API ključ se čuva samo na ovom uređaju i nikada se ne sinhronizuje niti pravi backup.</string>
     <string name="ai_invalid_api_key">AI API ključ je nevažeći. Ažuriraj ga u Podešavanjima.</string>
     <string name="ai_key_required_title">AI nije podešen</string>
