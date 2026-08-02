@@ -160,9 +160,14 @@ fun AiSettingsSection(
         GamifiedButton(
             text = localizedStringResource(R.string.profile_ai_save),
             onClick = {
-                viewModel.save(apiKeyDraft, modelDraft, baseUrlDraft)
-                onSaved()
+                scope.launch {
+                    val result = viewModel.testConnection(apiKeyDraft, modelDraft, baseUrlDraft)
+                    if (result is AiConnectionTestResult.Success) {
+                        onSaved()
+                    }
+                }
             },
+            enabled = !isTesting,
             backgroundColor = ElectricCyan,
             textColor = TrueBlack,
             modifier = Modifier.fillMaxWidth()

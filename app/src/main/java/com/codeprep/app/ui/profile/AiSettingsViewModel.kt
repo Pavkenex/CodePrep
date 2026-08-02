@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 @HiltViewModel
@@ -48,40 +47,39 @@ class AiSettingsViewModel @Inject constructor(
         aiSettingsStore.setBaseUrl(baseUrl.trim().ifBlank { AiSettingsStore.DEFAULT_BASE_URL })
     }
 
-    fun testConnection(apiKey: String, modelId: String, baseUrl: String) {
-        viewModelScope.launch {
-            _isTestingConnection.value = true
-            _connectionTestResult.value = null
-            // Persist the typed values first so the ping travels through the same
-            // interceptor path as production calls, validating exactly what the
-            // next real question will use.
-            save(apiKey, modelId, baseUrl)
-            val resolvedModelId = modelId.trim().ifBlank { AiSettingsStore.DEFAULT_MODEL_ID }
-            val result = runCatching {
-                api.askQuestion(
-                    AiRequest(
-                        model = resolvedModelId,
-                        messages = listOf(AiMessage(role = "user", content = "ping")),
-                        max_tokens = 1
-                    )
+    suspend fun testConnection(apiKey: String, modelId: String, baseUrl: String): AiConnectionTestResult {
+        _isTestingConnection.value = true
+        _connectionTestResult.value = null
+        // Persist the typed values first so the ping travels through the same
+        // interceptor path as production calls, validating exactly what the
+        // next real question will use.
+        save(apiKey, modelId, baseUrl)
+        val resolvedModelId = modelId.trim().ifBlank { AiSettingsStore.DEFAULT_MODEL_ID }
+        val result = runCatching {
+            api.askQuestion(
+                AiRequest(
+                    model = resolvedModelId,
+                    messages = listOf(AiMessage(role = "user", content = "ping")),
+                    max_tokens = 1
                 )
-            }.fold(
-                onSuccess = { AiConnectionTestResult.Success },
-                onFailure = { throwable ->
-                    when {
-                        throwable is HttpException && throwable.code() == 401 -> AiConnectionTestResult.InvalidKey
-                        // 404 and any other HTTP status mean the provider answered
-                        // with the wrong endpoint or model; a malformed base URL
-                        // surfaces as IllegalArgumentException here.
-                        throwable is HttpException -> AiConnectionTestResult.BadEndpoint
-                        throwable is IllegalArgumentException -> AiConnectionTestResult.BadEndpoint
-                        else -> AiConnectionTestResult.Unreachable
-                    }
-                }
             )
-            _connectionTestResult.value = result
-            _isTestingConnection.value = false
-        }
+        }.fold(
+            onSuccess = { AiConnectionTestResult.Success },
+            onFailure = { throwable ->
+                when {
+                    throwable is HttpException && throwable.code() == 401 -> AiConnectionTestResult.InvalidKey
+                    // 404 and any other HTTP status mean the provider answered
+                    // with the wrong endpoint or model; a malformed base URL
+                    // surfaces as IllegalArgumentException here.
+                    throwable is HttpException -> AiConnectionTestResult.BadEndpoint
+                    throwable is IllegalArgumentException -> AiConnectionTestResult.BadEndpoint
+                    else -> AiConnectionTestResult.Unreachable
+                }
+            }
+        )
+        _connectionTestResult.value = result
+        _isTestingConnection.value = false
+        return result
     }
 }
 
