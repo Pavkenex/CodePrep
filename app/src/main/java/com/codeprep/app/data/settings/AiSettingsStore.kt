@@ -81,7 +81,7 @@ class AiSettingsStore @Inject constructor(
         private const val KEY_BASE_URL = "base_url"
 
         const val DEFAULT_API_KEY = ""
-        const val DEFAULT_MODEL_ID = "stepfun/step-3.5-flash:freegi"
-        const val DEFAULT_BASE_URL = "https://openrouter.ai/api/v1/"
+        const val DEFAULT_MODEL_ID = ""
+        const val DEFAULT_BASE_URL = ""
     }
 }

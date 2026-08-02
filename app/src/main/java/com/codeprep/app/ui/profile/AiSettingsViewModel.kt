@@ -43,8 +43,8 @@ class AiSettingsViewModel @Inject constructor(
 
     fun save(apiKey: String, modelId: String, baseUrl: String) {
         aiSettingsStore.setApiKey(apiKey.trim())
-        aiSettingsStore.setModelId(modelId.trim().ifBlank { AiSettingsStore.DEFAULT_MODEL_ID })
-        aiSettingsStore.setBaseUrl(baseUrl.trim().ifBlank { AiSettingsStore.DEFAULT_BASE_URL })
+        aiSettingsStore.setModelId(modelId.trim())
+        aiSettingsStore.setBaseUrl(baseUrl.trim())
     }
 
     suspend fun testConnection(apiKey: String, modelId: String, baseUrl: String): AiConnectionTestResult {
@@ -54,7 +54,7 @@ class AiSettingsViewModel @Inject constructor(
         // interceptor path as production calls, validating exactly what the
         // next real question will use.
         save(apiKey, modelId, baseUrl)
-        val resolvedModelId = modelId.trim().ifBlank { AiSettingsStore.DEFAULT_MODEL_ID }
+        val resolvedModelId = modelId.trim()
         val result = runCatching {
             api.askQuestion(
                 AiRequest(

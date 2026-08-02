@@ -95,8 +95,7 @@ class AiRepository @Inject constructor(
         return try {
             val response = api.askQuestion(
                 AiRequest(
-                    model = aiSettingsStore.getModelId()
-                        .ifBlank { AiSettingsStore.DEFAULT_MODEL_ID },
+                    model = aiSettingsStore.getModelId().trim(),
                     messages = buildApiMessages(
                         systemPrompt = systemPrompt,
                         conversationHistory = conversationHistory,
