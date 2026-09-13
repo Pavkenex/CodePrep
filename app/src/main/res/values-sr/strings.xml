@@ -1,4 +1,13 @@
 <resources>
+    <string name="notification_channel_hearts_name">Obaveštenja o srcima</string>
+    <string name="notification_channel_hearts_description">Obaveštenja kada ti se srca ponovo napune.</string>
+    <string name="notification_channel_streak_name">Podsetnici za streak</string>
+    <string name="notification_channel_streak_description">Podsetnici pre nego što ti se streak resetuje.</string>
+    <string name="notification_hearts_title">Srca su ti opet puna</string>
+    <string name="notification_hearts_body">Možeš da nastaviš sa lekcijama bez čekanja.</string>
+    <string name="notification_streak_title">Streak ti je u opasnosti</string>
+    <string name="notification_streak_body">Uradi jednu lekciju uskoro da ne izgubiš streak.</string>
+    <string name="heart_refill_countdown">Sledeće srce za %1$s</string>
     <string name="ask_ai_back">Nazad</string>
     <string name="ask_ai_title_fallback">Pitaj AI</string>
     <string name="ask_ai_course_fallback">Tutor lekcije</string>

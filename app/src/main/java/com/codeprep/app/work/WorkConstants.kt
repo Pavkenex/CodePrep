@@ -5,6 +5,7 @@ import java.time.Duration
 object WorkConstants {
     const val USER_ID_KEY = "user_id"
 
+    const val HEART_REFILL_ACTION = "com.codeprep.app.action.HEART_REFILL"
     const val HEART_REMINDER_WORK_NAME = "heart-reminder-worker"
     const val LEGACY_HEART_WORK_NAME = "heart-worker"
     const val STREAK_WORK_NAME = "streak-worker"

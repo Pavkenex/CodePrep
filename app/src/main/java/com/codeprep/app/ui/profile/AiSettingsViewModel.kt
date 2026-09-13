@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.codeprep.app.R
 import com.codeprep.app.data.remote.api.AiMessage
 import com.codeprep.app.data.remote.api.AiRequest
+import com.codeprep.app.data.remote.api.EndpointBuilder
+import com.codeprep.app.data.remote.api.OpenCodeGateway
 import com.codeprep.app.data.remote.api.OpenRouterApi
 import com.codeprep.app.data.settings.AiSettingsStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,12 +58,16 @@ class AiSettingsViewModel @Inject constructor(
         save(apiKey, modelId, baseUrl)
         val resolvedModelId = modelId.trim()
         val result = runCatching {
+            val url = EndpointBuilder.build(baseUrl)
             api.askQuestion(
-                AiRequest(
+                url = url,
+                request = AiRequest(
                     model = resolvedModelId,
                     messages = listOf(AiMessage(role = "user", content = "ping")),
                     max_tokens = 1
-                )
+                ),
+                sessionId = OpenCodeGateway.sessionIdFor(url, conversationKey = null),
+                userAgent = OpenCodeGateway.userAgentFor(url)
             )
         }.fold(
             onSuccess = { AiConnectionTestResult.Success },

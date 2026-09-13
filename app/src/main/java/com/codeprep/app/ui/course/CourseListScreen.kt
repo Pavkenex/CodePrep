@@ -76,9 +76,17 @@ internal const val COURSE_LIST_CONTAINER_TAG = "course-list-container"
 internal const val COURSE_LIST_TITLE_TAG = "course-list-title"
 internal const val COURSE_LIST_SUBTITLE_TAG = "course-list-subtitle"
 
-internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
-    return if (screenWidthDp < 600) {
-        CourseListLayoutSpec(
+private const val COMPACT_HEIGHT_THRESHOLD_DP = 480
+
+internal fun courseListLayoutFor(
+    screenWidthDp: Int,
+    screenHeightDp: Int = Int.MAX_VALUE
+): CourseListLayoutSpec {
+    val isTabletWidth = screenWidthDp >= 600
+    val isCompactHeight = screenHeightDp < COMPACT_HEIGHT_THRESHOLD_DP
+
+    return when {
+        !isTabletWidth -> CourseListLayoutSpec(
             useTabletContainer = false,
             screenPaddingDp = 16,
             verticalSpacingDp = 16,
@@ -91,8 +99,22 @@ internal fun courseListLayoutFor(screenWidthDp: Int): CourseListLayoutSpec {
             pillHorizontalSpacingDp = 8,
             pillVerticalSpacingDp = 8
         )
-    } else {
-        CourseListLayoutSpec(
+
+        isCompactHeight -> CourseListLayoutSpec(
+            useTabletContainer = true,
+            screenPaddingDp = 24,
+            verticalSpacingDp = 12,
+            titleTopPaddingDp = 8,
+            titleBottomPaddingDp = 4,
+            subtitleBottomPaddingDp = 8,
+            maxContainerWidthDp = 800,
+            cardPaddingDp = 16,
+            cardSectionSpacingDp = 12,
+            pillHorizontalSpacingDp = 8,
+            pillVerticalSpacingDp = 8
+        )
+
+        else -> CourseListLayoutSpec(
             useTabletContainer = true,
             screenPaddingDp = 40,
             verticalSpacingDp = 24,
@@ -115,7 +137,10 @@ fun CourseListScreen(
 ) {
     val courses by viewModel.courses.collectAsState()
     val configuration = LocalConfiguration.current
-    val layout = courseListLayoutFor(configuration.screenWidthDp)
+    val layout = courseListLayoutFor(
+        screenWidthDp = configuration.screenWidthDp,
+        screenHeightDp = configuration.screenHeightDp
+    )
 
     CourseListScreenContent(
         courses = courses,
@@ -143,7 +168,7 @@ internal fun CourseListScreenContent(
                     .padding(horizontal = layout.screenPaddingDp.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                CourseListContentColumn(
+                CourseListContentList(
                     courses = courses,
                     layout = layout,
                     onCourseClick = onCourseClick,
@@ -154,7 +179,7 @@ internal fun CourseListScreenContent(
                 )
             }
         } else {
-            CourseListContentColumn(
+            CourseListContentList(
                 courses = courses,
                 layout = layout,
                 onCourseClick = onCourseClick,
@@ -168,61 +193,64 @@ internal fun CourseListScreenContent(
 }
 
 @Composable
-private fun CourseListContentColumn(
+private fun CourseListContentList(
     courses: List<ModuleCardUi>,
     layout: CourseListLayoutSpec,
     onCourseClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(layout.verticalSpacingDp.dp)
     ) {
-        Text(
-            text = localizedStringResource(R.string.course_list_title),
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.ExtraBold,
-                color = IceWhite
-            ),
-            modifier = Modifier.padding(
-                top = layout.titleTopPaddingDp.dp,
-                bottom = layout.titleBottomPaddingDp.dp
-            ).testTag(COURSE_LIST_TITLE_TAG)
-        )
-        Text(
-            text = localizedStringResource(R.string.course_list_subtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextLight,
-            modifier = Modifier
-                .padding(bottom = layout.subtitleBottomPaddingDp.dp)
-                .testTag(COURSE_LIST_SUBTITLE_TAG)
-        )
+        item(key = "course-list-title") {
+            Text(
+                text = localizedStringResource(R.string.course_list_title),
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = IceWhite
+                ),
+                modifier = Modifier.padding(
+                    top = layout.titleTopPaddingDp.dp,
+                    bottom = layout.titleBottomPaddingDp.dp
+                ).testTag(COURSE_LIST_TITLE_TAG)
+            )
+        }
+        item(key = "course-list-subtitle") {
+            Text(
+                text = localizedStringResource(R.string.course_list_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextLight,
+                modifier = Modifier
+                    .padding(bottom = layout.subtitleBottomPaddingDp.dp)
+                    .testTag(COURSE_LIST_SUBTITLE_TAG)
+            )
+        }
 
         if (courses.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = localizedStringResource(R.string.course_list_empty),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextLight
-                )
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(layout.verticalSpacingDp.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(courses, key = { it.courseId }) { course ->
-                    ModuleJourneyCard(
-                        module = course,
-                        layout = layout,
-                        onClick = { if (!course.isLocked) onCourseClick(course.courseId) }
+            item(key = "course-list-empty") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillParentMaxHeight(0.6f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = localizedStringResource(R.string.course_list_empty),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextLight
                     )
                 }
-                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
+        } else {
+            items(courses, key = { it.courseId }) { course ->
+                ModuleJourneyCard(
+                    module = course,
+                    layout = layout,
+                    onClick = { if (!course.isLocked) onCourseClick(course.courseId) }
+                )
+            }
+            item(key = "course-list-bottom-spacer") { Spacer(modifier = Modifier.height(24.dp)) }
         }
     }
 }

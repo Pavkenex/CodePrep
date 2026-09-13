@@ -74,7 +74,12 @@ class AiSettingsViewModelTest {
     private class FakeOpenRouterApi(
         private val error: Throwable? = null
     ) : OpenRouterApi {
-        override suspend fun askQuestion(request: AiRequest): AiApiResponse {
+        override suspend fun askQuestion(
+            url: String,
+            request: AiRequest,
+            sessionId: String?,
+            userAgent: String?
+        ): AiApiResponse {
             error?.let { throw it }
             return AiApiResponse(choices = emptyList())
         }

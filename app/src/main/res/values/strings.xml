@@ -5,10 +5,10 @@
     <string name="notification_channel_streak_name">Streak reminders</string>
     <string name="notification_channel_streak_description">Reminders before your streak resets.</string>
     <string name="heart_refill_countdown">Next in %1$s</string>
-    <string name="notification_hearts_title">Srca su ti opet puna</string>
-    <string name="notification_hearts_body">Mozes da nastavis sa lekcijama bez cekanja.</string>
-    <string name="notification_streak_title">Streak ti je u opasnosti</string>
-    <string name="notification_streak_body">Uradi jednu lekciju uskoro da ne izgubis streak.</string>
+    <string name="notification_hearts_title">Your hearts are full again</string>
+    <string name="notification_hearts_body">You can continue with lessons without waiting.</string>
+    <string name="notification_streak_title">Your streak is at risk</string>
+    <string name="notification_streak_body">Complete a lesson soon so you don\'t lose your streak.</string>
     <string name="fun_fact_activity_label">Fun Fact</string>
     <string name="fun_fact_widget_label">CodePrep Fun Facts</string>
     <string name="fun_fact_widget_description">Shows a daily programming fun fact from CodePrep.</string>

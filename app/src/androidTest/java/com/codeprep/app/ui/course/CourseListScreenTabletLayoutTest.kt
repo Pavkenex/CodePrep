@@ -33,14 +33,14 @@ class CourseListScreenTabletLayoutTest {
                 ) {
                     CourseListScreenContent(
                         courses = sampleModules(),
-                        layout = courseListLayoutFor(screenWidthDp = 900),
+                        layout = courseListLayoutFor(screenWidthDp = 900, screenHeightDp = 1200),
                         onCourseClick = {}
                     )
                 }
             }
         }
 
-        val layout = courseListLayoutFor(screenWidthDp = 900)
+        val layout = courseListLayoutFor(screenWidthDp = 900, screenHeightDp = 1200)
         val container = composeTestRule.onNodeWithTag(COURSE_LIST_CONTAINER_TAG).assertExists()
         val root = composeTestRule.onNodeWithTag(COURSE_LIST_ROOT_TAG).assertExists()
 
@@ -59,7 +59,7 @@ class CourseListScreenTabletLayoutTest {
 
     @Test
     fun tabletHeaderSpacing_comesFromLayoutSpec() {
-        val tabletLayout = courseListLayoutFor(screenWidthDp = 900)
+        val tabletLayout = courseListLayoutFor(screenWidthDp = 900, screenHeightDp = 1200)
 
         val header = measureHeaderBounds(
             widthDp = 900,
@@ -99,7 +99,7 @@ class CourseListScreenTabletLayoutTest {
                                 accent = CardinalRed
                             )
                         ),
-                        layout = courseListLayoutFor(screenWidthDp = 900)
+                        layout = courseListLayoutFor(screenWidthDp = 900, screenHeightDp = 1200)
                     )
                 }
             }

@@ -8,6 +8,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,12 +19,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,8 +37,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,6 +77,46 @@ import com.mikepenz.markdown.model.rememberMarkdownState
 
 private val AssistantMarkdownTextColor = Color(0xFFD9DEE3)
 
+internal data class AskAiChatLayoutSpec(
+    val compact: Boolean,
+    val headerVerticalPaddingDp: Int,
+    val inputMinHeightDp: Int,
+    val inputMaxHeightDp: Int,
+    val inputMinLines: Int,
+    val inputMaxLines: Int,
+    val inlineSendButton: Boolean,
+    val sendButtonWidthDp: Int
+)
+
+private const val COMPACT_HEIGHT_THRESHOLD_DP = 480
+
+
+internal fun askAiChatLayoutFor(screenHeightDp: Int): AskAiChatLayoutSpec {
+    return if (screenHeightDp < COMPACT_HEIGHT_THRESHOLD_DP) {
+        AskAiChatLayoutSpec(
+            compact = true,
+            headerVerticalPaddingDp = 6,
+            inputMinHeightDp = 56,
+            inputMaxHeightDp = 88,
+            inputMinLines = 1,
+            inputMaxLines = 2,
+            inlineSendButton = true,
+            sendButtonWidthDp = 132
+        )
+    } else {
+        AskAiChatLayoutSpec(
+            compact = false,
+            headerVerticalPaddingDp = 14,
+            inputMinHeightDp = 96,
+            inputMaxHeightDp = 144,
+            inputMinLines = 2,
+            inputMaxLines = 4,
+            inlineSendButton = false,
+            sendButtonWidthDp = 0
+        )
+    }
+}
+
 @Composable
 fun AskAiLessonOverlay(
     lessonContext: LessonContext,
@@ -87,6 +130,8 @@ fun AskAiLessonOverlay(
     val hasApiKey by viewModel.hasApiKey.collectAsState()
     var question by rememberSaveable(lessonContext.lessonId) { mutableStateOf("") }
     val listState = rememberLazyListState()
+    val configuration = LocalConfiguration.current
+    val layout = askAiChatLayoutFor(configuration.screenHeightDp)
 
     LaunchedEffect(lessonContext.lessonId) {
         viewModel.bindLesson(lessonContext)
@@ -102,6 +147,11 @@ fun AskAiLessonOverlay(
     }
 
     BackHandler(enabled = visible, onBack = onDismiss)
+
+    DisposableEffect(visible) {
+        viewModel.onOverlayVisibilityChanged(visible)
+        onDispose { viewModel.onOverlayVisibilityChanged(false) }
+    }
 
     AnimatedVisibility(
         visible = visible,
@@ -128,13 +178,18 @@ fun AskAiLessonOverlay(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .statusBarsPadding()
+                        // The app's top bar already clears the status bar in
+                        // portrait/tablet; only the immersive (compact) overlay
+                        // spans from the window edge and needs the inset.
+                        .then(
+                            if (layout.compact) Modifier.statusBarsPadding() else Modifier
+                        )
                 ) {
                     AskAiHeader(
                         languageCode = languageCode,
                         uiState = uiState,
-                        onDismiss = onDismiss,
-                        onSave = viewModel::saveConversation
+                        onSave = viewModel::saveConversation,
+                        verticalPaddingDp = layout.headerVerticalPaddingDp
                     )
 
                     if (uiState.messages.isEmpty()) {
@@ -179,7 +234,8 @@ fun AskAiLessonOverlay(
                                 viewModel.ask(question)
                                 question = ""
                             },
-                            enabled = !uiState.isLoading
+                            enabled = !uiState.isLoading,
+                            layout = layout
                         )
                     } else {
                         // Locked state: no question input, no network call.
@@ -187,7 +243,9 @@ fun AskAiLessonOverlay(
                             languageCode = languageCode,
                             onOpenSettings = onOpenSettings,
                             modifier = Modifier
-                                .navigationBarsPadding()
+                                .then(
+                                    if (layout.compact) Modifier.navigationBarsPadding() else Modifier
+                                )
                                 .padding(16.dp)
                         )
                     }
@@ -201,20 +259,16 @@ fun AskAiLessonOverlay(
 private fun AskAiHeader(
     languageCode: String,
     uiState: AskAiUiState,
-    onDismiss: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    verticalPaddingDp: Int
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = verticalPaddingDp.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        TextButton(onClick = onDismiss, modifier = Modifier.height(48.dp)) {
-            Text(localizedAiString(languageCode, R.string.ask_ai_back), color = ElectricCyan)
-        }
-
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = uiState.lessonTitle.ifBlank {
@@ -258,41 +312,47 @@ private fun AskAiEmptyState(
     showQuickPrompts: Boolean,
     onPrompt: (String) -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Charcoal,
-            shape = RoundedCornerShape(28.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Charcoal,
+                shape = RoundedCornerShape(28.dp)
             ) {
-                Text(
-                    text = localizedAiString(languageCode, R.string.ask_ai_empty_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = IceWhite
-                )
-                Text(
-                    text = localizedAiString(
-                        languageCode,
-                        R.string.ask_ai_empty_body,
-                        lessonContext.lessonTitle
-                    ),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TextLight
-                )
-                if (showQuickPrompts) {
-                    QuickPromptRow(
-                        languageCode = languageCode,
-                        onPrompt = onPrompt
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Text(
+                        text = localizedAiString(languageCode, R.string.ask_ai_empty_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = IceWhite
                     )
+                    Text(
+                        text = localizedAiString(
+                            languageCode,
+                            R.string.ask_ai_empty_body,
+                            lessonContext.lessonTitle
+                        ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextLight
+                    )
+                    if (showQuickPrompts) {
+                        QuickPromptRow(
+                            languageCode = languageCode,
+                            onPrompt = onPrompt
+                        )
+                    }
                 }
             }
         }
@@ -339,41 +399,89 @@ private fun AskAiComposer(
     question: String,
     onQuestionChange: (String) -> Unit,
     onSend: () -> Unit,
-    enabled: Boolean
+    enabled: Boolean,
+    layout: AskAiChatLayoutSpec
 ) {
+    val sendLabel = if (enabled) {
+        localizedAiString(languageCode, R.string.ask_ai_send)
+    } else {
+        localizedAiString(languageCode, R.string.ask_ai_thinking)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
+            // Portrait/tablet sit above the app's bottom bar, which already
+            // clears the system navigation area; the immersive overlay does not.
+            .then(
+                if (layout.compact) Modifier.navigationBarsPadding() else Modifier
+            )
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        OutlinedTextField(
-            value = question,
-            onValueChange = onQuestionChange,
-            label = {
-                Text(localizedAiString(languageCode, R.string.ask_ai_input_label), color = TextLight)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 96.dp, max = 144.dp),
-            minLines = 2,
-            maxLines = 4
-        )
-
-        GamifiedButton(
-            text = if (enabled) {
-                localizedAiString(languageCode, R.string.ask_ai_send)
-            } else {
-                localizedAiString(languageCode, R.string.ask_ai_thinking)
-            },
-            onClick = onSend,
-            enabled = enabled && question.isNotBlank(),
-            backgroundColor = ElectricCyan,
-            textColor = TrueBlack,
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (layout.inlineSendButton) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                AskAiInputField(
+                    languageCode = languageCode,
+                    question = question,
+                    onQuestionChange = onQuestionChange,
+                    layout = layout,
+                    modifier = Modifier.weight(1f)
+                )
+                GamifiedButton(
+                    text = sendLabel,
+                    onClick = onSend,
+                    enabled = enabled && question.isNotBlank(),
+                    backgroundColor = ElectricCyan,
+                    textColor = TrueBlack,
+                    modifier = Modifier.width(layout.sendButtonWidthDp.dp)
+                )
+            }
+        } else {
+            AskAiInputField(
+                languageCode = languageCode,
+                question = question,
+                onQuestionChange = onQuestionChange,
+                layout = layout,
+                modifier = Modifier.fillMaxWidth()
+            )
+            GamifiedButton(
+                text = sendLabel,
+                onClick = onSend,
+                enabled = enabled && question.isNotBlank(),
+                backgroundColor = ElectricCyan,
+                textColor = TrueBlack,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
+}
+
+@Composable
+private fun AskAiInputField(
+    languageCode: String,
+    question: String,
+    onQuestionChange: (String) -> Unit,
+    layout: AskAiChatLayoutSpec,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = question,
+        onValueChange = onQuestionChange,
+        label = {
+            Text(localizedAiString(languageCode, R.string.ask_ai_input_label), color = TextLight)
+        },
+        modifier = modifier.heightIn(
+            min = layout.inputMinHeightDp.dp,
+            max = layout.inputMaxHeightDp.dp
+        ),
+        minLines = layout.inputMinLines,
+        maxLines = layout.inputMaxLines
+    )
 }
 
 @Composable

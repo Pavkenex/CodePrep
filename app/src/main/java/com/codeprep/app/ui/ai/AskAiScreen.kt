@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,73 +67,79 @@ fun AskAiScreen(
         }
     }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppBackground)
-            .padding(horizontal = 16.dp, vertical = 20.dp)
+            .background(AppBackground),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = localizedAiString(languageCode, R.string.explanations_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = IceWhite
-        )
-        Text(
-            text = localizedAiString(languageCode, R.string.explanations_subtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            color = LockedGrey,
-            modifier = Modifier.padding(top = 6.dp)
-        )
+        item(key = "explanations-header") {
+            Column {
+                Text(
+                    text = localizedAiString(languageCode, R.string.explanations_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = IceWhite
+                )
+                Text(
+                    text = localizedAiString(languageCode, R.string.explanations_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = LockedGrey,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+            }
+        }
 
         // Locked banner: saved explanations stay browsable, only new questions
         // are gated (the tutor itself is opened from a lesson).
         if (!hasApiKey) {
-            AskAiLockedCard(
-                languageCode = languageCode,
-                onOpenSettings = onOpenSettings,
-                modifier = Modifier.padding(top = 18.dp)
-            )
+            item(key = "explanations-locked") {
+                AskAiLockedCard(
+                    languageCode = languageCode,
+                    onOpenSettings = onOpenSettings,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+            }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(top = 18.dp)
-        ) {
-            when {
-                explanationsUiState.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = ElectricCyan
+        when {
+            explanationsUiState.isLoading -> {
+                item(key = "explanations-loading") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillParentMaxHeight(0.5f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = ElectricCyan)
+                    }
+                }
+            }
+
+            explanationsUiState.isEmpty -> {
+                item(key = "explanations-empty") {
+                    ExplanationsEmptyState(
+                        languageCode = languageCode,
+                        modifier = Modifier.fillParentMaxHeight(0.6f)
                     )
                 }
+            }
 
-                explanationsUiState.isEmpty -> {
-                    ExplanationsEmptyState(languageCode = languageCode)
-                }
-
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(explanationsUiState.modules, key = { it.courseId }) { module ->
-                            ExplanationsModuleCard(
-                                module = module,
-                                expanded = expandedCourseId == module.courseId,
-                                onToggle = {
-                                    expandedCourseId = if (expandedCourseId == module.courseId) {
-                                        null
-                                    } else {
-                                        module.courseId
-                                    }
-                                },
-                                onLessonClick = onLessonClick,
-                                onDeleteClick = { lessonPendingDeletion = it }
-                            )
-                        }
-                    }
+            else -> {
+                items(explanationsUiState.modules, key = { it.courseId }) { module ->
+                    ExplanationsModuleCard(
+                        module = module,
+                        expanded = expandedCourseId == module.courseId,
+                        onToggle = {
+                            expandedCourseId = if (expandedCourseId == module.courseId) {
+                                null
+                            } else {
+                                module.courseId
+                            }
+                        },
+                        onLessonClick = onLessonClick,
+                        onDeleteClick = { lessonPendingDeletion = it }
+                    )
                 }
             }
         }
@@ -181,10 +188,11 @@ fun AskAiScreen(
 
 @Composable
 private fun ExplanationsEmptyState(
-    languageCode: String
+    languageCode: String,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
         color = Charcoal,
         shape = MaterialTheme.shapes.extraLarge
     ) {

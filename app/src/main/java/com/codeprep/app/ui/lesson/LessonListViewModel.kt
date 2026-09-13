@@ -75,6 +75,10 @@ class LessonListViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), LessonListUiState())
 
     init {
+        viewModelScope.launch {
+            courseRepository.refreshCourses()
+            courseRepository.refreshLessonsForCourse(courseId)
+        }
         refreshHearts()
     }
 

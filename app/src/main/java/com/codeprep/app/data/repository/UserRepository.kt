@@ -68,31 +68,28 @@ class UserRepository @Inject constructor(
 
     suspend fun refillHearts(userId: String) {
         updateProgress(userId) { user ->
-
-            if (user.hearts >= 5 || user.lastHeartLostAt == null) {
+            if (user.hearts >= MAX_HEARTS || user.lastHeartLostAt == null) {
                 user
             } else {
-                val minutesPassed =
-                    ChronoUnit.MINUTES.between(user.lastHeartLostAt, Instant.now())
+                val minutesPassed = ChronoUnit.MINUTES.between(user.lastHeartLostAt, Instant.now())
+                val heartsToAdd = (minutesPassed / HEART_REFILL_MINUTES).toInt()
+                val newHearts = (user.hearts + heartsToAdd).coerceAtMost(MAX_HEARTS)
 
-
-                val heartsToAdd = (minutesPassed / 30).toInt()
-                val newHearts = (user.hearts + heartsToAdd).coerceAtMost(5)
-                if(newHearts<5){
+                if (newHearts < MAX_HEARTS) {
                     val updatedLastHeartLostAt = user.lastHeartLostAt.plus(
-                        (heartsToAdd*30).toLong(),
-                        ChronoUnit.MINUTES)
+                        heartsToAdd * HEART_REFILL_MINUTES.toLong(),
+                        ChronoUnit.MINUTES
+                    )
                     user.copy(
                         hearts = newHearts,
                         lastHeartLostAt = updatedLastHeartLostAt
                     )
-                }else{
+                } else {
                     user.copy(
                         hearts = newHearts,
-                        lastHeartLostAt = if (newHearts == 5) null else user.lastHeartLostAt
+                        lastHeartLostAt = null
                     )
                 }
-
             }
         }
     }

@@ -32,7 +32,8 @@ class AskAiViewModel @Inject constructor(
     appSettingsStore: AppSettingsStore,
     aiSettingsStore: AiSettingsStore,
     private val strings: AppStringProvider,
-    auth: FirebaseAuth
+    auth: FirebaseAuth,
+    private val overlayVisibility: AskAiOverlayVisibility
 ) : ViewModel() {
     private val userId: String = auth.currentUser?.uid ?: ""
 
@@ -76,6 +77,16 @@ class AskAiViewModel @Inject constructor(
     private var lastSavedMessageCount = 0
 
     private var lastQuestionTime: Long = 0L
+
+    init {
+        viewModelScope.launch {
+            courseRepository.refreshCourses()
+        }
+    }
+
+    fun onOverlayVisibilityChanged(visible: Boolean) {
+        overlayVisibility.setVisible(visible)
+    }
 
     fun bindLesson(context: LessonContext) {
         if (currentLessonId == context.lessonId && _uiState.value.hasLoadedLesson) {

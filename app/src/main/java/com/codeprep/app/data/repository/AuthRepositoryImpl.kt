@@ -100,7 +100,7 @@ class AuthRepositoryImpl @Inject constructor(
                 )
             }
         } catch (_: Exception) {
-            // Firestore unreachable — ensure at least a local record exists
+
             if (local == null) {
                 userDao.upsert(
                     UserProgressEntity(
@@ -140,10 +140,8 @@ class AuthRepositoryImpl @Inject constructor(
             updatedAt = updatedAt
         )
 
-        // Local insert first — this is what the UI and quiz gating depend on
         userDao.upsert(userProgress)
 
-        // Firestore write is best-effort; don't let it block login
         try {
             firestore.collection("users").document(userId).set(
                 mapOf(

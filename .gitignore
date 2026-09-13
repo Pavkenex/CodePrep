@@ -45,3 +45,10 @@ app/google-services.json
 
 # Agent review notes (local only)
 /.agent-review/
+
+# Local learning workspace
+/.learning/
+
+# Build artifacts (root-generated stubs)
+/AndroidManifest.xml
+/R.txt

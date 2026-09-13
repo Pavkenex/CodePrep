@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -31,6 +32,7 @@ import androidx.core.content.ContextCompat
 import com.codeprep.app.feedback.AppFeedback
 import com.codeprep.app.feedback.ProvideAppFeedback
 import com.codeprep.app.data.settings.PendingSettingsActionHolder
+import com.codeprep.app.ui.ai.AskAiOverlayVisibility
 import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.CodePrepBottomBar
 import com.codeprep.app.ui.navigation.Screen
@@ -48,6 +50,8 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+private const val COMPACT_HEIGHT_THRESHOLD_DP = 480
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
@@ -55,6 +59,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var pendingSettingsActionHolder: PendingSettingsActionHolder
+
+    @Inject
+    lateinit var askAiOverlayVisibility: AskAiOverlayVisibility
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -68,7 +75,8 @@ class MainActivity : ComponentActivity() {
             CodePrepTheme {
                 ProvideAppFeedback(appFeedback = appFeedback) {
                     RootNavGraph(
-                        pendingSettingsActionHolder = pendingSettingsActionHolder
+                        pendingSettingsActionHolder = pendingSettingsActionHolder,
+                        askAiOverlayVisibility = askAiOverlayVisibility
                     )
                 }
             }
@@ -92,11 +100,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RootNavGraph(
-    pendingSettingsActionHolder: PendingSettingsActionHolder
+    pendingSettingsActionHolder: PendingSettingsActionHolder,
+    askAiOverlayVisibility: AskAiOverlayVisibility
 ) {
     val navController = rememberNavController()
     val bootstrapViewModel: SessionBootstrapViewModel = hiltViewModel()
     val secretFactViewModel: SecretFactViewModel = hiltViewModel()
+    val configuration = LocalConfiguration.current
+    val overlayVisible by askAiOverlayVisibility.visible.collectAsStateWithLifecycle()
+    val hideChrome = overlayVisible && configuration.screenHeightDp < COMPACT_HEIGHT_THRESHOLD_DP
     val secretFactUiState by secretFactViewModel.uiState.collectAsStateWithLifecycle()
     val currentUserId by bootstrapViewModel.currentUserId.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -164,7 +176,7 @@ fun RootNavGraph(
         }
         val shouldShowBottomNav = currentRoute in mainRoutes
 
-        if (shouldShowSessionBanner) {
+        if (shouldShowSessionBanner && !hideChrome) {
              TopBarStats(
                  hearts = currentUserProgress?.hearts ?: 5,
                  streak = currentUserProgress?.streak ?: 0,
@@ -190,7 +202,7 @@ fun RootNavGraph(
             )
         }
 
-        if (shouldShowBottomNav) {
+        if (shouldShowBottomNav && !hideChrome) {
             CodePrepBottomBar(
                 currentRoute = currentRoute,
                 onNavigate = { route ->

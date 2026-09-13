@@ -13,13 +13,15 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.codeprep.app.MainActivity
 import com.codeprep.app.R
+import com.codeprep.app.data.settings.AppStringProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CodePrepNotificationManager @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val stringProvider: AppStringProvider
 ) {
 
     fun createChannels() {
@@ -29,19 +31,19 @@ class CodePrepNotificationManager @Inject constructor(
         notificationManager.createNotificationChannel(
             NotificationChannel(
                 HEARTS_CHANNEL_ID,
-                context.getString(R.string.notification_channel_hearts_name),
+                stringProvider.get(R.string.notification_channel_hearts_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = context.getString(R.string.notification_channel_hearts_description)
+                description = stringProvider.get(R.string.notification_channel_hearts_description)
             }
         )
         notificationManager.createNotificationChannel(
             NotificationChannel(
                 STREAK_CHANNEL_ID,
-                context.getString(R.string.notification_channel_streak_name),
+                stringProvider.get(R.string.notification_channel_streak_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = context.getString(R.string.notification_channel_streak_description)
+                description = stringProvider.get(R.string.notification_channel_streak_description)
             }
         )
     }
@@ -50,8 +52,8 @@ class CodePrepNotificationManager @Inject constructor(
         showNotification(
             channelId = HEARTS_CHANNEL_ID,
             notificationId = HEARTS_NOTIFICATION_ID,
-            title = context.getString(R.string.notification_hearts_title),
-            body = context.getString(R.string.notification_hearts_body)
+            title = stringProvider.get(R.string.notification_hearts_title),
+            body = stringProvider.get(R.string.notification_hearts_body)
         )
     }
 
@@ -59,8 +61,8 @@ class CodePrepNotificationManager @Inject constructor(
         showNotification(
             channelId = STREAK_CHANNEL_ID,
             notificationId = STREAK_NOTIFICATION_ID,
-            title = context.getString(R.string.notification_streak_title),
-            body = context.getString(R.string.notification_streak_body)
+            title = stringProvider.get(R.string.notification_streak_title),
+            body = stringProvider.get(R.string.notification_streak_body)
         )
     }
 

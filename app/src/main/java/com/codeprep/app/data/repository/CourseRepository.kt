@@ -13,10 +13,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
@@ -27,10 +24,6 @@ class CourseRepository @Inject constructor(
 ) {
 
     fun getCourses(): Flow<List<CachedCourseEntity>> {
-        CoroutineScope(Dispatchers.IO).launch {
-            refreshModulesAndLessons()
-        }
-
         return courseDao.getAllCourses()
     }
 
@@ -39,11 +32,11 @@ class CourseRepository @Inject constructor(
     }
 
     fun getLessonsForCourse(courseId: String): Flow<List<CachedLessonEntity>> {
-        CoroutineScope(Dispatchers.IO).launch {
-            refreshLessonsForCourse(courseId)
-        }
-
         return courseDao.getLessonsForCourse(courseId)
+    }
+
+    suspend fun refreshCourses() {
+        refreshModulesAndLessons()
     }
 
     suspend fun getCourseTitle(courseId: String): String? {
@@ -104,7 +97,7 @@ class CourseRepository @Inject constructor(
         }
     }
 
-    private suspend fun refreshLessonsForCourse(courseId: String) {
+    suspend fun refreshLessonsForCourse(courseId: String) {
         try {
             val lessons = fetchLessonsForCourseFromFirestore(courseId)
             courseDao.clearLessonsForCourse(courseId)

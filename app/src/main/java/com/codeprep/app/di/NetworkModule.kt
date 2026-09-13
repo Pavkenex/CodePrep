@@ -1,6 +1,5 @@
 package com.codeprep.app.di
 
-import com.codeprep.app.data.remote.api.EndpointBuilder
 import com.codeprep.app.data.remote.api.OpenRouterApi
 import com.codeprep.app.data.settings.AiSettingsStore
 import dagger.Module
@@ -17,9 +16,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    // Placeholder only: the interceptor rewrites the URL per request using the
-    // user-configured base URL (see EndpointBuilder). Retrofit needs a valid,
-    // absolute URL at construction time.
+    // Retrofit requires a valid absolute URL at construction time. Every call
+    // passes its real URL via @Url, so this base is only a stub.
     private const val RETROFIT_PLACEHOLDER_BASE_URL = "https://placeholder.invalid/"
 
     @Provides
@@ -28,15 +26,8 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
-                // encodedPath intentionally drops any query string: the
-                // OpenRouterApi methods declare no @Query parameters today.
-                val endpointUrl = EndpointBuilder.build(
-                    baseUrl = aiSettingsStore.getBaseUrl(),
-                    path = originalRequest.url.encodedPath.removePrefix("/")
-                )
 
                 val requestBuilder = originalRequest.newBuilder()
-                    .url(endpointUrl)
                     .addHeader("Content-Type", "application/json")
 
                 // Only send the Authorization header when a key is configured.
