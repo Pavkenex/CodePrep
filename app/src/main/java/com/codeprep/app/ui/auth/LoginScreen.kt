@@ -15,7 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,9 +37,13 @@ fun LoginScreen(
     navController: NavHostController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
+    val launchGoogleSignIn = rememberGoogleSignInAction(
+        onIdToken = viewModel::loginWithGoogle,
+        onFailure = viewModel::googleSignInFailed
+    )
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -109,10 +113,11 @@ fun LoginScreen(
 
         GamifiedButton(
             text = localizedStringResource(R.string.auth_login_google),
-            onClick = { /* TODO: Google Auth */ },
+            onClick = launchGoogleSignIn,
             backgroundColor = Charcoal,
             shadowColor = DeepCharcoal,
             textColor = IceWhite,
+            enabled = authState !is AuthState.Loading,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 

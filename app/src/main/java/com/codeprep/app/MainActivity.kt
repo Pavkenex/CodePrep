@@ -20,18 +20,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.core.content.ContextCompat
 import com.codeprep.app.feedback.AppFeedback
 import com.codeprep.app.feedback.ProvideAppFeedback
+import com.codeprep.app.data.settings.PendingSettingsActionHolder
+import com.codeprep.app.ui.ai.AskAiOverlayVisibility
 import com.codeprep.app.ui.components.TopBarStats
 import com.codeprep.app.ui.navigation.CodePrepBottomBar
 import com.codeprep.app.ui.navigation.Screen
@@ -39,6 +40,7 @@ import com.codeprep.app.ui.navigation.SessionBootstrapViewModel
 import com.codeprep.app.ui.navigation.authNavGraph
 import com.codeprep.app.ui.navigation.formatHeartRefillCountdown
 import com.codeprep.app.ui.navigation.mainNavGraph
+import com.codeprep.app.ui.navigation.navigateToTopLevelRoute
 import com.codeprep.app.ui.secretfact.SecretFactSensorController
 import com.codeprep.app.ui.secretfact.SecretFactOverlay
 import com.codeprep.app.ui.secretfact.SecretFactViewModel
@@ -48,10 +50,18 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+private const val COMPACT_HEIGHT_THRESHOLD_DP = 480
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var appFeedback: AppFeedback
+
+    @Inject
+    lateinit var pendingSettingsActionHolder: PendingSettingsActionHolder
+
+    @Inject
+    lateinit var askAiOverlayVisibility: AskAiOverlayVisibility
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -64,7 +74,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             CodePrepTheme {
                 ProvideAppFeedback(appFeedback = appFeedback) {
-                    RootNavGraph()
+                    RootNavGraph(
+                        pendingSettingsActionHolder = pendingSettingsActionHolder,
+                        askAiOverlayVisibility = askAiOverlayVisibility
+                    )
                 }
             }
         }
@@ -86,10 +99,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun RootNavGraph() {
+fun RootNavGraph(
+    pendingSettingsActionHolder: PendingSettingsActionHolder,
+    askAiOverlayVisibility: AskAiOverlayVisibility
+) {
     val navController = rememberNavController()
     val bootstrapViewModel: SessionBootstrapViewModel = hiltViewModel()
     val secretFactViewModel: SecretFactViewModel = hiltViewModel()
+    val configuration = LocalConfiguration.current
+    val overlayVisible by askAiOverlayVisibility.visible.collectAsStateWithLifecycle()
+    val hideChrome = overlayVisible && configuration.screenHeightDp < COMPACT_HEIGHT_THRESHOLD_DP
     val secretFactUiState by secretFactViewModel.uiState.collectAsStateWithLifecycle()
     val currentUserId by bootstrapViewModel.currentUserId.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -157,7 +176,7 @@ fun RootNavGraph() {
         }
         val shouldShowBottomNav = currentRoute in mainRoutes
 
-        if (shouldShowSessionBanner) {
+        if (shouldShowSessionBanner && !hideChrome) {
              TopBarStats(
                  hearts = currentUserProgress?.hearts ?: 5,
                  streak = currentUserProgress?.streak ?: 0,
@@ -177,10 +196,13 @@ fun RootNavGraph() {
             modifier = Modifier.weight(1f)
         ) {
             authNavGraph(navController)
-            mainNavGraph(navController)
+            mainNavGraph(
+                navController = navController,
+                pendingSettingsActionHolder = pendingSettingsActionHolder
+            )
         }
 
-        if (shouldShowBottomNav) {
+        if (shouldShowBottomNav && !hideChrome) {
             CodePrepBottomBar(
                 currentRoute = currentRoute,
                 onNavigate = { route ->
@@ -197,22 +219,5 @@ fun RootNavGraph() {
             uiState = secretFactUiState,
             onDismiss = secretFactViewModel::onDismiss
         )
-    }
-}
-
-private fun navigateToTopLevelRoute(
-    navController: NavHostController,
-    route: String
-) {
-    val popped = navController.popBackStack(route, inclusive = false)
-    val currentRoute = navController.currentDestination?.route
-    if (popped && currentRoute == route) return
-
-    navController.navigate(route) {
-        popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
     }
 }

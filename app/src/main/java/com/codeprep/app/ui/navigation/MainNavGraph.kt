@@ -2,10 +2,12 @@ package com.codeprep.app.ui.navigation
 
 import androidx.compose.material3.Text
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import com.codeprep.app.data.settings.PendingSettingsActionHolder
 import com.codeprep.app.ui.friends.AddFriendsScreen
 import com.codeprep.app.ui.friends.FriendProfileScreen
 import com.codeprep.app.ui.ai.AskAiScreen
@@ -17,7 +19,10 @@ import com.codeprep.app.ui.profile.ProfileScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.codeprep.app.ui.quiz.QuizScreen
 
-fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
+fun NavGraphBuilder.mainNavGraph(
+    navController: NavHostController,
+    pendingSettingsActionHolder: PendingSettingsActionHolder
+) {
     navigation(startDestination = Screen.Home.route, route = "main") {
         composable(Screen.Home.route) {
             HomeScreen(
@@ -55,6 +60,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                 startWithAiOpen = backStackEntry.arguments?.getBoolean("openAi") == true,
                 onStartQuiz = { lessonId ->
                     navController.navigate(Screen.Quiz.createRoute(lessonId))
+                },
+                onOpenSettings = {
+                    openAiSettings(navController, pendingSettingsActionHolder)
                 }
             )
         }
@@ -69,6 +77,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
             AskAiScreen(
                 onLessonClick = { lessonId ->
                     navController.navigate(Screen.LessonDetail.createRoute(lessonId, openAi = true))
+                },
+                onOpenSettings = {
+                    openAiSettings(navController, pendingSettingsActionHolder)
                 }
             )
         }
@@ -83,7 +94,8 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                     navController.navigate("auth") {
                         popUpTo("main") { inclusive = true }
                     }
-                }
+                },
+                pendingSettingsActionHolder = pendingSettingsActionHolder
             )
         }
         composable(Screen.AddFriends.route) {
@@ -102,5 +114,30 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() }
             )
         }
+    }
+}
+
+private fun openAiSettings(
+    navController: NavHostController,
+    pendingSettingsActionHolder: PendingSettingsActionHolder
+) {
+    pendingSettingsActionHolder.requestAiSettings()
+    navigateToTopLevelRoute(navController, Screen.Profile.route)
+}
+
+internal fun navigateToTopLevelRoute(
+    navController: NavHostController,
+    route: String
+) {
+    val popped = navController.popBackStack(route, inclusive = false)
+    val currentRoute = navController.currentDestination?.route
+    if (popped && currentRoute == route) return
+
+    navController.navigate(route) {
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }

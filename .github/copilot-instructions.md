@@ -23,7 +23,7 @@ Run commands from the repository root (Windows):
   - `UserRepository`: XP/level/hearts/streak rules and Room + Firestore synchronization/hydration.
   - `LessonProgressRepository`: per-user lesson attempt/completion/perfect-run tracking.
 - Room DB (`CodePrepDatabase`) persists `user_progress`, `lesson_progress`, `cached_courses`, `cached_lessons`, and `ai_explanations`; `Converters` handles `Instant`, `List<String>`, and `List<CodeSnippet>`.
-- AI API wiring is in `di/NetworkModule.kt` and `data/remote/api/OpenRouterApi.kt`; key comes from `BuildConfig.OPENROUTER_API_KEY` loaded from `local.properties` in `app/build.gradle.kts`.
+- AI API wiring is in `di/NetworkModule.kt` and `data/remote/api/OpenRouterApi.kt`; the API key, model ID, and base URL are user-configured and stored encrypted in `data/settings/AiSettingsStore.kt` (`EncryptedSharedPreferences`). `NetworkModule` reads them per request via the `EndpointBuilder` interceptor; no build-time key exists.
 
 ## Key conventions in this repository
 

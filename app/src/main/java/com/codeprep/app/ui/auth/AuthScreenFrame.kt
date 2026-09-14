@@ -33,20 +33,42 @@ internal data class AuthScreenLayoutSpec(
     val cardWidthDp: Int,
     val cardHorizontalPaddingDp: Int,
     val cardVerticalPaddingDp: Int,
-    val formWidthDp: Int
+    val formWidthDp: Int,
+    val brandBottomPaddingDp: Int
 )
 
-internal fun authScreenLayoutFor(screenWidthDp: Int): AuthScreenLayoutSpec {
+private const val COMPACT_HEIGHT_THRESHOLD_DP = 480
+
+internal fun authScreenLayoutFor(
+    screenWidthDp: Int,
+    screenHeightDp: Int = Int.MAX_VALUE
+): AuthScreenLayoutSpec {
+    val isCompactHeight = screenHeightDp < COMPACT_HEIGHT_THRESHOLD_DP
+
     return if (screenWidthDp >= 600) {
-        AuthScreenLayoutSpec(
-            useCenteredCard = true,
-            screenPaddingDp = 72,
-            verticalPaddingDp = 48,
-            cardWidthDp = 320,
-            cardHorizontalPaddingDp = 40,
-            cardVerticalPaddingDp = 44,
-            formWidthDp = 280
-        )
+        if (isCompactHeight) {
+            AuthScreenLayoutSpec(
+                useCenteredCard = true,
+                screenPaddingDp = 16,
+                verticalPaddingDp = 12,
+                cardWidthDp = 420,
+                cardHorizontalPaddingDp = 28,
+                cardVerticalPaddingDp = 20,
+                formWidthDp = 360,
+                brandBottomPaddingDp = 16
+            )
+        } else {
+            AuthScreenLayoutSpec(
+                useCenteredCard = true,
+                screenPaddingDp = 72,
+                verticalPaddingDp = 48,
+                cardWidthDp = 320,
+                cardHorizontalPaddingDp = 40,
+                cardVerticalPaddingDp = 44,
+                formWidthDp = 280,
+                brandBottomPaddingDp = 32
+            )
+        }
     } else {
         AuthScreenLayoutSpec(
             useCenteredCard = false,
@@ -55,7 +77,8 @@ internal fun authScreenLayoutFor(screenWidthDp: Int): AuthScreenLayoutSpec {
             cardWidthDp = 0,
             cardHorizontalPaddingDp = 0,
             cardVerticalPaddingDp = 0,
-            formWidthDp = 0
+            formWidthDp = 0,
+            brandBottomPaddingDp = if (isCompactHeight) 24 else 48
         )
     }
 }
@@ -66,7 +89,10 @@ internal fun AuthScreenFrame(
     content: @Composable () -> Unit
 ) {
     val configuration = LocalConfiguration.current
-    val layout = authScreenLayoutFor(configuration.screenWidthDp)
+    val layout = authScreenLayoutFor(
+        screenWidthDp = configuration.screenWidthDp,
+        screenHeightDp = configuration.screenHeightDp
+    )
 
     Box(
         modifier = Modifier
@@ -121,7 +147,7 @@ internal fun AuthScreenFrame(
                                 ),
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
-                                    .padding(bottom = 32.dp)
+                                    .padding(bottom = layout.brandBottomPaddingDp.dp)
                             )
                         }
 
@@ -146,7 +172,7 @@ internal fun AuthScreenFrame(
                             ),
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
-                                .padding(bottom = 48.dp)
+                                .padding(bottom = layout.brandBottomPaddingDp.dp)
                         )
                     }
 

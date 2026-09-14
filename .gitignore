@@ -37,3 +37,18 @@ google-services.json
 
 app/google-services.json
 /docs
+
+# Local AI agent output and scratch plans
+/.opencode/
+*.prompt.md
+*copilot*review*.txt
+
+# Agent review notes (local only)
+/.agent-review/
+
+# Local learning workspace
+/.learning/
+
+# Build artifacts (root-generated stubs)
+/AndroidManifest.xml
+/R.txt

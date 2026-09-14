@@ -5,10 +5,10 @@
     <string name="notification_channel_streak_name">Streak reminders</string>
     <string name="notification_channel_streak_description">Reminders before your streak resets.</string>
     <string name="heart_refill_countdown">Next in %1$s</string>
-    <string name="notification_hearts_title">Srca su ti opet puna</string>
-    <string name="notification_hearts_body">Mozes da nastavis sa lekcijama bez cekanja.</string>
-    <string name="notification_streak_title">Streak ti je u opasnosti</string>
-    <string name="notification_streak_body">Uradi jednu lekciju uskoro da ne izgubis streak.</string>
+    <string name="notification_hearts_title">Your hearts are full again</string>
+    <string name="notification_hearts_body">You can continue with lessons without waiting.</string>
+    <string name="notification_streak_title">Your streak is at risk</string>
+    <string name="notification_streak_body">Complete a lesson soon so you don\'t lose your streak.</string>
     <string name="fun_fact_activity_label">Fun Fact</string>
     <string name="fun_fact_widget_label">CodePrep Fun Facts</string>
     <string name="fun_fact_widget_description">Shows a daily programming fun fact from CodePrep.</string>
@@ -80,6 +80,8 @@
     <string name="auth_register_have_account">Already have an account?</string>
     <string name="auth_error_login">Login failed.</string>
     <string name="auth_error_register">Registration failed.</string>
+    <string name="auth_error_google">Google sign-in failed.</string>
+    <string name="auth_error_google_account_exists">This Google email is already registered with email and password. Log in with email and password instead.</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_modules">Modules</string>
@@ -176,6 +178,27 @@
     <string name="profile_conversations_import_success">Conversations imported.</string>
     <string name="profile_conversations_import_invalid_file">This file isn\'t a valid CodePrep conversations backup.</string>
     <string name="profile_conversations_import_error">Couldn\'t import conversations.</string>
+    <string name="profile_ai_settings_section">AI settings</string>
+    <string name="profile_ai_api_key_label">API key</string>
+    <string name="profile_ai_api_key_placeholder">Paste your API key</string>
+    <string name="profile_ai_model_label">Model</string>
+    <string name="profile_ai_model_placeholder">e.g. stepfun/step-3.5-flash:freegi</string>
+    <string name="profile_ai_base_url_label">Base URL</string>
+    <string name="profile_ai_base_url_placeholder">https://openrouter.ai/api/v1/</string>
+    <string name="profile_ai_show_key">Show API key</string>
+    <string name="profile_ai_hide_key">Hide API key</string>
+    <string name="profile_ai_test_connection">Test connection</string>
+    <string name="profile_ai_test_success">Connection successful.</string>
+    <string name="profile_ai_test_invalid_key">Invalid API key. Check the key and try again.</string>
+    <string name="profile_ai_test_bad_endpoint">Couldn\'t reach this endpoint. Check the base URL and model.</string>
+    <string name="profile_ai_test_unreachable">Connection failed. Check your network connection.</string>
+    <string name="profile_ai_save">Save</string>
+    <string name="profile_ai_storage_note">Your API key is stored only on this device and is never synced or backed up.</string>
+    <string name="ai_invalid_api_key">The AI API key is invalid. Update it in Settings.</string>
+    <string name="ai_key_required_title">AI is not configured</string>
+    <string name="ai_key_required_body">Add your AI API key in Settings to unlock the AI tutor.</string>
+    <string name="ai_key_required_open_settings">Open settings</string>
+    <string name="ai_key_required_system_message">Set up your AI API key in Settings to ask questions.</string>
 
     <string name="fun_fact_opening_home">&gt;&gt; OPENING_HOME()</string>
 

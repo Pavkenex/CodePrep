@@ -30,8 +30,8 @@ android {
         }
         buildConfigField(
             "String",
-            "OPENROUTER_API_KEY",
-            "\"${localProps.getProperty("OPENROUTER_API_KEY", "").trim()}\""
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${localProps.getProperty("GOOGLE_WEB_CLIENT_ID", "").trim()}\""
         )
     }
 
@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.security.crypto)
     ksp(libs.androidx.room.compiler)
     androidTestImplementation(libs.kotlinx.coroutines.test)
     implementation(platform(libs.firebase.bom))

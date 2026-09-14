@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.codeprep.app.R
 import com.codeprep.app.data.repository.AuthRepository
 import com.codeprep.app.data.settings.AppStringProvider
+import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +45,45 @@ class AuthViewModel @Inject constructor(
                     )
                 }
         }
+    }
+
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            authRepository.loginWithGoogle(idToken)
+                .onSuccess { _authState.value = AuthState.Success }
+                .onFailure {
+                    _authState.value = AuthState.Error(googleAuthErrorMessage(it))
+                }
+        }
+    }
+
+    fun googleSignInFailed() {
+        _authState.value = AuthState.Error(
+            appStringProvider.get(R.string.auth_error_google)
+        )
+    }
+
+    private fun googleAuthErrorMessage(error: Throwable): String {
+        return resolveGoogleAuthErrorMessage(
+            errorCode = (error as? FirebaseAuthException)?.errorCode,
+            errorMessage = error.message,
+            genericMessage = appStringProvider.get(R.string.auth_error_google),
+            accountExistsMessage = appStringProvider.get(R.string.auth_error_google_account_exists)
+        )
+    }
+}
+
+internal fun resolveGoogleAuthErrorMessage(
+    errorCode: String?,
+    errorMessage: String?,
+    genericMessage: String,
+    accountExistsMessage: String
+): String {
+    return if (errorCode == "ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL") {
+        accountExistsMessage
+    } else {
+        errorMessage ?: genericMessage
     }
 }
 sealed class AuthState{

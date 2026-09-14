@@ -28,6 +28,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -62,11 +63,14 @@ private fun LessonListContent(
     modifier: Modifier = Modifier
 ) {
     val lessons = state.lessons
+    val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
+    val isTabletLayout = configuration.screenWidthDp >= 600
     val tooltipState = rememberLessonTooltipState(
         lessons = lessons,
         scrollState = scrollState,
+        isTabletLayout = isTabletLayout,
         density = density
     )
 
@@ -80,6 +84,7 @@ private fun LessonListContent(
         rootSize = tooltipState.rootSize,
         tooltipSize = tooltipState.tooltipSize,
         lessonCount = lessons.size,
+        isTabletLayout = isTabletLayout,
         density = density
     )
 

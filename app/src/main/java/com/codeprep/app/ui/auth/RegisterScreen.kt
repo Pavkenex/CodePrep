@@ -13,6 +13,7 @@ import com.codeprep.app.ui.components.GamifiedTextField
 import com.codeprep.app.ui.theme.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -31,11 +32,15 @@ fun RegisterScreen(
     navController: NavHostController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var fullName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
+    val launchGoogleSignIn = rememberGoogleSignInAction(
+        onIdToken = viewModel::loginWithGoogle,
+        onFailure = viewModel::googleSignInFailed
+    )
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -133,10 +138,11 @@ fun RegisterScreen(
 
         GamifiedButton(
             text = localizedStringResource(R.string.auth_register_google),
-            onClick = { /* TODO: Google Auth */ },
+            onClick = launchGoogleSignIn,
             backgroundColor = Charcoal,
             shadowColor = DeepCharcoal,
             textColor = IceWhite,
+            enabled = authState !is AuthState.Loading,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 

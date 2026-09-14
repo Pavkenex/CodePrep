@@ -6,6 +6,7 @@ import com.codeprep.app.R
 import com.codeprep.app.data.remote.api.AiConfig
 import com.codeprep.app.data.repository.AiRepository
 import com.codeprep.app.data.repository.CourseRepository
+import com.codeprep.app.data.settings.AiSettingsStore
 import com.codeprep.app.data.settings.AppSettingsStore
 import com.codeprep.app.data.settings.AppStringProvider
 import com.codeprep.app.domain.model.AiConversationMessage
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,13 +30,20 @@ class AskAiViewModel @Inject constructor(
     private val aiRepository: AiRepository,
     courseRepository: CourseRepository,
     appSettingsStore: AppSettingsStore,
+    aiSettingsStore: AiSettingsStore,
     private val strings: AppStringProvider,
-    auth: FirebaseAuth
+    auth: FirebaseAuth,
+    private val overlayVisibility: AskAiOverlayVisibility
 ) : ViewModel() {
     private val userId: String = auth.currentUser?.uid ?: ""
 
     private val _uiState = MutableStateFlow(AskAiUiState())
     val uiState: StateFlow<AskAiUiState> = _uiState.asStateFlow()
+
+    /** True when the user has configured an API key; gates the whole Ask AI flow. */
+    val hasApiKey = aiSettingsStore.apiKey()
+        .map { it.isNotBlank() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     val savedConversations = aiRepository.getSavedConversations(userId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -69,6 +78,16 @@ class AskAiViewModel @Inject constructor(
 
     private var lastQuestionTime: Long = 0L
 
+    init {
+        viewModelScope.launch {
+            courseRepository.refreshCourses()
+        }
+    }
+
+    fun onOverlayVisibilityChanged(visible: Boolean) {
+        overlayVisibility.setVisible(visible)
+    }
+
     fun bindLesson(context: LessonContext) {
         if (currentLessonId == context.lessonId && _uiState.value.hasLoadedLesson) {
             return
@@ -98,6 +117,13 @@ class AskAiViewModel @Inject constructor(
         val normalizedQuestion = question.trim()
         if (normalizedQuestion.isBlank()) {
             appendSystemMessage(strings.get(R.string.ask_ai_error_empty_input))
+            return
+        }
+
+        // No network call is made in the locked state; the UI renders a locked
+        // card instead, this is a safety net for any other entry point.
+        if (!hasApiKey.value) {
+            appendSystemMessage(strings.get(R.string.ai_key_required_system_message))
             return
         }
 

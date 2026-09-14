@@ -1,4 +1,13 @@
 <resources>
+    <string name="notification_channel_hearts_name">Obaveštenja o srcima</string>
+    <string name="notification_channel_hearts_description">Obaveštenja kada ti se srca ponovo napune.</string>
+    <string name="notification_channel_streak_name">Podsetnici za streak</string>
+    <string name="notification_channel_streak_description">Podsetnici pre nego što ti se streak resetuje.</string>
+    <string name="notification_hearts_title">Srca su ti opet puna</string>
+    <string name="notification_hearts_body">Možeš da nastaviš sa lekcijama bez čekanja.</string>
+    <string name="notification_streak_title">Streak ti je u opasnosti</string>
+    <string name="notification_streak_body">Uradi jednu lekciju uskoro da ne izgubiš streak.</string>
+    <string name="heart_refill_countdown">Sledeće srce za %1$s</string>
     <string name="ask_ai_back">Nazad</string>
     <string name="ask_ai_title_fallback">Pitaj AI</string>
     <string name="ask_ai_course_fallback">Tutor lekcije</string>
@@ -67,6 +76,8 @@
     <string name="auth_register_have_account">Već imaš nalog?</string>
     <string name="auth_error_login">Prijava nije uspela.</string>
     <string name="auth_error_register">Registracija nije uspela.</string>
+    <string name="auth_error_google">Prijava putem Google-a nije uspela.</string>
+    <string name="auth_error_google_account_exists">Ovaj Google email je već registrovan putem emaila i lozinke. Prijavi se emailom i lozinkom.</string>
 
     <string name="nav_home">Početna</string>
     <string name="nav_modules">Moduli</string>
@@ -163,6 +174,27 @@
     <string name="profile_conversations_import_success">Razgovori su uvezeni.</string>
     <string name="profile_conversations_import_invalid_file">Ova datoteka nije ispravan CodePrep backup razgovora.</string>
     <string name="profile_conversations_import_error">Nije moguće uvesti razgovore.</string>
+    <string name="profile_ai_settings_section">AI podešavanja</string>
+    <string name="profile_ai_api_key_label">API ključ</string>
+    <string name="profile_ai_api_key_placeholder">Nalepi svoj API ključ</string>
+    <string name="profile_ai_model_label">Model</string>
+    <string name="profile_ai_model_placeholder">npr. stepfun/step-3.5-flash:freegi</string>
+    <string name="profile_ai_base_url_label">Osnovni URL</string>
+    <string name="profile_ai_base_url_placeholder">https://openrouter.ai/api/v1/</string>
+    <string name="profile_ai_show_key">Prikaži API ključ</string>
+    <string name="profile_ai_hide_key">Sakrij API ključ</string>
+    <string name="profile_ai_test_connection">Testiraj vezu</string>
+    <string name="profile_ai_test_success">Veza je uspešna.</string>
+    <string name="profile_ai_test_invalid_key">Nevažeći API ključ. Proveri ključ i pokušaj ponovo.</string>
+    <string name="profile_ai_test_bad_endpoint">Nije moguće doseći ovu adresu. Proveri osnovni URL i model.</string>
+    <string name="profile_ai_test_unreachable">Veza nije uspela. Proveri mrežnu vezu.</string>
+    <string name="profile_ai_save">Sačuvaj</string>
+    <string name="profile_ai_storage_note">Tvoj API ključ se čuva samo na ovom uređaju i nikada se ne sinhronizuje niti pravi backup.</string>
+    <string name="ai_invalid_api_key">AI API ključ je nevažeći. Ažuriraj ga u Podešavanjima.</string>
+    <string name="ai_key_required_title">AI nije podešen</string>
+    <string name="ai_key_required_body">Dodaj svoj AI API ključ u Podešavanjima da otključaš AI tutora.</string>
+    <string name="ai_key_required_open_settings">Otvori podešavanja</string>
+    <string name="ai_key_required_system_message">Podesi svoj AI API ključ u Podešavanjima da postavljaš pitanja.</string>
 
     <string name="fun_fact_opening_home">&gt;&gt; OTVARAM_POCETNU()</string>
 

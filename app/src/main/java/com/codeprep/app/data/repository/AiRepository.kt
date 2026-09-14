@@ -13,8 +13,11 @@ import com.codeprep.app.data.local.entity.AiResponseCacheEntity
 import com.codeprep.app.data.remote.api.AiConfig
 import com.codeprep.app.data.remote.api.AiMessage
 import com.codeprep.app.data.remote.api.AiRequest
+import com.codeprep.app.data.remote.api.EndpointBuilder
+import com.codeprep.app.data.remote.api.OpenCodeGateway
 import com.codeprep.app.data.remote.api.OpenRouterApi
 import com.codeprep.app.data.settings.AppStringProvider
+import com.codeprep.app.data.settings.AiSettingsStore
 import com.codeprep.app.domain.AiPromptBuilder
 import com.codeprep.app.domain.model.AiConversationMessage
 import com.codeprep.app.domain.model.AiConversationRole
@@ -39,6 +42,7 @@ class AiRepository @Inject constructor(
     private val conversationDao: AiConversationDao,
     private val cacheDao: AiResponseCacheDao,
     private val strings: AppStringProvider,
+    private val aiSettingsStore: AiSettingsStore,
     private val api: OpenRouterApi
 ) {
     suspend fun askQuestion(
@@ -61,6 +65,7 @@ class AiRepository @Inject constructor(
 
         val canUseCache = conversationHistory.isEmpty()
         if (canUseCache) {
+
             val freshCache = cacheDao.getCachedAnswer(
                 userId = userId,
                 question = normalizedQuestion,
@@ -87,16 +92,20 @@ class AiRepository @Inject constructor(
         }
 
         return try {
+            val url = EndpointBuilder.build(aiSettingsStore.getBaseUrl())
             val response = api.askQuestion(
-                AiRequest(
-                    model = AiConfig.MODEL,
+                url = url,
+                request = AiRequest(
+                    model = aiSettingsStore.getModelId().trim(),
                     messages = buildApiMessages(
                         systemPrompt = systemPrompt,
                         conversationHistory = conversationHistory,
                         question = normalizedQuestion
                     ),
                     max_tokens = maxTokens
-                )
+                ),
+                sessionId = OpenCodeGateway.sessionIdFor(url, conversationKey = context?.lessonId),
+                userAgent = OpenCodeGateway.userAgentFor(url)
             )
 
             val answer = response.choices.firstOrNull()?.message?.content?.trim().orEmpty()
@@ -122,6 +131,14 @@ class AiRepository @Inject constructor(
         } catch (e: HttpException) {
             if (e.code() == 429) {
                 AiResponse.RateLimited
+            } else if (e.code() == 401) {
+                // The configured API key was rejected by the provider.
+                resolveFallback(
+                    userId = userId,
+                    question = normalizedQuestion,
+                    context = context,
+                    defaultError = strings.get(R.string.ai_invalid_api_key)
+                )
             } else {
                 resolveFallback(
                     userId = userId,
@@ -131,6 +148,13 @@ class AiRepository @Inject constructor(
                 )
             }
         } catch (_: IOException) {
+            resolveFallback(
+                userId = userId,
+                question = normalizedQuestion,
+                context = context,
+                defaultError = strings.get(R.string.ai_unavailable_try_again)
+            )
+        } catch (_: IllegalArgumentException) {
             resolveFallback(
                 userId = userId,
                 question = normalizedQuestion,
